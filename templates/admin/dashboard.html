@@ -1,0 +1,35 @@
+<h2>Panel de Administración</h2>
+
+<a href="{{ url_for('admin_routes.add_empleado') }}">Agregar Empleado</a> |
+<a href="{{ url_for('admin_routes.anadir_producto') }}">Agregar Producto</a> |
+
+<table>
+    <tr>
+        <th>ID</th>
+        <th>Nombre</th>
+        <th>Correo</th>
+        <th>Teléfono</th>
+        <th>Rol</th>
+        <th>¿Debe cambiar contraseña?</th>
+        <th>Acciones</th>
+    </tr>
+    {% for u in usuarios %}
+    <tr>
+        <td>{{ u.id }}</td>
+        <td>{{ u.nombre_completo }}</td>
+        <td>{{ u.correo }}</td>
+        <td>{{ u.telefono }}</td>
+        <td>{{ u.rol }}</td>
+        <td>
+            {% if u.debe_cambiar_contrasena %}
+                Sí
+            {% else %}
+                No
+            {% endif %}
+        </td>
+        <td>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+<a href="{{ url_for('auth_routes.logout') }}">Cerrar sesión</a>

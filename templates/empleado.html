@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Panel Empleado</title>
+</head>
+<body>
+    <h2>Bienvenido, {{ usuario.nombre_completo }}</h2>
+    <p>Correo: {{ usuario.correo }}</p>
+    <p>Teléfono: {{ usuario.telefono }}</p>
+    <a href="{{ url_for('auth_routes.logout') }}">Cerrar sesión</a>
+</body>
+</html>

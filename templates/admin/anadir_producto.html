@@ -1,0 +1,25 @@
+<h2>Añadir Producto</h2>
+<form method="POST">
+    <label>Nombre:</label><br>
+    <input type="text" name="nombre" required><br>
+    <label>Descripción:</label><br>
+    <input type="text" name="descripcion"><br>
+    <label>Precio:</label><br>
+    <input type="number" step="0.01" name="precio" required><br>
+    <label>¿Es rotativo?</label><br>
+    <select name="es_rotativo">
+        <option value="1">Sí</option>
+        <option value="0">No</option>
+    </select><br>
+    <label>Categoría:</label><br>
+    <select name="categorias_id">
+        {% for c in categorias %}
+            <option value="{{ c.id }}">{{ c.nombre }}</option>
+        {% endfor %}
+    </select><br><br>
+    <button type="submit">Añadir Producto</button>
+</form>
+{% if mensaje %}
+    <p>{{ mensaje }}</p>
+{% endif %}
+<a href="{{ url_for('admin_routes.dashboard') }}">Volver al panel</a>

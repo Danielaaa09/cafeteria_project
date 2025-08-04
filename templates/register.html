@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Registro de Usuario</title>
+</head>
+<body>
+    <h2>Crear una cuenta</h2>
+    <form action="{{ url_for('auth_routes.register') }}" method="POST">
+        <label>Nombre completo:</label><br>
+        <input type="text" name="nombre_completo" required><br><br>
+
+        <label>Correo:</label><br>
+        <input type="email" name="correo" required><br><br>
+
+        <label>Contraseña:</label><br>
+        <input type="password" name="contrasena" required><br><br>
+
+        <label>Teléfono:</label><br>
+        <input type="text" name="telefono"><br><br>
+
+        <input type="submit" value="Registrarse">
+    </form>
+    <p>¿Ya tienes una cuenta? <a href="/login">Iniciar sesión</a></p>
+</body>
+</html>

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cafeteria Las Dos Amigas</title>
+</head>
+<body>
+    <h2>Inicio de Sesión</h2>
+    <form action="{{ url_for('auth_routes.login') }}" method="POST">
+        <label>Correo:</label><br>
+        <input type="email" name="correo" required><br><br>
+
+        <label>Contraseña:</label><br>
+        <input type="password" name="contrasena" required><br><br>
+
+        <input type="submit" value="Iniciar sesión">
+    </form>
+
+    <p>¿No tienes una cuenta? <a href="/register">Regístrate aquí</a></p>
+    <p><a href="{{ url_for('auth_routes.recuperar_contrasena') }}">¿Has olvidado tu contraseña?</a></p>
+</body>
+</html>
