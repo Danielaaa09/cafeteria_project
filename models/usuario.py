@@ -10,7 +10,7 @@ class Usuario(db.Model):
     correo = db.Column(db.String(100), unique=True, nullable=False)
     telefono = db.Column(db.String(100))
     contrasena_hash = db.Column(db.String(255), nullable=False)
-    rol = db.Column(db.Enum('cliente', 'empleado', 'administrador'), nullable=False)
+    rol = db.Column(db.Enum('cliente', 'empleado', 'administrador', name='rol_enum'), nullable=False)
     fecha_creacion = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     debe_cambiar_contrasena = db.Column(db.Boolean, default=False)
 

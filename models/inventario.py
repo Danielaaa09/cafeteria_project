@@ -7,5 +7,5 @@ class Inventario(db.Model):
     cantidad_disponible = db.Column(db.Integer, nullable=False)
     cantidad_minima = db.Column(db.Integer, nullable=False)
     fecha_actualizacion = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    rotativo = db.Column(db.Enum('si', 'no'), nullable=False)
+    rotativo = db.Column(db.Enum('si', 'no', name = 'rotativo_enum'), nullable=False)
     producto_id = db.Column(db.Integer, db.ForeignKey('producto.id'))
