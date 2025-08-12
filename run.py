@@ -2,9 +2,5 @@ from app import create_app
 
 app = create_app()
 
-# Elimina o comenta el bloque db.create_all(), ya que usas migraciones
-# with app.app_context():
-#     db.create_all()
-
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=8083)
