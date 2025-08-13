@@ -1,4 +1,4 @@
-/* login.css */
+/* login.css - Versión corregida */
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=DM+Sans:wght@400;500&display=swap');
 
 * {
@@ -12,6 +12,7 @@ body {
     min-height: 100vh;
     background: linear-gradient(135deg, #fffbeb 0%, #fed7aa 50%, #fffbeb 100%);
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     padding: 20px;
@@ -46,18 +47,10 @@ body::after {
     z-index: 1;
 }
 
-/* Contenedor principal del formulario */
-form {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
-    padding: 40px;
-    border-radius: 20px;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-    width: 100%;
-    max-width: 400px;
+/* Contenedor principal que agrupa todo */
+body > * {
     position: relative;
     z-index: 10;
-    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 /* Título principal */
@@ -67,7 +60,16 @@ h2 {
     font-weight: 700;
     color: #1f2937;
     text-align: center;
-    margin-bottom: 8px;
+    margin-bottom: 30px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    padding: 20px;
+    border-radius: 20px 20px 0 0;
+    box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.05);
+    width: 100%;
+    max-width: 400px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-bottom: none;
     position: relative;
 }
 
@@ -77,6 +79,20 @@ h2::after {
     font-size: 32px;
     margin-top: 8px;
     opacity: 0.8;
+}
+
+/* Contenedor principal del formulario */
+form {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    padding: 40px;
+    border-radius: 0;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 400px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-top: none;
+    border-bottom: none;
 }
 
 /* Etiquetas */
@@ -138,15 +154,34 @@ input[type="submit"]:active {
     transform: translateY(0);
 }
 
-/* Enlaces */
+/* Contenedor de enlaces */
 p {
     text-align: center;
-    margin-top: 20px;
+    margin: 0;
+    padding: 15px 40px;
     color: #6b7280;
     font-size: 14px;
     line-height: 1.6;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    width: 100%;
+    max-width: 400px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
+/* Primer párrafo (registro) */
+p:first-of-type {
+    border-top: 1px solid #f3f4f6;
+    border-bottom: none;
+}
+
+/* Último párrafo (recuperar contraseña) */
+p:last-of-type {
+    border-radius: 0 0 20px 20px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+}
+
+/* Enlaces */
 a {
     color: #ea580c;
     text-decoration: none;
@@ -159,29 +194,29 @@ a:hover {
     text-decoration: underline;
 }
 
-/* Espaciado entre párrafos */
-p:first-of-type {
-    margin-top: 25px;
-    padding-top: 20px;
-    border-top: 1px solid #f3f4f6;
-}
-
-p:last-of-type {
-    margin-top: 10px;
-}
-
 /* Responsivo para móviles */
 @media (max-width: 480px) {
     body {
         padding: 15px;
     }
     
-    form {
-        padding: 30px 25px;
+    h2,
+    form,
+    p {
+        max-width: 100%;
+        padding-left: 25px;
+        padding-right: 25px;
     }
     
     h2 {
         font-size: 24px;
+        padding-top: 25px;
+        padding-bottom: 25px;
+    }
+    
+    form {
+        padding-top: 30px;
+        padding-bottom: 30px;
     }
     
     input[type="email"],
@@ -193,7 +228,7 @@ p:last-of-type {
 }
 
 /* Animación sutil al cargar */
-form {
+h2, form, p {
     animation: fadeInUp 0.6s ease-out;
 }
 
