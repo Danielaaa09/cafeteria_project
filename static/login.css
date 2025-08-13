@@ -1,376 +1,268 @@
-/* Reset y configuración base */
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-body {
-    font-family: 'Georgia', 'Times New Roman', serif;
-    background: linear-gradient(135deg, #f7f3e9 0%, #e8dcc0 100%);
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    color: #3e2723;
-}
+        body {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            background: linear-gradient(135deg, #fef7ed 0%, #fed7aa 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
 
-/* Contenedor principal del formulario */
-form {
-    background: white;
-    padding: 40px;
-    border-radius: 16px;
-    box-shadow: 0 20px 40px rgba(62, 39, 35, 0.1);
-    width: 100%;
-    max-width: 400px;
-    border: 1px solid #d7ccc8;
-}
+        .login-card {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(120, 53, 15, 0.1);
+            width: 100%;
+            max-width: 420px;
+            border: 1px solid #fbbf24;
+        }
 
-/* Título principal */
-h2 {
-    font-size: 2rem;
-    font-weight: 600;
-    color: #5d4037;
-    text-align: center;
-    margin-bottom: 30px;
-    position: relative;
-}
+        .logo {
+            text-align: center;
+            margin-bottom: 32px;
+        }
 
-h2::after {
-    content: '';
-    position: absolute;
-    bottom: -10px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 60px;
-    height: 3px;
-    background: linear-gradient(90deg, #ff8f00, #ffb300);
-    border-radius: 2px;
-}
+        .logo h1 {
+            color: #78350f;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
 
-/* Etiquetas */
-label {
-    display: block;
-    font-size: 0.95rem;
-    font-weight: 500;
-    color: #5d4037;
-    margin-bottom: 8px;
-    margin-top: 16px;
-}
+        .logo p {
+            color: #92400e;
+            font-size: 14px;
+            font-style: italic;
+        }
 
-label:first-of-type {
-    margin-top: 0;
-}
+        .form-group {
+            margin-bottom: 24px;
+        }
 
-/* Campos de entrada */
-input[type="email"],
-input[type="password"] {
-    width: 100%;
-    padding: 12px 16px;
-    border: 2px solid #e0e0e0;
-    border-radius: 8px;
-    font-size: 1rem;
-    transition: all 0.3s ease;
-    background: #fafafa;
-    color: #3e2723;
-}
+        label {
+            display: block;
+            color: #78350f;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 15px;
+        }
 
-input[type="email"]:focus,
-input[type="password"]:focus {
-    outline: none;
-    border-color: #ff8f00;
-    background: white;
-    box-shadow: 0 0 0 3px rgba(255, 143, 0, 0.1);
-}
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #fbbf24;
+            border-radius: 10px;
+            font-size: 16px;
+            background-color: #fffbeb;
+            color: #78350f;
+            transition: all 0.3s ease;
+        }
 
-/* Botón de envío */
-input[type="submit"] {
-    width: 100%;
-    padding: 14px;
-    background: linear-gradient(135deg, #ff8f00 0%, #ffb300 100%);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 1.1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    margin-top: 24px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
+        input[type="email"]:focus,
+        input[type="password"]:focus {
+            outline: none;
+            border-color: #f59e0b;
+            background-color: white;
+            box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.1);
+        }
 
-input[type="submit"]:hover {
-    background: linear-gradient(135deg, #f57c00 0%, #ff9800 100%);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(255, 143, 0, 0.3);
-}
+        .login-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #78350f 0%, #92400e 100%);
+            color: white;
+            padding: 16px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 8px;
+        }
 
-input[type="submit"]:active {
-    transform: translateY(0);
-}
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(120, 53, 15, 0.3);
+        }
 
-/* Enlaces */
-p {
-    text-align: center;
-    margin-top: 20px;
-    font-size: 0.9rem;
-    color: #6d4c41;
-}
+        .login-btn:active {
+            transform: translateY(0);
+        }
 
-a {
-    color: #ff8f00;
-    text-decoration: none;
-    font-weight: 500;
-    transition: color 0.3s ease;
-}
+        .links {
+            text-align: center;
+            margin-top: 28px;
+            padding-top: 24px;
+            border-top: 1px solid #fbbf24;
+        }
 
-a:hover {
-    color: #f57c00;
-    text-decoration: underline;
-}
+        .links p {
+            margin: 12px 0;
+            color: #78350f;
+            font-size: 14px;
+        }
 
-/* Espaciado entre párrafos */
-p + p {
-    margin-top: 12px;
-}
+        .links a {
+            color: #f59e0b;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
 
-/* Responsive */
-@media (max-width: 480px) {
-    form {
-        padding: 30px 20px;
-        margin: 0 10px;
-    }
-    
-    h2 {
-        font-size: 1.75rem;
-    }
-    
-    input[type="email"],
-    input[type="password"] {
-        padding: 10px 14px;
-    }
-    
-    input[type="submit"] {
-        padding: 12px;
-        font-size: 1rem;
-    }
-}
+        .links a:hover {
+            color: #d97706;
+            text-decoration: underline;
+        }
 
-/* Efectos adicionales */
-form::before {
-    content: '';
-    position: absolute;
-    top: -2px;
-    left: -2px;
-    right: -2px;
-    bottom: -2px;
-    background: linear-gradient(45deg, #ff8f00, #ffb300, #ff8f00);
-    border-radius: 18px;
-    z-index: -1;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
+        @media (max-width: 480px) {
+            .login-card {
+                padding: 28px 24px;
+            }
+            
+            .logo h1 {
+                font-size: 24px;
+            }
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-form:hover::before {
-    opacity: 0.1;
-}
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+        body {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            background: linear-gradient(135deg, #fef7ed 0%, #fed7aa 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
 
-body {
-    font-family: 'Georgia', 'Times New Roman', serif;
-    background: linear-gradient(135deg, #f7f3e9 0%, #e8dcc0 100%);
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
-    color: #5d4e37;
-}
+        .register-card {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(120, 53, 15, 0.1);
+            width: 100%;
+            max-width: 420px;
+            border: 1px solid #fbbf24;
+        }
 
-h2 {
-    font-size: 2.5rem;
-    font-weight: 600;
-    color: #8b4513;
-    margin-bottom: 2rem;
-    text-align: center;
-    text-shadow: 0 2px 4px rgba(139, 69, 19, 0.1);
-}
+        .logo {
+            text-align: center;
+            margin-bottom: 32px;
+        }
 
-form {
-    background: rgba(255, 255, 255, 0.95);
-    padding: 3rem;
-    border-radius: 20px;
-    box-shadow: 0 20px 40px rgba(139, 69, 19, 0.15);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(139, 69, 19, 0.1);
-    width: 100%;
-    max-width: 450px;
-}
+        .logo h1 {
+            color: #78350f;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
 
-label {
-    display: block;
-    font-size: 1.1rem;
-    font-weight: 500;
-    color: #5d4e37;
-    margin-bottom: 0.5rem;
-    margin-top: 1rem;
-}
+        .logo p {
+            color: #92400e;
+            font-size: 14px;
+            font-style: italic;
+        }
 
-label:first-of-type {
-    margin-top: 0;
-}
+        .form-group {
+            margin-bottom: 20px;
+        }
 
-input[type="text"],
-input[type="email"],
-input[type="password"] {
-    width: 100%;
-    padding: 1rem;
-    border: 2px solid #e8dcc0;
-    border-radius: 12px;
-    font-size: 1rem;
-    font-family: inherit;
-    background: rgba(255, 255, 255, 0.8);
-    color: #5d4e37;
-    transition: all 0.3s ease;
-    margin-bottom: 0.5rem;
-}
+        label {
+            display: block;
+            color: #78350f;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 15px;
+        }
 
-input[type="text"]:focus,
-input[type="email"]:focus,
-input[type="password"]:focus {
-    outline: none;
-    border-color: #d2691e;
-    background: rgba(255, 255, 255, 1);
-    box-shadow: 0 0 0 3px rgba(210, 105, 30, 0.1);
-    transform: translateY(-2px);
-}
+        input[type="text"],
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #fbbf24;
+            border-radius: 10px;
+            font-size: 16px;
+            background-color: #fffbeb;
+            color: #78350f;
+            transition: all 0.3s ease;
+        }
 
-input[type="submit"] {
-    width: 100%;
-    padding: 1.2rem;
-    background: linear-gradient(135deg, #d2691e 0%, #8b4513 100%);
-    color: white;
-    border: none;
-    border-radius: 12px;
-    font-size: 1.1rem;
-    font-weight: 600;
-    font-family: inherit;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    margin-top: 1.5rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        input[type="password"]:focus {
+            outline: none;
+            border-color: #f59e0b;
+            background-color: white;
+            box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.1);
+        }
 
-input[type="submit"]:hover {
-    background: linear-gradient(135deg, #ff7f50 0%, #d2691e 100%);
-    transform: translateY(-3px);
-    box-shadow: 0 10px 25px rgba(139, 69, 19, 0.3);
-}
+        .register-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #78350f 0%, #92400e 100%);
+            color: white;
+            padding: 16px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 8px;
+        }
 
-input[type="submit"]:active {
-    transform: translateY(-1px);
-    box-shadow: 0 5px 15px rgba(139, 69, 19, 0.3);
-}
+        .register-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(120, 53, 15, 0.3);
+        }
 
-p {
-    text-align: center;
-    margin-top: 2rem;
-    font-size: 1rem;
-    color: #5d4e37;
-}
+        .register-btn:active {
+            transform: translateY(0);
+        }
 
-a {
-    color: #d2691e;
-    text-decoration: none;
-    font-weight: 600;
-    transition: all 0.3s ease;
-}
+        .links {
+            text-align: center;
+            margin-top: 28px;
+            padding-top: 24px;
+            border-top: 1px solid #fbbf24;
+        }
 
-a:hover {
-    color: #8b4513;
-    text-decoration: underline;
-}
+        .links p {
+            margin: 12px 0;
+            color: #78350f;
+            font-size: 14px;
+        }
 
-/* Responsive Design */
-@media (max-width: 768px) {
-    body {
-        padding: 15px;
-    }
-    
-    h2 {
-        font-size: 2rem;
-        margin-bottom: 1.5rem;
-    }
-    
-    form {
-        padding: 2rem;
-        border-radius: 15px;
-    }
-    
-    input[type="text"],
-    input[type="email"],
-    input[type="password"] {
-        padding: 0.9rem;
-        font-size: 0.95rem;
-    }
-    
-    input[type="submit"] {
-        padding: 1rem;
-        font-size: 1rem;
-    }
-}
+        .links a {
+            color: #f59e0b;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
 
-@media (max-width: 480px) {
-    form {
-        padding: 1.5rem;
-        margin: 10px;
-    }
-    
-    h2 {
-        font-size: 1.8rem;
-    }
-    
-    input[type="text"],
-    input[type="email"],
-    input[type="password"] {
-        padding: 0.8rem;
-    }
-}
+        .links a:hover {
+            color: #d97706;
+            text-decoration: underline;
+        }
 
-/* Animaciones sutiles */
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-form {
-    animation: fadeIn 0.6s ease-out;
-}
-
-/* Efectos adicionales para mejorar la experiencia */
-input[type="text"]:valid,
-input[type="email"]:valid,
-input[type="password"]:valid {
-    border-color: #90EE90;
-}
-
-input[type="text"]:invalid:not(:focus):not(:placeholder-shown),
-input[type="email"]:invalid:not(:focus):not(:placeholder-shown),
-input[type="password"]:invalid:not(:focus):not(:placeholder-shown) {
-    border-color: #ff6b6b;
-}
+        @media (max-width: 480px) {
+            .register-card {
+                padding: 28px 24px;
+            }
+            
+            .logo h1 {
+                font-size: 24px;
+            }
+        }
