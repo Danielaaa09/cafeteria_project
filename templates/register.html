@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>Registro de Usuario</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='login.css') }}">
 </head>
 <body>
     <h2>Crear una cuenta</h2>
@@ -12,11 +13,11 @@
         <label>Correo:</label><br>
         <input type="email" name="correo" required><br><br>
 
-        <label>Contraseña:</label><br>
-        <input type="password" name="contrasena" required><br><br>
-
         <label>Teléfono:</label><br>
         <input type="text" name="telefono"><br><br>
+
+         <label>Contraseña:</label><br>
+        <input type="password" name="contrasena" required><br><br>
 
         <input type="submit" value="Registrarse">
     </form>
