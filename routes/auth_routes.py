@@ -69,7 +69,8 @@ def register():
 @auth_routes.route('/logout')
 def logout():
     session.clear()
-    return redirect(url_for('auth_routes.login_form'))
+    return render_template('paginaprin.html')
+
 
 @auth_routes.route('/cambiar_contrasena', methods=['GET', 'POST'])
 def cambiar_contrasena():

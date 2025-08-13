@@ -10,7 +10,6 @@
         <th>Correo</th>
         <th>Teléfono</th>
         <th>Rol</th>
-        <th>¿Debe cambiar contraseña?</th>
         <th>Acciones</th>
     </tr>
     {% for u in usuarios %}
@@ -20,13 +19,6 @@
         <td>{{ u.correo }}</td>
         <td>{{ u.telefono }}</td>
         <td>{{ u.rol }}</td>
-        <td>
-            {% if u.debe_cambiar_contrasena %}
-                Sí
-            {% else %}
-                No
-            {% endif %}
-        </td>
         <td>
         </td>
     </tr>

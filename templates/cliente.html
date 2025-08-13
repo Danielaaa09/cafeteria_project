@@ -1,16 +1,163 @@
-
 <!DOCTYPE html>
-<html lang="es">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Panel del Cliente</title>
-        <link rel="stylesheet" href="{{ url_for('static', filename='login.css') }}">
+    <title>Panel Empleado</title>
 </head>
 <body>
-    <h1>Bienvenido, {{ usuario.nombre_completo }}</h1>
-    <p>Correo: {{ usuario.correo }}</p>
-    <p>Teléfono: {{ usuario.telefono }}</p>
+    <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='paginaprin.css') }}">
+    <title>Cafeteria Las Dos Amigas</title>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <div class="logo-icon">☕</div>
+                    <h1>Cafetería Las Dos Amigas</h1>
+                </div>
 
-    <a href="{{ url_for('auth_routes.logout') }}">Cerrar sesión</a>
+                <nav>
+                    <a href="#inicio">Inicio</a>
+                    <a href="#menu">Menú</a>
+                    <a href="#nosotros">Nosotros</a>
+                    <a href="#contacto">Contacto</a>
+                </nav>
+
+                <button class="login-btn" onclick="window.location.href='{{ url_for('auth_routes.login') }}'">Iniciar Sesión</button>
+                <button class="logout-btn" onclick="window.location.href='{{ url_for('auth_routes.logout')}}'">Cerrar sesión</button>
+             
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <div>
+                     <h2>Bienvenido, {{ usuario.nombre_completo }}</h2>
+                    <p>Disfruta del mejor café artesanal en un ambiente acogedor. Cada taza es preparada con amor y los granos más selectos.</p>
+                    <div class="hero-buttons">
+                        <button class="btn-primary">Ver Menú</button>
+                    </div>
+                </div>
+
+                <div class="hero-image">
+                    <img src="/placeholder.svg?height=384&width=500" alt="Interior acogedor de cafetería">
+                    <div class="rating-card">
+                        <div class="rating-icon">⭐</div>
+                        <div>
+                            <p style="font-weight: bold; color: #451a03; margin: 0;">4.9/5</p>
+                            <p style="font-size: 14px; color: #92400e; margin: 0;">+500 reseñas</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features">
+        <div class="container">
+            <h3>¿Por qué elegirnos?</h3>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🏠</div>
+                    <h4>Ambiente Acogedor</h4>
+                    <p>Un espacio cálido y confortable perfecto para relajarse o trabajar.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">👥</div>
+                    <h4>Servicio Excepcional</h4>
+                    <p>Nuestro equipo está dedicado a brindarte la mejor experiencia posible.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="menu">
+        <div class="container">
+            <h3>Nuestras Especialidades</h3>
+            <div class="menu-grid">
+                <div class="menu-item">
+                    <img src="/placeholder.svg?height=192&width=300" alt="Espresso Clásico">
+                    <div class="menu-item-content">
+                        <h4>Espresso Clásico</h4>
+                        <p class="price">$3.50</p>
+                    </div>
+                </div>
+
+                <div class="menu-item">
+                    <img src="/placeholder.svg?height=192&width=300" alt="Cappuccino Artesanal">
+                    <div class="menu-item-content">
+                        <h4>Cappuccino Artesanal</h4>
+                        <p class="price">$4.25</p>
+                    </div>
+                </div>
+
+                <div class="menu-item">
+                    <img src="/placeholder.svg?height=192&width=300" alt="Latte Vainilla">
+                    <div class="menu-item-content">
+                        <h4>Latte Vainilla</h4>
+                        <p class="price">$4.75</p>
+                    </div>
+                </div>
+
+                <div class="menu-item">
+                    <img src="/placeholder.svg?height=192&width=300" alt="Americano Premium">
+                    <div class="menu-item-content">
+                        <h4>Americano Premium</h4>
+                        <p class="price">$3.75</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="menu-center">
+                <button class="btn-primary">Ver Menú Completo</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-logo">
+                        <div class="footer-logo-icon">☕</div>
+                        <h4>Cafetería Las Dos Amigas</h4>
+                    </div>
+                    <p>Tu cafetería de confianza desde 2020. Sirviendo el mejor café con amor y dedicación.</p>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Horarios</h4>
+                    <p>Lunes - Viernes: 7:00 AM - 9:00 PM</p>
+                    <p>Sábados: 8:00 AM - 10:00 PM</p>
+                    <p>Domingos: 8:00 AM - 8:00 PM</p>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Contacto</h4>
+                    <p>📍 Calle Principal 123, Centro</p>
+                    <p>📞 (555) 123-4567</p>
+                    <p>✉️ info@cafearoma.com</p>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2024 Café Aroma. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+   
 </body>
 </html>
+
+    
