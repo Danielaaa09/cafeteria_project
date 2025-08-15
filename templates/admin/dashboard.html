@@ -1,27 +1,275 @@
-<h2>Panel de Administración</h2>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administrador - Café Aroma</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        * { font-family: 'Poppins', sans-serif; }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+        }
+        
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-amber-50 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-lg sticky top-0 z-40">
+        <nav class="container mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-2">
+                    <i class="fas fa-coffee text-amber-600 text-2xl"></i>
+                    <h1 class="text-2xl font-bold text-amber-800">Café Aroma - Admin</h1>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <span class="text-amber-800">Bienvenido, </span>
+                    <a href="{{ url_for('auth_routes.logout') }}" class="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 transition-colors">
+                        <i class="fas fa-home mr-2"></i>Volver al Sitio
+                    </a>
+                </div>
+            </div>
+        </nav>
+    </header>
 
-<a href="{{ url_for('admin_routes.add_empleado') }}">Agregar Empleado</a> |
-<a href="{{ url_for('admin_routes.anadir_producto') }}">Agregar Producto</a> |
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+        <!-- Dashboard Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-amber-600 text-sm font-medium">Total Productos</p>
+                        <p class="text-3xl font-bold text-amber-800">24</p>
+                    </div>
+                    <i class="fas fa-coffee text-amber-600 text-2xl"></i>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-amber-600 text-sm font-medium">Empleados</p>
+                        <p class="text-3xl font-bold text-amber-800">12</p>
+                    </div>
+                    <i class="fas fa-users text-amber-600 text-2xl"></i>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-amber-600 text-sm font-medium">Ventas Hoy</p>
+                        <p class="text-3xl font-bold text-amber-800">$1,250</p>
+                    </div>
+                    <i class="fas fa-chart-line text-amber-600 text-2xl"></i>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-amber-600 text-sm font-medium">Pedidos</p>
+                        <p class="text-3xl font-bold text-amber-800">45</p>
+                    </div>
+                    <i class="fas fa-shopping-cart text-amber-600 text-2xl"></i>
+                </div>
+            </div>
+        </div>
 
-<table>
-    <tr>
-        <th>ID</th>
-        <th>Nombre</th>
-        <th>Correo</th>
-        <th>Teléfono</th>
-        <th>Rol</th>
-        <th>Acciones</th>
-    </tr>
-    {% for u in usuarios %}
-    <tr>
-        <td>{{ u.id }}</td>
-        <td>{{ u.nombre_completo }}</td>
-        <td>{{ u.correo }}</td>
-        <td>{{ u.telefono }}</td>
-        <td>{{ u.rol }}</td>
-        <td>
-        </td>
-    </tr>
-    {% endfor %}
-</table>
-<a href="{{ url_for('auth_routes.logout') }}">Cerrar sesión</a>
+        <!-- Action Buttons -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <button onclick="openModal('productModal')" class="bg-gradient-to-r from-amber-600 to-amber-700 text-white p-8 rounded-xl shadow-lg hover:from-amber-700 hover:to-amber-800 transition-all transform hover:scale-105">
+                <i class="fas fa-plus-circle text-4xl mb-4"></i>
+                <h3 class="text-2xl font-bold mb-2">Agregar Producto</h3>
+                <p class="text-amber-100">Añadir nuevos productos al menú</p>
+            </button>
+            
+            <button onclick="openModal('employeeModal')" class="bg-gradient-to-r from-amber-600 to-amber-700 text-white p-8 rounded-xl shadow-lg hover:from-amber-700 hover:to-amber-800 transition-all transform hover:scale-105">
+                <i class="fas fa-user-plus text-4xl mb-4"></i>
+                <h3 class="text-2xl font-bold mb-2">Agregar Empleado</h3>
+                <p class="text-amber-100">Registrar nuevo personal</p>
+            </button>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <h3 class="text-xl font-bold text-amber-800 mb-4">Actividad Reciente</h3>
+            <div class="space-y-4">
+                <div class="flex items-center space-x-4 p-4 bg-amber-50 rounded-lg">
+                    <i class="fas fa-coffee text-amber-600"></i>
+                    <div>
+                        <p class="font-medium text-amber-800">Nuevo producto agregado: Latte Vainilla</p>
+                        <p class="text-sm text-amber-600">Hace 2 horas</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4 p-4 bg-amber-50 rounded-lg">
+                    <i class="fas fa-user text-amber-600"></i>
+                    <div>
+                        <p class="font-medium text-amber-800">Empleado registrado: María González</p>
+                        <p class="text-sm text-amber-600">Hace 5 horas</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4 p-4 bg-amber-50 rounded-lg">
+                    <i class="fas fa-chart-up text-amber-600"></i>
+                    <div>
+                        <p class="font-medium text-amber-800">Ventas aumentaron 15% esta semana</p>
+                        <p class="text-sm text-amber-600">Hace 1 día</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Product Modal -->
+    <div id="productModal" class="modal">
+        <div class="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full mx-4 fade-in">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-amber-800">Agregar Producto</h3>
+                <button onclick="closeModal('productModal')" class="text-amber-600 hover:text-amber-800">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <form id="productForm">
+                <div class="mb-4">
+                    <label class="block text-amber-800 font-medium mb-2">Nombre del Producto</label>
+                    <input type="text" class="w-full px-4 py-3 border border-amber-200 rounded-lg focus:outline-none focus:border-amber-500" required>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-amber-800 font-medium mb-2">Precio</label>
+                    <input type="number" step="0.01" class="w-full px-4 py-3 border border-amber-200 rounded-lg focus:outline-none focus:border-amber-500" required>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-amber-800 font-medium mb-2">Categoría</label>
+                    <select class="w-full px-4 py-3 border border-amber-200 rounded-lg focus:outline-none focus:border-amber-500" required>
+                        <option value="">Seleccionar categoría</option>
+                        <option value="cafe">Café</option>
+                        <option value="bebidas">Bebidas</option>
+                        <option value="postres">Postres</option>
+                        <option value="snacks">Snacks</option>
+                    </select>
+                </div>
+                
+                <div class="mb-6">
+                    <label class="block text-amber-800 font-medium mb-2">Descripción</label>
+                    <textarea rows="3" class="w-full px-4 py-3 border border-amber-200 rounded-lg focus:outline-none focus:border-amber-500"></textarea>
+                </div>
+                
+                <button type="submit" class="w-full bg-amber-600 text-white py-3 rounded-lg font-semibold hover:bg-amber-700 transition-colors">
+                    Agregar Producto
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Employee Modal -->
+    <div id="employeeModal" class="modal">
+        <div class="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full mx-4 fade-in">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-amber-800">Agregar Empleado</h3>
+                <button onclick="closeModal('employeeModal')" class="text-amber-600 hover:text-amber-800">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <form id="employeeForm">
+                <div class="mb-4">
+                    <label class="block text-amber-800 font-medium mb-2">Nombre Completo</label>
+                    <input type="text" class="w-full px-4 py-3 border border-amber-200 rounded-lg focus:outline-none focus:border-amber-500" required>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-amber-800 font-medium mb-2">Email</label>
+                    <input type="email" class="w-full px-4 py-3 border border-amber-200 rounded-lg focus:outline-none focus:border-amber-500" required>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-amber-800 font-medium mb-2">Teléfono</label>
+                    <input type="tel" class="w-full px-4 py-3 border border-amber-200 rounded-lg focus:outline-none focus:border-amber-500" required>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-amber-800 font-medium mb-2">Puesto</label>
+                    <select class="w-full px-4 py-3 border border-amber-200 rounded-lg focus:outline-none focus:border-amber-500" required>
+                        <option value="">Seleccionar puesto</option>
+                        <option value="barista">Barista</option>
+                        <option value="cajero">Cajero</option>
+                        <option value="gerente">Gerente</option>
+                        <option value="limpieza">Limpieza</option>
+                    </select>
+                </div>
+                
+                <div class="mb-6">
+                    <label class="block text-amber-800 font-medium mb-2">Salario</label>
+                    <input type="number" class="w-full px-4 py-3 border border-amber-200 rounded-lg focus:outline-none focus:border-amber-500" required>
+                </div>
+                
+                <button type="submit" class="w-full bg-amber-600 text-white py-3 rounded-lg font-semibold hover:bg-amber-700 transition-colors">
+                    Agregar Empleado
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('show');
+        }
+        
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+        }
+        
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.classList.remove('show');
+            }
+        }
+        
+        // Handle form submissions
+        document.getElementById('productForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('¡Producto agregado exitosamente!');
+            closeModal('productModal');
+            this.reset();
+        });
+        
+        document.getElementById('employeeForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('¡Empleado registrado exitosamente!');
+            closeModal('employeeModal');
+            this.reset();
+        });
+    </script>
+</body>
+</html>
