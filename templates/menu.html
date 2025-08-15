@@ -22,10 +22,10 @@
                 </div>
                 
                 <div class="hidden md:flex space-x-8">
-                    <a href="index.html" class="text-amber-800 hover:text-amber-600 font-medium transition-colors">Inicio</a>
-                    <a href="menu.html" class="text-amber-600 font-medium">Menú</a>
-                    <a href="about.html" class="text-amber-800 hover:text-amber-600 font-medium transition-colors">Nosotros</a>
-                    <a href="contact.html" class="text-amber-800 hover:text-amber-600 font-medium transition-colors">Contacto</a>
+                    <a class="text-amber-800 hover:text-amber-600 font-medium transition-colors">Inicio</a>
+                    <a href="{{ url_for('menu_routes.menu') }}" class="text-amber-800 hover:text-amber-600 font-medium transition-colors">Menú</a>
+                    <a href="{{ url_for('acerca_routes.acerca') }}" class="text-amber-800 hover:text-amber-600 font-medium transition-colors">Nosotros</a>
+                    <a href="{{ url_for('contacto_routes.contacto') }}" class="text-amber-600 font-medium">Contacto</a>
                 </div>
                 
                 <a href="{{ url_for('auth_routes.login_form') }}" class="bg-amber-600 text-white px-6 py-2 rounded-full hover:bg-amber-700 transition-colors font-medium">
