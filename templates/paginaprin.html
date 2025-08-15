@@ -1,152 +1,349 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{{ url_for('static', filename='paginaprin.css') }}">
-    <title>Cafeteria Las Dos Amigas</title>
+    <title>Café Aroma - Cafetería Artesanal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
+        * {
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        .hero-bg {
+            background: linear-gradient(135deg, rgba(139, 69, 19, 0.9), rgba(160, 82, 45, 0.8)), 
+                        url('/placeholder.svg?height=600&width=1200') center/cover;
+        }
+        
+        .carousel-container {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .carousel-slide {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        
+        .carousel-slide.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .floating-coffee {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .scroll-reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease;
+        }
+        
+        .scroll-reveal.revealed {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
 </head>
-<body>
-    <header>
-        <div class="container">
-            <div class="header-content">
-                <div class="logo">
-                    <div class="logo-icon">☕</div>
-                    <h1>Cafetería Las Dos Amigas</h1>
+<body class="bg-amber-50">
+    <!-- Header -->
+    <header class="bg-white shadow-lg sticky top-0 z-50">
+        <nav class="container mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-2">
+                    <i class="fas fa-coffee text-amber-600 text-2xl floating-coffee"></i>
+                    <h1 class="text-2xl font-bold text-amber-800">Café Aroma</h1>
                 </div>
-
-                <nav>
-                    <a href="#inicio">Inicio</a>
-                    <a href="#menu">Menú</a>
-                    <a href="#nosotros">Nosotros</a>
-                    <a href="#contacto">Contacto</a>
-                </nav>
-
-                <button class="login-btn" onclick="window.location.href='{{ url_for('auth_routes.login')}}'">Iniciar Sesión</button>
+                
+                <!-- Desktop Navigation -->
+                <div class="hidden md:flex space-x-8">
+                    <a href="{{ url_for('index') }}" class="text-amber-800 hover:text-amber-600 font-medium transition-colors">Inicio</a>
+                    <a href="{{ url_for('menu_routes.menu') }}" class="text-amber-800 hover:text-amber-600 font-medium transition-colors">Menú</a>
+                    <a href="{{ url_for('acerca_routes.acerca') }}" class="text-amber-800 hover:text-amber-600 font-medium transition-colors">Nosotros</a>
+                    <a href="{{ url_for('contacto') }}" class="text-amber-800 hover:text-amber-600 font-medium transition-colors">Contacto</a>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <a href="{{ url_for('auth_routes.login_form') }}" class="bg-amber-600 text-white px-6 py-2 rounded-full hover:bg-amber-700 transition-colors font-medium">
+        Iniciar Sesión
+    </a>
+                    <button id="mobile-menu-btn" class="md:hidden text-amber-800">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                </div>
             </div>
-        </div>
+            
+            <!-- Mobile Navigation -->
+            <div id="mobile-menu" class="md:hidden hidden mt-4 pb-4">
+                <div class="flex flex-col space-y-3">
+                    class="text-amber-800 hover:text-amber-600 font-medium">Inicio</a>
+                    <a href="{{ url_for('menu_routes.menu') }}" class="text-amber-800 hover:text-amber-600 font-medium">Menú</a>
+                    <a href="{{ url_for('acerca_routes.acerca') }}" class="text-amber-800 hover:text-amber-600 font-medium">Nosotros</a>
+                    <a href="{{ url_for('contacto') }}" class="text-amber-800 hover:text-amber-600 font-medium">Contacto</a>
+                </div>
+            </div>
+        </nav>
     </header>
 
     <!-- Hero Section -->
-    <section class="hero">
-        <div class="container">
-            <div class="hero-content">
-                <div>
-                    <h2>Bienvenido </h2>
-                    <p>Disfruta del mejor café artesanal en un ambiente acogedor. Cada taza es preparada con amor y los granos más selectos.</p>
-                    <div class="hero-buttons">
-                        <button class="btn-primary">Ver Menú</button>
-                    </div>
-                </div>
+    <section class="hero-bg min-h-screen flex items-center justify-center text-white">
+        <div class="container mx-auto px-4 text-center">
+            <h2 class="text-5xl md:text-7xl font-bold mb-6 scroll-reveal">
+                Bienvenido a <span class="text-amber-300">Café Aroma</span>
+            </h2>
+            <p class="text-xl md:text-2xl mb-8 max-w-2xl mx-auto scroll-reveal">
+                Donde cada taza cuenta una historia y cada sorbo es una experiencia única
+            </p>
+            <div class="space-x-4 scroll-reveal">
+                <a href="menu.html" class="bg-amber-600 text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-amber-700 transition-colors inline-block">
+                    Ver Menú
+                </a>
+                <a href="reservations.html" class="border-2 border-white text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-white hover:text-amber-800 transition-colors inline-block">
+                    Reservar Mesa
+                </a>
+            </div>
+        </div>
+    </section>
 
-                <div class="hero-image">
-                    <img src="/placeholder.svg?height=384&width=500" alt="Interior acogedor de cafetería">
-                    <div class="rating-card">
-                        <div class="rating-icon">⭐</div>
-                        <div>
-                            <p style="font-weight: bold; color: #451a03; margin: 0;">4.9/5</p>
-                            <p style="font-size: 14px; color: #92400e; margin: 0;">+500 reseñas</p>
+    <!-- Carousel Section -->
+    <section class="py-16 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="carousel-container bg-gradient-to-r from-amber-100 to-orange-100 rounded-2xl overflow-hidden shadow-xl">
+                <!-- Slide 1 -->
+                <div class="carousel-slide active">
+                    <div class="flex flex-col md:flex-row items-center min-h-96">
+                        <div class="md:w-1/2 p-8 md:p-12">
+                            <h3 class="text-3xl md:text-4xl font-bold text-amber-800 mb-4">Espresso Artesanal</h3>
+                            <p class="text-lg text-amber-700 mb-6">Granos seleccionados de las mejores fincas, tostados a la perfección para crear el espresso más aromático.</p>
+                            <a href="menu.html" class="bg-amber-600 text-white px-6 py-3 rounded-full hover:bg-amber-700 transition-colors inline-block">
+                                Ver Menú
+                            </a>
+                        </div>
+                        <div class="md:w-1/2">
+                            <img src="/placeholder.svg?height=400&width=600" alt="Espresso Artesanal" class="w-full h-96 object-cover">
                         </div>
                     </div>
+                </div>
+                
+                <!-- Slide 2 -->
+                <div class="carousel-slide">
+                    <div class="flex flex-col md:flex-row items-center min-h-96">
+                        <div class="md:w-1/2 p-8 md:p-12">
+                            <h3 class="text-3xl md:text-4xl font-bold text-amber-800 mb-4">Repostería Fresca</h3>
+                            <p class="text-lg text-amber-700 mb-6">Pasteles, croissants y dulces horneados diariamente con ingredientes premium.</p>
+                            <a href="menu.html" class="bg-amber-600 text-white px-6 py-3 rounded-full hover:bg-amber-700 transition-colors inline-block">
+                                Ordenar Ahora
+                            </a>
+                        </div>
+                        <div class="md:w-1/2">
+                            <img src="/placeholder.svg?height=400&width=600" alt="Repostería Fresca" class="w-full h-96 object-cover">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Slide 3 -->
+                <div class="carousel-slide">
+                    <div class="flex flex-col md:flex-row items-center min-h-96">
+                        <div class="md:w-1/2 p-8 md:p-12">
+                            <h3 class="text-3xl md:text-4xl font-bold text-amber-800 mb-4">Ambiente Acogedor</h3>
+                            <p class="text-lg text-amber-700 mb-6">Un espacio diseñado para relajarte, trabajar o compartir momentos especiales.</p>
+                            <a href="reservations.html" class="bg-amber-600 text-white px-6 py-3 rounded-full hover:bg-amber-700 transition-colors inline-block">
+                                Reservar Mesa
+                            </a>
+                        </div>
+                        <div class="md:w-1/2">
+                            <img src="/placeholder.svg?height=400&width=600" alt="Ambiente Acogedor" class="w-full h-96 object-cover">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Slide 4 -->
+                <div class="carousel-slide">
+                    <div class="flex flex-col md:flex-row items-center min-h-96">
+                        <div class="md:w-1/2 p-8 md:p-12">
+                            <h3 class="text-3xl md:text-4xl font-bold text-amber-800 mb-4">Baristas Expertos</h3>
+                            <p class="text-lg text-amber-700 mb-6">Nuestro equipo de baristas certificados crea arte en cada taza.</p>
+                            <a href="about.html" class="bg-amber-600 text-white px-6 py-3 rounded-full hover:bg-amber-700 transition-colors inline-block">
+                                Conocer Equipo
+                            </a>
+                        </div>
+                        <div class="md:w-1/2">
+                            <img src="/placeholder.svg?height=400&width=600" alt="Baristas Expertos" class="w-full h-96 object-cover">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Navigation Buttons -->
+                <button id="prevBtn" class="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-80 hover:bg-opacity-100 text-amber-800 p-3 rounded-full shadow-lg transition-all">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <button id="nextBtn" class="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-80 hover:bg-opacity-100 text-amber-800 p-3 rounded-full shadow-lg transition-all">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+                
+                <!-- Indicators -->
+                <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+                    <button class="carousel-indicator w-3 h-3 bg-white bg-opacity-60 rounded-full transition-all" data-slide="0"></button>
+                    <button class="carousel-indicator w-3 h-3 bg-white bg-opacity-60 rounded-full transition-all" data-slide="1"></button>
+                    <button class="carousel-indicator w-3 h-3 bg-white bg-opacity-60 rounded-full transition-all" data-slide="2"></button>
+                    <button class="carousel-indicator w-3 h-3 bg-white bg-opacity-60 rounded-full transition-all" data-slide="3"></button>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- Features Section -->
-    <section class="features">
-        <div class="container">
-            <h3>¿Por qué elegirnos?</h3>
-
-                <div class="feature-card">
-                    <div class="feature-icon">🏠</div>
-                    <h4>Ambiente Acogedor</h4>
-                    <p>Un espacio cálido y confortable perfecto para relajarse o trabajar.</p>
+    <section class="py-16 bg-amber-50">
+        <div class="container mx-auto px-4">
+            <h2 class="text-4xl font-bold text-center text-amber-800 mb-12 scroll-reveal">¿Por qué elegir Café Aroma?</h2>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="text-center p-6 bg-white rounded-xl shadow-lg scroll-reveal">
+                    <i class="fas fa-seedling text-4xl text-green-600 mb-4"></i>
+                    <h3 class="text-xl font-semibold text-amber-800 mb-3">100% Orgánico</h3>
+                    <p class="text-amber-700">Granos cultivados sin pesticidas, respetando el medio ambiente.</p>
                 </div>
-
-                <div class="feature-card">
-                    <div class="feature-icon">👥</div>
-                    <h4>Servicio Excepcional</h4>
-                    <p>Nuestro equipo está dedicado a brindarte la mejor experiencia posible.</p>
+                <div class="text-center p-6 bg-white rounded-xl shadow-lg scroll-reveal">
+                    <i class="fas fa-award text-4xl text-amber-600 mb-4"></i>
+                    <h3 class="text-xl font-semibold text-amber-800 mb-3">Calidad Premium</h3>
+                    <p class="text-amber-700">Selección cuidadosa de los mejores granos del mundo.</p>
                 </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="menu">
-        <div class="container">
-            <h3>Nuestras Especialidades</h3>
-            <div class="menu-grid">
-                <div class="menu-item">
-                    <img src="/placeholder.svg?height=192&width=300" alt="Espresso Clásico">
-                    <div class="menu-item-content">
-                        <h4>Espresso Clásico</h4>
-                        <p class="price">$3.50</p>
-                    </div>
+                <div class="text-center p-6 bg-white rounded-xl shadow-lg scroll-reveal">
+                    <i class="fas fa-heart text-4xl text-red-500 mb-4"></i>
+                    <h3 class="text-xl font-semibold text-amber-800 mb-3">Hecho con Amor</h3>
+                    <p class="text-amber-700">Cada taza preparada con pasión y dedicación.</p>
                 </div>
-
-                <div class="menu-item">
-                    <img src="/placeholder.svg?height=192&width=300" alt="Cappuccino Artesanal">
-                    <div class="menu-item-content">
-                        <h4>Cappuccino Artesanal</h4>
-                        <p class="price">$4.25</p>
-                    </div>
-                </div>
-
-                <div class="menu-item">
-                    <img src="/placeholder.svg?height=192&width=300" alt="Latte Vainilla">
-                    <div class="menu-item-content">
-                        <h4>Latte Vainilla</h4>
-                        <p class="price">$4.75</p>
-                    </div>
-                </div>
-
-                <div class="menu-item">
-                    <img src="/placeholder.svg?height=192&width=300" alt="Americano Premium">
-                    <div class="menu-item-content">
-                        <h4>Americano Premium</h4>
-                        <p class="price">$3.75</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="menu-center">
-                <button class="btn-primary">Ver Menú Completo</button>
             </div>
         </div>
     </section>
 
     <!-- Footer -->
-    <footer>
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <div class="footer-logo">
-                        <div class="footer-logo-icon">☕</div>
-                        <h4>Cafetería Las Dos Amigas</h4>
+    <footer class="bg-amber-900 text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid md:grid-cols-4 gap-8">
+                <div>
+                    <div class="flex items-center space-x-2 mb-4">
+                        <i class="fas fa-coffee text-2xl"></i>
+                        <h3 class="text-xl font-bold">Café Aroma</h3>
                     </div>
-                    <p>Tu cafetería de confianza desde 2020. Sirviendo el mejor café con amor y dedicación.</p>
+                    <p class="text-amber-200">Tu cafetería de confianza desde 2020</p>
                 </div>
-
-                <div class="footer-section">
-                    <h4>Horarios</h4>
-                    <p>Lunes - Viernes: 7:00 AM - 9:00 PM</p>
-                    <p>Sábados: 8:00 AM - 10:00 PM</p>
-                    <p>Domingos: 8:00 AM - 8:00 PM</p>
+                <div>
+                    <h4 class="font-semibold mb-4">Enlaces</h4>
+                    <ul class="space-y-2">
+                        <li><a href="index.html" class="text-amber-200 hover:text-white transition-colors">Inicio</a></li>
+                        <li><a href="menu.html" class="text-amber-200 hover:text-white transition-colors">Menú</a></li>
+                        <li><a href="about.html" class="text-amber-200 hover:text-white transition-colors">Nosotros</a></li>
+                        <li><a href="contact.html" class="text-amber-200 hover:text-white transition-colors">Contacto</a></li>
+                    </ul>
                 </div>
-
-                <div class="footer-section">
-                    <h4>Contacto</h4>
-                    <p>📍 Calle Principal 123, Centro</p>
-                    <p>📞 (555) 123-4567</p>
-                    <p>✉️ info@cafearoma.com</p>
+                <div>
+                    <h4 class="font-semibold mb-4">Servicios</h4>
+                    <ul class="space-y-2">
+                        <li><a href="reservations.html" class="text-amber-200 hover:text-white transition-colors">Reservas</a></li>
+                        <li><a href="menu.html" class="text-amber-200 hover:text-white transition-colors">Delivery</a></li>
+                        <li><a href="about.html" class="text-amber-200 hover:text-white transition-colors">Eventos</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4">Contacto</h4>
+                    <p class="text-amber-200 mb-2"><i class="fas fa-map-marker-alt mr-2"></i>Calle Principal 123</p>
+                    <p class="text-amber-200 mb-2"><i class="fas fa-phone mr-2"></i>+1 234 567 890</p>
+                    <p class="text-amber-200"><i class="fas fa-envelope mr-2"></i>info@cafearoma.com</p>
                 </div>
             </div>
-
-            <div class="footer-bottom">
-                <p>&copy; 2024 Café Aroma. Todos los derechos reservados.</p>
+            <div class="border-t border-amber-800 mt-8 pt-8 text-center">
+                <p class="text-amber-200">&copy; 2024 Café Aroma. Todos los derechos reservados.</p>
             </div>
         </div>
     </footer>
+
+    <script>
+        // Mobile menu toggle
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        
+        mobileMenuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // Carousel functionality
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.carousel-slide');
+        const indicators = document.querySelectorAll('.carousel-indicator');
+        const totalSlides = slides.length;
+
+        function showSlide(index) {
+            slides.forEach(slide => slide.classList.remove('active'));
+            indicators.forEach(indicator => indicator.classList.remove('bg-white'));
+            
+            slides[index].classList.add('active');
+            indicators[index].classList.add('bg-white');
+        }
+
+        function nextSlide() {
+            currentSlide = (currentSlide + 1) % totalSlides;
+            showSlide(currentSlide);
+        }
+
+        function prevSlide() {
+            currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
+            showSlide(currentSlide);
+        }
+
+        // Event listeners
+        document.getElementById('nextBtn').addEventListener('click', nextSlide);
+        document.getElementById('prevBtn').addEventListener('click', prevSlide);
+
+        indicators.forEach((indicator, index) => {
+            indicator.addEventListener('click', () => {
+                currentSlide = index;
+                showSlide(currentSlide);
+            });
+        });
+
+        // Auto-play carousel
+        let autoPlay = setInterval(nextSlide, 5000);
+
+        // Pause on hover
+        const carouselContainer = document.querySelector('.carousel-container');
+        carouselContainer.addEventListener('mouseenter', () => clearInterval(autoPlay));
+        carouselContainer.addEventListener('mouseleave', () => {
+            autoPlay = setInterval(nextSlide, 5000);
+        });
+
+        // Initialize first slide
+        showSlide(0);
+
+        // Scroll reveal animation
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('revealed');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.scroll-reveal').forEach(el => {
+            observer.observe(el);
+        });
+    </script>
 </body>
 </html>

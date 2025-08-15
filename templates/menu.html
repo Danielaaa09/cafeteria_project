@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menú - Café Aroma</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        * { font-family: 'Poppins', sans-serif; }
+    </style>
+</head>
+<body class="bg-amber-50">
+    <!-- Header -->
+    <header class="bg-white shadow-lg sticky top-0 z-50">
+        <nav class="container mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-2">
+                    <i class="fas fa-coffee text-amber-600 text-2xl"></i>
+                    <h1 class="text-2xl font-bold text-amber-800">Café Aroma</h1>
+                </div>
+                
+                <div class="hidden md:flex space-x-8">
+                    <a href="index.html" class="text-amber-800 hover:text-amber-600 font-medium transition-colors">Inicio</a>
+                    <a href="menu.html" class="text-amber-600 font-medium">Menú</a>
+                    <a href="about.html" class="text-amber-800 hover:text-amber-600 font-medium transition-colors">Nosotros</a>
+                    <a href="contact.html" class="text-amber-800 hover:text-amber-600 font-medium transition-colors">Contacto</a>
+                </div>
+                
+                <a href="login.html" class="bg-amber-600 text-white px-6 py-2 rounded-full hover:bg-amber-700 transition-colors font-medium">
+                    Iniciar Sesión
+                </a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Menu Content -->
+    <main class="py-16">
+        <div class="container mx-auto px-4">
+            <h1 class="text-5xl font-bold text-center text-amber-800 mb-12">Nuestro Menú</h1>
+            
+            <!-- Coffee Section -->
+            <section class="mb-16">
+                <h2 class="text-3xl font-bold text-amber-800 mb-8 text-center">Cafés Especiales</h2>
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div class="bg-white rounded-xl shadow-lg p-6">
+                        <img src="/placeholder.svg?height=200&width=300" alt="Espresso" class="w-full h-48 object-cover rounded-lg mb-4">
+                        <h3 class="text-xl font-semibold text-amber-800 mb-2">Espresso</h3>
+                        <p class="text-amber-700 mb-3">Café concentrado y aromático</p>
+                        <p class="text-2xl font-bold text-amber-600">$3.50</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-lg p-6">
+                        <img src="/placeholder.svg?height=200&width=300" alt="Cappuccino" class="w-full h-48 object-cover rounded-lg mb-4">
+                        <h3 class="text-xl font-semibold text-amber-800 mb-2">Cappuccino</h3>
+                        <p class="text-amber-700 mb-3">Espresso con leche vaporizada y espuma</p>
+                        <p class="text-2xl font-bold text-amber-600">$4.50</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-lg p-6">
+                        <img src="/placeholder.svg?height=200&width=300" alt="Latte" class="w-full h-48 object-cover rounded-lg mb-4">
+                        <h3 class="text-xl font-semibold text-amber-800 mb-2">Latte</h3>
+                        <p class="text-amber-700 mb-3">Espresso suave con leche cremosa</p>
+                        <p class="text-2xl font-bold text-amber-600">$5.00</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Pastries Section -->
+            <section class="mb-16">
+                <h2 class="text-3xl font-bold text-amber-800 mb-8 text-center">Repostería</h2>
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div class="bg-white rounded-xl shadow-lg p-6">
+                        <img src="/placeholder.svg?height=200&width=300" alt="Croissant" class="w-full h-48 object-cover rounded-lg mb-4">
+                        <h3 class="text-xl font-semibold text-amber-800 mb-2">Croissant</h3>
+                        <p class="text-amber-700 mb-3">Hojaldre francés recién horneado</p>
+                        <p class="text-2xl font-bold text-amber-600">$2.50</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-lg p-6">
+                        <img src="/placeholder.svg?height=200&width=300" alt="Muffin" class="w-full h-48 object-cover rounded-lg mb-4">
+                        <h3 class="text-xl font-semibold text-amber-800 mb-2">Muffin de Chocolate</h3>
+                        <p class="text-amber-700 mb-3">Esponjoso muffin con chips de chocolate</p>
+                        <p class="text-2xl font-bold text-amber-600">$3.00</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-lg p-6">
+                        <img src="/placeholder.svg?height=200&width=300" alt="Cheesecake" class="w-full h-48 object-cover rounded-lg mb-4">
+                        <h3 class="text-xl font-semibold text-amber-800 mb-2">Cheesecake</h3>
+                        <p class="text-amber-700 mb-3">Cremoso pastel de queso con frutos rojos</p>
+                        <p class="text-2xl font-bold text-amber-600">$4.50</p>
+                    </div>
+                </div>
+            </section>
+
+            <div class="text-center">
+                <a href="contact.html" class="bg-amber-600 text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-amber-700 transition-colors inline-block">
+                    Hacer Pedido
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-amber-900 text-white py-12">
+        <div class="container mx-auto px-4 text-center">
+            <p>&copy; 2024 Café Aroma. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+</body>
+</html>

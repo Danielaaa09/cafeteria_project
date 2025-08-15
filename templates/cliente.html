@@ -9,7 +9,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{{ url_for('static', filename='paginaprin.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='Styles1.css') }}">
     <title>Cafeteria Las Dos Amigas</title>
 </head>
 <body>
@@ -84,39 +84,17 @@
         <div class="container">
             <h3>Nuestras Especialidades</h3>
             <div class="menu-grid">
+                {% for producto in productos %}
                 <div class="menu-item">
-                    <img src="/placeholder.svg?height=192&width=300" alt="Espresso Clásico">
+                    <img src="{{ url_for('static', filename='placeholder.svg') }}" alt="{{ producto.nombre }}">
                     <div class="menu-item-content">
-                        <h4>Espresso Clásico</h4>
-                        <p class="price">$3.50</p>
+                        <h4>{{ producto.nombre }}</h4>
+                        <p class="price">${{ producto.precio }}</p>
+                        <p>{{ producto.descripcion }}</p>
                     </div>
                 </div>
-
-                <div class="menu-item">
-                    <img src="/placeholder.svg?height=192&width=300" alt="Cappuccino Artesanal">
-                    <div class="menu-item-content">
-                        <h4>Cappuccino Artesanal</h4>
-                        <p class="price">$4.25</p>
-                    </div>
-                </div>
-
-                <div class="menu-item">
-                    <img src="/placeholder.svg?height=192&width=300" alt="Latte Vainilla">
-                    <div class="menu-item-content">
-                        <h4>Latte Vainilla</h4>
-                        <p class="price">$4.75</p>
-                    </div>
-                </div>
-
-                <div class="menu-item">
-                    <img src="/placeholder.svg?height=192&width=300" alt="Americano Premium">
-                    <div class="menu-item-content">
-                        <h4>Americano Premium</h4>
-                        <p class="price">$3.75</p>
-                    </div>
-                </div>
+                {% endfor %}
             </div>
-
             <div class="menu-center">
                 <button class="btn-primary">Ver Menú Completo</button>
             </div>
@@ -158,5 +136,3 @@
    
 </body>
 </html>
-
-    

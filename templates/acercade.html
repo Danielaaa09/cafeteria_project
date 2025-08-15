@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nosotros - Café Aroma</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        * { font-family: 'Poppins', sans-serif; }
+    </style>
+</head>
+<body class="bg-amber-50">
+    <!-- Header -->
+    <header class="bg-white shadow-lg sticky top-0 z-50">
+        <nav class="container mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-2">
+                    <i class="fas fa-coffee text-amber-600 text-2xl"></i>
+                    <h1 class="text-2xl font-bold text-amber-800">Café Aroma</h1>
+                </div>
+                
+                <div class="hidden md:flex space-x-8">
+                    <a href="index.html" class="text-amber-800 hover:text-amber-600 font-medium transition-colors">Inicio</a>
+                    <a href="menu.html" class="text-amber-800 hover:text-amber-600 font-medium transition-colors">Menú</a>
+                    <a href="about.html" class="text-amber-600 font-medium">Nosotros</a>
+                    <a href="contact.html" class="text-amber-800 hover:text-amber-600 font-medium transition-colors">Contacto</a>
+                </div>
+                
+                <a href="login.html" class="bg-amber-600 text-white px-6 py-2 rounded-full hover:bg-amber-700 transition-colors font-medium">
+                    Iniciar Sesión
+                </a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- About Content -->
+    <main class="py-16">
+        <div class="container mx-auto px-4">
+            <h1 class="text-5xl font-bold text-center text-amber-800 mb-12">Sobre Nosotros</h1>
+            
+            <!-- Story Section -->
+            <section class="mb-16">
+                <div class="max-w-4xl mx-auto text-center">
+                    <img src="/placeholder.svg?height=400&width=800" alt="Nuestra Historia" class="w-full h-64 object-cover rounded-xl mb-8">
+                    <h2 class="text-3xl font-bold text-amber-800 mb-6">Nuestra Historia</h2>
+                    <p class="text-lg text-amber-700 leading-relaxed mb-6">
+                        Café Aroma nació en 2020 con la visión de crear un espacio donde la pasión por el café se encuentre con la calidez humana. 
+                        Comenzamos como un pequeño local familiar y hemos crecido hasta convertirnos en el corazón de nuestra comunidad.
+                    </p>
+                    <p class="text-lg text-amber-700 leading-relaxed">
+                        Cada grano que servimos es seleccionado cuidadosamente de fincas sostenibles, y cada taza es preparada con el amor y 
+                        dedicación que merecen nuestros clientes.
+                    </p>
+                </div>
+            </section>
+
+            <!-- Team Section -->
+            <section class="mb-16">
+                <h2 class="text-3xl font-bold text-amber-800 mb-8 text-center">Nuestro Equipo</h2>
+                <div class="grid md:grid-cols-3 gap-8">
+                    <div class="bg-white rounded-xl shadow-lg p-6 text-center">
+                        <img src="/placeholder.svg?height=200&width=200" alt="María García" class="w-32 h-32 rounded-full mx-auto mb-4 object-cover">
+                        <h3 class="text-xl font-semibold text-amber-800 mb-2">María García</h3>
+                        <p class="text-amber-600 mb-3">Fundadora & Barista Principal</p>
+                        <p class="text-amber-700">15 años de experiencia en el mundo del café</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-lg p-6 text-center">
+                        <img src="/placeholder.svg?height=200&width=200" alt="Carlos López" class="w-32 h-32 rounded-full mx-auto mb-4 object-cover">
+                        <h3 class="text-xl font-semibold text-amber-800 mb-2">Carlos López</h3>
+                        <p class="text-amber-600 mb-3">Chef Pastelero</p>
+                        <p class="text-amber-700">Especialista en repostería artesanal</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-lg p-6 text-center">
+                        <img src="/placeholder.svg?height=200&width=200" alt="Ana Martínez" class="w-32 h-32 rounded-full mx-auto mb-4 object-cover">
+                        <h3 class="text-xl font-semibold text-amber-800 mb-2">Ana Martínez</h3>
+                        <p class="text-amber-600 mb-3">Barista Senior</p>
+                        <p class="text-amber-700">Experta en latte art y atención al cliente</p>
+                    </div>
+                </div>
+            </section>
+
+            <div class="text-center">
+                <a href="contact.html" class="bg-amber-600 text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-amber-700 transition-colors inline-block">
+                    Contáctanos
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-amber-900 text-white py-12">
+        <div class="container mx-auto px-4 text-center">
+            <p>&copy; 2024 Café Aroma. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+</body>
+</html>

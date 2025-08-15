@@ -33,6 +33,8 @@ def create_app():
     from routes.pedidos_route import pedidos_bp
     from routes.auth_routes import auth_routes  
     from routes.admin_routes import admin_routes
+    from routes.acerca_routes import acerca_routes
+    from routes.menu_routes import menu_routes
 
     app.register_blueprint(usuarios_bp, url_prefix='/api')
     app.register_blueprint(productos_bp, url_prefix='/api')
@@ -42,9 +44,15 @@ def create_app():
     app.register_blueprint(pedidos_bp, url_prefix='/api')
     app.register_blueprint(auth_routes)
     app.register_blueprint(admin_routes, url_prefix='/admin')
+    app.register_blueprint(menu_routes)
+    app.register_blueprint(acerca_routes)
 
     @app.route('/')
     def index():
         return render_template('paginaprin.html')
+
+    @app.route('/contacto')
+    def contacto():
+        return render_template('contacto.html')
 
     return app
