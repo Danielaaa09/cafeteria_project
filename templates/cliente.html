@@ -1,138 +1,389 @@
 <!DOCTYPE html>
-<html>
-<head>
-    <title>Panel Empleado</title>
-</head>
-<body>
-    <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{{ url_for('static', filename='Styles1.css') }}">
-    <title>Cafeteria Las Dos Amigas</title>
+    <title>Mi Cuenta - Café Aroma</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        * { font-family: 'Poppins', sans-serif; }
+        
+        .product-card {
+            transition: all 0.3s ease;
+        }
+        
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        
+        .cart-item {
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        .floating-cart {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        
+        .cart-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #dc2626;
+            color: white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+    </style>
 </head>
-<body>
-    <header>
-        <div class="container">
-            <div class="header-content">
-                <div class="logo">
-                    <div class="logo-icon">☕</div>
-                    <h1>Cafetería Las Dos Amigas</h1>
+<body class="bg-amber-50 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-lg sticky top-0 z-50">
+        <nav class="container mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-2">
+                    <i class="fas fa-coffee text-amber-600 text-2xl"></i>
+                    <h1 class="text-2xl font-bold text-amber-800">Café Aroma</h1>
                 </div>
-
-                <nav>
-                    <a href="#inicio">Inicio</a>
-                    <a href="#menu">Menú</a>
-                    <a href="#nosotros">Nosotros</a>
-                    <a href="#contacto">Contacto</a>
-                </nav>
-
-                <button class="login-btn" onclick="window.location.href='{{ url_for('auth_routes.logout')}}'">Cerrar sesión</button>
-             
+                
+                <div class="hidden md:flex space-x-8">
+                    <a href="index.html" class="text-amber-800 hover:text-amber-600 font-medium transition-colors">Inicio</a>
+                    <a href="menu.html" class="text-amber-800 hover:text-amber-600 font-medium transition-colors">Menú</a>
+                    <a href="dashboard.html" class="text-amber-600 font-medium">Mi Tienda</a>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-user-circle text-amber-600 text-xl"></i>
+                        <span class="text-amber-800 font-medium">Hola, {{ usuario.nombre_completo }}</span>
+                    </div>
+                    <button onclick="window.location.href='{{ url_for('auth_routes.logout')}}'" class="text-amber-800 hover:text-amber-600 font-medium transition-colors">
+                        <i class="fas fa-sign-out-alt"></i> Cerrar sesión
+                    </button>
+                </div>
             </div>
-        </div>
+        </nav>
     </header>
 
-    <!-- Hero Section -->
-    <section class="hero">
-        <div class="container">
-            <div class="hero-content">
-                <div>
-                     <h2>Bienvenido, {{ usuario.nombre_completo }}</h2>
-                    <p>Disfruta del mejor café artesanal en un ambiente acogedor. Cada taza es preparada con amor y los granos más selectos.</p>
-                    <div class="hero-buttons">
-                        <button class="btn-primary">Ver Menú</button>
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+        <div class="flex flex-col lg:flex-row gap-8">
+            <!-- Products Section -->
+            <div class="lg:w-2/3">
+                <h2 class="text-3xl font-bold text-amber-800 mb-8">Nuestros Productos</h2>
+                
+                <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    <!-- Product 1 -->
+                    <div class="product-card bg-white rounded-xl shadow-lg overflow-hidden">
+                        <img src="/placeholder.svg?height=200&width=300" alt="Espresso" class="w-full h-48 object-cover">
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold text-amber-800 mb-2">Espresso Clásico</h3>
+                            <p class="text-amber-700 mb-4">Café intenso y aromático, perfecto para comenzar el día</p>
+                            <div class="flex justify-between items-center">
+                                <span class="text-2xl font-bold text-amber-600">$3.50</span>
+                                <button onclick="addToCart('espresso', 'Espresso Clásico', 3.50)" class="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 transition-colors">
+                                    <i class="fas fa-plus"></i> Agregar
+                                </button>
+                            </div>
+                        </div>
                     </div>
-                </div>
 
-                <div class="hero-image">
-                    <img src="/placeholder.svg?height=384&width=500" alt="Interior acogedor de cafetería">
-                    <div class="rating-card">
-                        <div class="rating-icon">⭐</div>
-                        <div>
-                            <p style="font-weight: bold; color: #451a03; margin: 0;">4.9/5</p>
-                            <p style="font-size: 14px; color: #92400e; margin: 0;">+500 reseñas</p>
+                    <!-- Product 2 -->
+                    <div class="product-card bg-white rounded-xl shadow-lg overflow-hidden">
+                        <img src="/placeholder.svg?height=200&width=300" alt="Cappuccino" class="w-full h-48 object-cover">
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold text-amber-800 mb-2">Cappuccino</h3>
+                            <p class="text-amber-700 mb-4">Espresso con leche vaporizada y espuma cremosa</p>
+                            <div class="flex justify-between items-center">
+                                <span class="text-2xl font-bold text-amber-600">$4.25</span>
+                                <button onclick="addToCart('cappuccino', 'Cappuccino', 4.25)" class="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 transition-colors">
+                                    <i class="fas fa-plus"></i> Agregar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Product 3 -->
+                    <div class="product-card bg-white rounded-xl shadow-lg overflow-hidden">
+                        <img src="/placeholder.svg?height=200&width=300" alt="Latte" class="w-full h-48 object-cover">
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold text-amber-800 mb-2">Latte</h3>
+                            <p class="text-amber-700 mb-4">Café suave con abundante leche vaporizada</p>
+                            <div class="flex justify-between items-center">
+                                <span class="text-2xl font-bold text-amber-600">$4.75</span>
+                                <button onclick="addToCart('latte', 'Latte', 4.75)" class="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 transition-colors">
+                                    <i class="fas fa-plus"></i> Agregar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Product 4 -->
+                    <div class="product-card bg-white rounded-xl shadow-lg overflow-hidden">
+                        <img src="/placeholder.svg?height=200&width=300" alt="Americano" class="w-full h-48 object-cover">
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold text-amber-800 mb-2">Americano</h3>
+                            <p class="text-amber-700 mb-4">Espresso diluido con agua caliente</p>
+                            <div class="flex justify-between items-center">
+                                <span class="text-2xl font-bold text-amber-600">$3.25</span>
+                                <button onclick="addToCart('americano', 'Americano', 3.25)" class="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 transition-colors">
+                                    <i class="fas fa-plus"></i> Agregar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Product 5 -->
+                    <div class="product-card bg-white rounded-xl shadow-lg overflow-hidden">
+                        <img src="/placeholder.svg?height=200&width=300" alt="Mocha" class="w-full h-48 object-cover">
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold text-amber-800 mb-2">Mocha</h3>
+                            <p class="text-amber-700 mb-4">Café con chocolate y crema batida</p>
+                            <div class="flex justify-between items-center">
+                                <span class="text-2xl font-bold text-amber-600">$5.25</span>
+                                <button onclick="addToCart('mocha', 'Mocha', 5.25)" class="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 transition-colors">
+                                    <i class="fas fa-plus"></i> Agregar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Product 6 -->
+                    <div class="product-card bg-white rounded-xl shadow-lg overflow-hidden">
+                        <img src="/placeholder.svg?height=200&width=300" alt="Croissant" class="w-full h-48 object-cover">
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold text-amber-800 mb-2">Croissant</h3>
+                            <p class="text-amber-700 mb-4">Hojaldre francés recién horneado</p>
+                            <div class="flex justify-between items-center">
+                                <span class="text-2xl font-bold text-amber-600">$2.75</span>
+                                <button onclick="addToCart('croissant', 'Croissant', 2.75)" class="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 transition-colors">
+                                    <i class="fas fa-plus"></i> Agregar
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
 
-    <!-- Features Section -->
-    <section class="features">
-        <div class="container">
-            <h3>¿Por qué elegirnos?</h3>
-
-                <div class="feature-card">
-                    <div class="feature-icon">🏠</div>
-                    <h4>Ambiente Acogedor</h4>
-                    <p>Un espacio cálido y confortable perfecto para relajarse o trabajar.</p>
-                </div>
-
-                <div class="feature-card">
-                    <div class="feature-icon">👥</div>
-                    <h4>Servicio Excepcional</h4>
-                    <p>Nuestro equipo está dedicado a brindarte la mejor experiencia posible.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="menu">
-        <div class="container">
-            <h3>Nuestras Especialidades</h3>
-            <div class="menu-grid">
-                {% for producto in productos %}
-                <div class="menu-item">
-                    <img src="{{ url_for('static', filename='placeholder.svg') }}" alt="{{ producto.nombre }}">
-                    <div class="menu-item-content">
-                        <h4>{{ producto.nombre }}</h4>
-                        <p class="price">${{ producto.precio }}</p>
-                        <p>{{ producto.descripcion }}</p>
+            <!-- Cart Section -->
+            <div class="lg:w-1/3">
+                <div class="bg-white rounded-xl shadow-lg p-6 sticky top-24">
+                    <h3 class="text-2xl font-bold text-amber-800 mb-6 flex items-center">
+                        <i class="fas fa-shopping-cart mr-2"></i>
+                        Mi Carrito
+                    </h3>
+                    
+                    <div id="cartItems" class="space-y-4 mb-6">
+                        <p class="text-amber-700 text-center py-8">Tu carrito está vacío</p>
+                    </div>
+                    
+                    <div class="border-t pt-4">
+                        <div class="flex justify-between items-center mb-4">
+                            <span class="text-lg font-semibold text-amber-800">Total:</span>
+                            <span id="cartTotal" class="text-2xl font-bold text-amber-600">$0.00</span>
+                        </div>
+                        
+                        <button id="checkoutBtn" onclick="checkout()" class="w-full bg-amber-600 text-white py-3 rounded-lg font-semibold hover:bg-amber-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                            <i class="fas fa-credit-card mr-2"></i>
+                            Proceder al Pago
+                        </button>
                     </div>
                 </div>
-                {% endfor %}
-            </div>
-            <div class="menu-center">
-                <button class="btn-primary">Ver Menú Completo</button>
             </div>
         </div>
-    </section>
+    </main>
 
-    <!-- Footer -->
-    <footer>
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <div class="footer-logo">
-                        <div class="footer-logo-icon">☕</div>
-                        <h4>Cafetería Las Dos Amigas</h4>
-                    </div>
-                    <p>Tu cafetería de confianza desde 2020. Sirviendo el mejor café con amor y dedicación.</p>
-                </div>
+    <!-- Floating Cart Button (Mobile) -->
+    <div class="floating-cart lg:hidden">
+        <button onclick="toggleMobileCart()" class="bg-amber-600 text-white p-4 rounded-full shadow-lg hover:bg-amber-700 transition-colors">
+            <i class="fas fa-shopping-cart text-xl"></i>
+            <span id="cartBadge" class="cart-badge hidden">0</span>
+        </button>
+    </div>
 
-                <div class="footer-section">
-                    <h4>Horarios</h4>
-                    <p>Lunes - Viernes: 7:00 AM - 9:00 PM</p>
-                    <p>Sábados: 8:00 AM - 10:00 PM</p>
-                    <p>Domingos: 8:00 AM - 8:00 PM</p>
-                </div>
-
-                <div class="footer-section">
-                    <h4>Contacto</h4>
-                    <p>📍 Calle Principal 123, Centro</p>
-                    <p>📞 (555) 123-4567</p>
-                    <p>✉️ info@cafearoma.com</p>
-                </div>
+    <!-- Mobile Cart Modal -->
+    <div id="mobileCartModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden lg:hidden">
+        <div class="absolute bottom-0 left-0 right-0 bg-white rounded-t-xl p-6 max-h-96 overflow-y-auto">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-amber-800">Mi Carrito</h3>
+                <button onclick="toggleMobileCart()" class="text-amber-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
             </div>
-
-            <div class="footer-bottom">
-                <p>&copy; 2024 Café Aroma. Todos los derechos reservados.</p>
+            <div id="mobileCartItems" class="space-y-4 mb-6">
+                <p class="text-amber-700 text-center py-4">Tu carrito está vacío</p>
+            </div>
+            <div class="border-t pt-4">
+                <div class="flex justify-between items-center mb-4">
+                    <span class="text-lg font-semibold text-amber-800">Total:</span>
+                    <span id="mobileCartTotal" class="text-xl font-bold text-amber-600">$0.00</span>
+                </div>
+                <button onclick="checkout()" class="w-full bg-amber-600 text-white py-3 rounded-lg font-semibold hover:bg-amber-700 transition-colors">
+                    Proceder al Pago
+                </button>
             </div>
         </div>
-    </footer>
-   
+    </div>
+
+    <script>
+        let cart = [];
+        let cartTotal = 0;
+
+        function addToCart(id, name, price) {
+            const existingItem = cart.find(item => item.id === id);
+            
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                cart.push({
+                    id: id,
+                    name: name,
+                    price: price,
+                    quantity: 1
+                });
+            }
+            
+            updateCartDisplay();
+            showAddedToCartMessage(name);
+        }
+
+        function removeFromCart(id) {
+            const itemIndex = cart.findIndex(item => item.id === id);
+            if (itemIndex > -1) {
+                cart.splice(itemIndex, 1);
+                updateCartDisplay();
+            }
+        }
+
+        function updateQuantity(id, change) {
+            const item = cart.find(item => item.id === id);
+            if (item) {
+                item.quantity += change;
+                if (item.quantity <= 0) {
+                    removeFromCart(id);
+                } else {
+                    updateCartDisplay();
+                }
+            }
+        }
+
+        function updateCartDisplay() {
+            const cartItems = document.getElementById('cartItems');
+            const mobileCartItems = document.getElementById('mobileCartItems');
+            const cartTotal = document.getElementById('cartTotal');
+            const mobileCartTotal = document.getElementById('mobileCartTotal');
+            const checkoutBtn = document.getElementById('checkoutBtn');
+            const cartBadge = document.getElementById('cartBadge');
+            
+            if (cart.length === 0) {
+                const emptyMessage = '<p class="text-amber-700 text-center py-8">Tu carrito está vacío</p>';
+                cartItems.innerHTML = emptyMessage;
+                mobileCartItems.innerHTML = '<p class="text-amber-700 text-center py-4">Tu carrito está vacío</p>';
+                cartTotal.textContent = '$0.00';
+                mobileCartTotal.textContent = '$0.00';
+                checkoutBtn.disabled = true;
+                cartBadge.classList.add('hidden');
+            } else {
+                let itemsHTML = '';
+                let total = 0;
+                
+                cart.forEach(item => {
+                    const itemTotal = item.price * item.quantity;
+                    total += itemTotal;
+                    
+                    itemsHTML += `
+                        <div class="cart-item flex justify-between items-center p-3 bg-amber-50 rounded-lg">
+                            <div class="flex-1">
+                                <h4 class="font-semibold text-amber-800">${item.name}</h4>
+                                <p class="text-amber-600">$${item.price.toFixed(2)} c/u</p>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <button onclick="updateQuantity('${item.id}', -1)" class="bg-amber-200 text-amber-800 w-8 h-8 rounded-full hover:bg-amber-300 transition-colors">
+                                    <i class="fas fa-minus text-xs"></i>
+                                </button>
+                                <span class="font-semibold text-amber-800 w-8 text-center">${item.quantity}</span>
+                                <button onclick="updateQuantity('${item.id}', 1)" class="bg-amber-200 text-amber-800 w-8 h-8 rounded-full hover:bg-amber-300 transition-colors">
+                                    <i class="fas fa-plus text-xs"></i>
+                                </button>
+                            </div>
+                            <div class="ml-4">
+                                <p class="font-bold text-amber-800">$${itemTotal.toFixed(2)}</p>
+                                <button onclick="removeFromCart('${item.id}')" class="text-red-500 hover:text-red-700 text-xs">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                cartItems.innerHTML = itemsHTML;
+                mobileCartItems.innerHTML = itemsHTML;
+                cartTotal.textContent = `$${total.toFixed(2)}`;
+                mobileCartTotal.textContent = `$${total.toFixed(2)}`;
+                checkoutBtn.disabled = false;
+                
+                const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+                cartBadge.textContent = totalItems;
+                cartBadge.classList.remove('hidden');
+            }
+        }
+
+        function showAddedToCartMessage(productName) {
+            // Create temporary notification
+            const notification = document.createElement('div');
+            notification.className = 'fixed top-20 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+            notification.innerHTML = `<i class="fas fa-check mr-2"></i>${productName} agregado al carrito`;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        function toggleMobileCart() {
+            const modal = document.getElementById('mobileCartModal');
+            modal.classList.toggle('hidden');
+        }
+
+        function checkout() {
+            if (cart.length === 0) return;
+            
+            alert(`¡Gracias por tu compra!\nTotal: $${cart.reduce((sum, item) => sum + (item.price * item.quantity), 0).toFixed(2)}\n\nTu pedido será preparado en 15-20 minutos.`);
+            cart = [];
+            updateCartDisplay();
+            
+            // Close mobile cart if open
+            document.getElementById('mobileCartModal').classList.add('hidden');
+        }
+
+        function logout() {
+            if (confirm('¿Estás seguro que deseas cerrar sesión?')) {
+                window.location.href = 'login.html';
+            }
+        }
+
+        // Close mobile cart when clicking outside
+        document.getElementById('mobileCartModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                toggleMobileCart();
+            }
+        });
+    </script>
 </body>
 </html>
