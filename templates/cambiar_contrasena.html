@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cambiar Contraseña - Café Aroma</title>
+    <title>Cambiar Contraseña - Cafetería Las Dos Amigas</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -85,7 +85,7 @@
             </a>
             <div class="flex items-center space-x-2">
                 <i class="fas fa-coffee text-amber-600 text-2xl"></i>
-                <h1 class="text-2xl font-bold text-amber-800">Café Aroma</h1>
+                <h1 class="text-2xl font-bold text-amber-800">Cafetería Las Dos Amigas</h1>
             </div>
         </div>
     </header>
@@ -186,7 +186,6 @@
                     </button>
                 </form>
 
-                <!-- Additional Links -->
                 <div class="mt-6 text-center space-y-2">
                     <a href="{{ url_for('auth_routes.login') }}" class="text-amber-600 hover:text-amber-800 text-sm font-medium transition-colors">
                         Volver al login
@@ -197,7 +196,7 @@
     </main>
 
     <script>
-        // Toggle password visibility
+
         function togglePassword(fieldId) {
             const field = document.getElementById(fieldId);
             const icon = document.getElementById(fieldId + '_icon');
@@ -212,7 +211,6 @@
             }
         }
 
-        // Password validation
         const newPasswordField = document.getElementById('nueva_contrasena');
         const confirmPasswordField = document.getElementById('confirm_password');
         const lengthCheck = document.getElementById('length-check');

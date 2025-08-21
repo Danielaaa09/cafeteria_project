@@ -1,389 +1,275 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mi Cuenta - Café Aroma</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
-        * { font-family: 'Poppins', sans-serif; }
-        
-        .product-card {
-            transition: all 0.3s ease;
-        }
-        
-        .product-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-        }
-        
-        .cart-item {
-            animation: slideIn 0.3s ease;
-        }
-        
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateX(20px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-        
-        .floating-cart {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 1000;
-        }
-        
-        .cart-badge {
-            position: absolute;
-            top: -8px;
-            right: -8px;
-            background: #dc2626;
-            color: white;
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            font-weight: bold;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mi Cuenta - Cafetería Las Dos Amigas</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+    * { font-family: 'Poppins', sans-serif; }
+
+    .product-card { transition: all 0.3s ease; }
+    .product-card:hover { transform: translateY(-5px); box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
+    .cart-item { animation: slideIn 0.3s ease; }
+    @keyframes slideIn { from { opacity: 0; transform: translateX(20px);} to { opacity: 1; transform: translateX(0);} }
+    .floating-cart { position: fixed; bottom: 20px; right: 20px; z-index: 1000; }
+    .cart-badge { position: absolute; top: -8px; right: -8px; background: #dc2626; color: #fff; border-radius: 50%;
+                  width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; }
+  </style>
 </head>
 <body class="bg-amber-50 min-h-screen">
-    <!-- Header -->
-    <header class="bg-white shadow-lg sticky top-0 z-50">
-        <nav class="container mx-auto px-4 py-4">
-            <div class="flex justify-between items-center">
-                <div class="flex items-center space-x-2">
-                    <i class="fas fa-coffee text-amber-600 text-2xl"></i>
-                    <h1 class="text-2xl font-bold text-amber-800">Café Aroma</h1>
-                </div>
-                
-                <div class="hidden md:flex space-x-8">
-                    <a class="text-amber-800 hover:text-amber-600 font-medium transition-colors">Inicio</a>
-                    <a href="{{ url_for('menu_routes.menu') }}" class="text-amber-800 hover:text-amber-600 font-medium transition-colors">Menú</a>
-                    <a href="dashboard.html" class="text-amber-600 font-medium">Mi Tienda</a>
-                </div>
-                
-                <div class="flex items-center space-x-4">
-                    <div class="flex items-center space-x-2">
-                        <i class="fas fa-user-circle text-amber-600 text-xl"></i>
-                        <span class="text-amber-800 font-medium">Hola, {{ usuario.nombre_completo }}</span>
-                    </div>
-                    <button onclick="window.location.href='{{ url_for('auth_routes.logout')}}'" class="text-amber-800 hover:text-amber-600 font-medium transition-colors">
-                        <i class="fas fa-sign-out-alt"></i> Cerrar sesión
+  <!-- Header -->
+  <header class="bg-white shadow-lg sticky top-0 z-50">
+    <nav class="container mx-auto px-4 py-4">
+      <div class="flex justify-between items-center">
+        <div class="flex items-center space-x-2">
+          <i class="fas fa-coffee text-amber-600 text-2xl"></i>
+          <h1 class="text-2xl font-bold text-amber-800">Cafetería Las Dos Amigas</h1>
+        </div>
+
+        <div class="hidden md:flex space-x-8">
+          <a href="dashboard.html" class="text-amber-600 font-medium">Mi Tienda</a>
+        </div>
+
+        <div class="flex items-center space-x-4">
+          <div class="flex items-center space-x-2">
+            <i class="fas fa-user-circle text-amber-600 text-xl"></i>
+            <span class="text-amber-800 font-medium">
+              Hola, {{ usuario.nombre_completo }}
+            </span>
+          </div>
+          <button onclick="window.location.href='{{ url_for('auth_routes.logout') }}'"
+                  class="text-amber-800 hover:text-amber-600 font-medium transition-colors">
+            <i class="fas fa-sign-out-alt"></i> Cerrar sesión
+          </button>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Main -->
+  <main class="container mx-auto px-4 py-8">
+    <div class="flex flex-col lg:flex-row gap-8">
+      <!-- Productos -->
+      <section class="lg:w-2/3">
+        <h2 class="text-3xl font-bold text-amber-800 mb-8">Nuestros Productos</h2>
+
+        {% if productos %}
+          <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
+            {% for producto in productos %}
+              <div class="product-card bg-white rounded-xl shadow-lg overflow-hidden">
+                <img src="{{ producto.imagen_url }}" 
+                alt="{{ producto.nombre }}" 
+                class="w-full h-48 object-cover rounded-lg mb-4">
+
+
+                <div class="p-6">
+                  <h3 class="text-xl font-bold text-amber-800 mb-2">{{ producto.nombre }}</h3>
+                  <p class="text-amber-700 mb-4">{{ producto.descripcion }}</p>
+
+                  <div class="flex justify-between items-center">
+                    <span class="text-2xl font-bold text-amber-600">
+                      ${{ '%.2f'|format(producto.precio|float) }}
+                    </span>
+
+                    <button
+                      onclick="addToCart('{{ producto.id_producto }}', '{{ producto.nombre }}', {{ producto.precio }})"
+                      class="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 transition-colors">
+                      <i class="fas fa-plus"></i> Agregar
                     </button>
+                  </div>
                 </div>
-            </div>
-        </nav>
-    </header>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="text-amber-700 text-center">No hay productos disponibles en este momento.</p>
+        {% endif %}
+      </section>
 
-    <!-- Main Content -->
-    <main class="container mx-auto px-4 py-8">
-        <div class="flex flex-col lg:flex-row gap-8">
-            <!-- Products Section -->
-            <div class="lg:w-2/3">
-                <h2 class="text-3xl font-bold text-amber-800 mb-8">Nuestros Productos</h2>
-                
-                <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
-                    <!-- Product 1 -->
-                    <div class="product-card bg-white rounded-xl shadow-lg overflow-hidden">
-                        <img src="/placeholder.svg?height=200&width=300" alt="Espresso" class="w-full h-48 object-cover">
-                        <div class="p-6">
-                            <h3 class="text-xl font-bold text-amber-800 mb-2">Espresso Clásico</h3>
-                            <p class="text-amber-700 mb-4">Café intenso y aromático, perfecto para comenzar el día</p>
-                            <div class="flex justify-between items-center">
-                                <span class="text-2xl font-bold text-amber-600">$3.50</span>
-                                <button onclick="addToCart('espresso', 'Espresso Clásico', 3.50)" class="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 transition-colors">
-                                    <i class="fas fa-plus"></i> Agregar
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+      <!-- Carrito -->
+      <aside class="lg:w-1/3">
+        <div class="bg-white rounded-xl shadow-lg p-6 sticky top-24">
+          <h3 class="text-2xl font-bold text-amber-800 mb-6 flex items-center">
+            <i class="fas fa-shopping-cart mr-2"></i> Mi Carrito
+          </h3>
 
-                    <!-- Product 2 -->
-                    <div class="product-card bg-white rounded-xl shadow-lg overflow-hidden">
-                        <img src="/placeholder.svg?height=200&width=300" alt="Cappuccino" class="w-full h-48 object-cover">
-                        <div class="p-6">
-                            <h3 class="text-xl font-bold text-amber-800 mb-2">Cappuccino</h3>
-                            <p class="text-amber-700 mb-4">Espresso con leche vaporizada y espuma cremosa</p>
-                            <div class="flex justify-between items-center">
-                                <span class="text-2xl font-bold text-amber-600">$4.25</span>
-                                <button onclick="addToCart('cappuccino', 'Cappuccino', 4.25)" class="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 transition-colors">
-                                    <i class="fas fa-plus"></i> Agregar
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+          <div id="cartItems" class="space-y-4 mb-6">
+            <p class="text-amber-700 text-center py-8">Tu carrito está vacío</p>
+          </div>
 
-                    <!-- Product 3 -->
-                    <div class="product-card bg-white rounded-xl shadow-lg overflow-hidden">
-                        <img src="/placeholder.svg?height=200&width=300" alt="Latte" class="w-full h-48 object-cover">
-                        <div class="p-6">
-                            <h3 class="text-xl font-bold text-amber-800 mb-2">Latte</h3>
-                            <p class="text-amber-700 mb-4">Café suave con abundante leche vaporizada</p>
-                            <div class="flex justify-between items-center">
-                                <span class="text-2xl font-bold text-amber-600">$4.75</span>
-                                <button onclick="addToCart('latte', 'Latte', 4.75)" class="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 transition-colors">
-                                    <i class="fas fa-plus"></i> Agregar
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Product 4 -->
-                    <div class="product-card bg-white rounded-xl shadow-lg overflow-hidden">
-                        <img src="/placeholder.svg?height=200&width=300" alt="Americano" class="w-full h-48 object-cover">
-                        <div class="p-6">
-                            <h3 class="text-xl font-bold text-amber-800 mb-2">Americano</h3>
-                            <p class="text-amber-700 mb-4">Espresso diluido con agua caliente</p>
-                            <div class="flex justify-between items-center">
-                                <span class="text-2xl font-bold text-amber-600">$3.25</span>
-                                <button onclick="addToCart('americano', 'Americano', 3.25)" class="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 transition-colors">
-                                    <i class="fas fa-plus"></i> Agregar
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Product 5 -->
-                    <div class="product-card bg-white rounded-xl shadow-lg overflow-hidden">
-                        <img src="/placeholder.svg?height=200&width=300" alt="Mocha" class="w-full h-48 object-cover">
-                        <div class="p-6">
-                            <h3 class="text-xl font-bold text-amber-800 mb-2">Mocha</h3>
-                            <p class="text-amber-700 mb-4">Café con chocolate y crema batida</p>
-                            <div class="flex justify-between items-center">
-                                <span class="text-2xl font-bold text-amber-600">$5.25</span>
-                                <button onclick="addToCart('mocha', 'Mocha', 5.25)" class="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 transition-colors">
-                                    <i class="fas fa-plus"></i> Agregar
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Product 6 -->
-                    <div class="product-card bg-white rounded-xl shadow-lg overflow-hidden">
-                        <img src="/placeholder.svg?height=200&width=300" alt="Croissant" class="w-full h-48 object-cover">
-                        <div class="p-6">
-                            <h3 class="text-xl font-bold text-amber-800 mb-2">Croissant</h3>
-                            <p class="text-amber-700 mb-4">Hojaldre francés recién horneado</p>
-                            <div class="flex justify-between items-center">
-                                <span class="text-2xl font-bold text-amber-600">$2.75</span>
-                                <button onclick="addToCart('croissant', 'Croissant', 2.75)" class="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 transition-colors">
-                                    <i class="fas fa-plus"></i> Agregar
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Cart Section -->
-            <div class="lg:w-1/3">
-                <div class="bg-white rounded-xl shadow-lg p-6 sticky top-24">
-                    <h3 class="text-2xl font-bold text-amber-800 mb-6 flex items-center">
-                        <i class="fas fa-shopping-cart mr-2"></i>
-                        Mi Carrito
-                    </h3>
-                    
-                    <div id="cartItems" class="space-y-4 mb-6">
-                        <p class="text-amber-700 text-center py-8">Tu carrito está vacío</p>
-                    </div>
-                    
-                    <div class="border-t pt-4">
-                        <div class="flex justify-between items-center mb-4">
-                            <span class="text-lg font-semibold text-amber-800">Total:</span>
-                            <span id="cartTotal" class="text-2xl font-bold text-amber-600">$0.00</span>
-                        </div>
-                        
-                        <button id="checkoutBtn" onclick="checkout()" class="w-full bg-amber-600 text-white py-3 rounded-lg font-semibold hover:bg-amber-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" disabled>
-                            <i class="fas fa-credit-card mr-2"></i>
-                            Proceder al Pago
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </main>
-
-    <!-- Floating Cart Button (Mobile) -->
-    <div class="floating-cart lg:hidden">
-        <button onclick="toggleMobileCart()" class="bg-amber-600 text-white p-4 rounded-full shadow-lg hover:bg-amber-700 transition-colors">
-            <i class="fas fa-shopping-cart text-xl"></i>
-            <span id="cartBadge" class="cart-badge hidden">0</span>
-        </button>
-    </div>
-
-    <!-- Mobile Cart Modal -->
-    <div id="mobileCartModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden lg:hidden">
-        <div class="absolute bottom-0 left-0 right-0 bg-white rounded-t-xl p-6 max-h-96 overflow-y-auto">
+          <div class="border-t pt-4">
             <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-bold text-amber-800">Mi Carrito</h3>
-                <button onclick="toggleMobileCart()" class="text-amber-600">
-                    <i class="fas fa-times text-xl"></i>
-                </button>
+              <span class="text-lg font-semibold text-amber-800">Total:</span>
+              <span id="cartTotal" class="text-2xl font-bold text-amber-600">$0.00</span>
             </div>
-            <div id="mobileCartItems" class="space-y-4 mb-6">
-                <p class="text-amber-700 text-center py-4">Tu carrito está vacío</p>
-            </div>
-            <div class="border-t pt-4">
-                <div class="flex justify-between items-center mb-4">
-                    <span class="text-lg font-semibold text-amber-800">Total:</span>
-                    <span id="mobileCartTotal" class="text-xl font-bold text-amber-600">$0.00</span>
-                </div>
-                <button onclick="checkout()" class="w-full bg-amber-600 text-white py-3 rounded-lg font-semibold hover:bg-amber-700 transition-colors">
-                    Proceder al Pago
-                </button>
-            </div>
+
+            <button id="checkoutBtn" onclick="checkout()"
+              class="w-full bg-amber-600 text-white py-3 rounded-lg font-semibold hover:bg-amber-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled>
+              <i class="fas fa-credit-card mr-2"></i>
+              Proceder al Pago
+            </button>
+          </div>
         </div>
+      </aside>
     </div>
+  </main>
 
-    <script>
-        let cart = [];
-        let cartTotal = 0;
+  <!-- Flotante móvil -->
+  <div class="floating-cart lg:hidden">
+    <button onclick="toggleMobileCart()" class="bg-amber-600 text-white p-4 rounded-full shadow-lg hover:bg-amber-700 transition-colors relative">
+      <i class="fas fa-shopping-cart text-xl"></i>
+      <span id="cartBadge" class="cart-badge hidden">0</span>
+    </button>
+  </div>
 
-        function addToCart(id, name, price) {
-            const existingItem = cart.find(item => item.id === id);
-            
-            if (existingItem) {
-                existingItem.quantity += 1;
-            } else {
-                cart.push({
-                    id: id,
-                    name: name,
-                    price: price,
-                    quantity: 1
-                });
-            }
-            
-            updateCartDisplay();
-            showAddedToCartMessage(name);
-        }
+  <!-- Modal móvil -->
+  <div id="mobileCartModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden lg:hidden">
+    <div class="absolute bottom-0 left-0 right-0 bg-white rounded-t-xl p-6 max-h-96 overflow-y-auto">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-xl font-bold text-amber-800">Mi Carrito</h3>
+        <button onclick="toggleMobileCart()" class="text-amber-600">
+          <i class="fas fa-times text-xl"></i>
+        </button>
+      </div>
 
-        function removeFromCart(id) {
-            const itemIndex = cart.findIndex(item => item.id === id);
-            if (itemIndex > -1) {
-                cart.splice(itemIndex, 1);
-                updateCartDisplay();
-            }
-        }
+      <div id="mobileCartItems" class="space-y-4 mb-6">
+        <p class="text-amber-700 text-center py-4">Tu carrito está vacío</p>
+      </div>
 
-        function updateQuantity(id, change) {
-            const item = cart.find(item => item.id === id);
-            if (item) {
-                item.quantity += change;
-                if (item.quantity <= 0) {
-                    removeFromCart(id);
-                } else {
-                    updateCartDisplay();
-                }
-            }
-        }
+      <div class="border-t pt-4">
+        <div class="flex justify-between items-center mb-4">
+          <span class="text-lg font-semibold text-amber-800">Total:</span>
+          <span id="mobileCartTotal" class="text-xl font-bold text-amber-600">$0.00</span>
+        </div>
+        <button onclick="checkout()" class="w-full bg-amber-600 text-white py-3 rounded-lg font-semibold hover:bg-amber-700 transition-colors">
+          Proceder al Pago
+        </button>
+      </div>
+    </div>
+  </div>
 
-        function updateCartDisplay() {
-            const cartItems = document.getElementById('cartItems');
-            const mobileCartItems = document.getElementById('mobileCartItems');
-            const cartTotal = document.getElementById('cartTotal');
-            const mobileCartTotal = document.getElementById('mobileCartTotal');
-            const checkoutBtn = document.getElementById('checkoutBtn');
-            const cartBadge = document.getElementById('cartBadge');
-            
-            if (cart.length === 0) {
-                const emptyMessage = '<p class="text-amber-700 text-center py-8">Tu carrito está vacío</p>';
-                cartItems.innerHTML = emptyMessage;
-                mobileCartItems.innerHTML = '<p class="text-amber-700 text-center py-4">Tu carrito está vacío</p>';
-                cartTotal.textContent = '$0.00';
-                mobileCartTotal.textContent = '$0.00';
-                checkoutBtn.disabled = true;
-                cartBadge.classList.add('hidden');
-            } else {
-                let itemsHTML = '';
-                let total = 0;
-                
-                cart.forEach(item => {
-                    const itemTotal = item.price * item.quantity;
-                    total += itemTotal;
-                    
-                    itemsHTML += `
-                        <div class="cart-item flex justify-between items-center p-3 bg-amber-50 rounded-lg">
-                            <div class="flex-1">
-                                <h4 class="font-semibold text-amber-800">${item.name}</h4>
-                                <p class="text-amber-600">$${item.price.toFixed(2)} c/u</p>
-                            </div>
-                            <div class="flex items-center space-x-2">
-                                <button onclick="updateQuantity('${item.id}', -1)" class="bg-amber-200 text-amber-800 w-8 h-8 rounded-full hover:bg-amber-300 transition-colors">
-                                    <i class="fas fa-minus text-xs"></i>
-                                </button>
-                                <span class="font-semibold text-amber-800 w-8 text-center">${item.quantity}</span>
-                                <button onclick="updateQuantity('${item.id}', 1)" class="bg-amber-200 text-amber-800 w-8 h-8 rounded-full hover:bg-amber-300 transition-colors">
-                                    <i class="fas fa-plus text-xs"></i>
-                                </button>
-                            </div>
-                            <div class="ml-4">
-                                <p class="font-bold text-amber-800">$${itemTotal.toFixed(2)}</p>
-                                <button onclick="removeFromCart('${item.id}')" class="text-red-500 hover:text-red-700 text-xs">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                });
-                
-                cartItems.innerHTML = itemsHTML;
-                mobileCartItems.innerHTML = itemsHTML;
-                cartTotal.textContent = `$${total.toFixed(2)}`;
-                mobileCartTotal.textContent = `$${total.toFixed(2)}`;
-                checkoutBtn.disabled = false;
-                
-                const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-                cartBadge.textContent = totalItems;
-                cartBadge.classList.remove('hidden');
-            }
-        }
+  <!-- Scripts Carrito -->
+  <script>
+    let cart = [];
 
-        function showAddedToCartMessage(productName) {
-            // Create temporary notification
-            const notification = document.createElement('div');
-            notification.className = 'fixed top-20 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
-            notification.innerHTML = `<i class="fas fa-check mr-2"></i>${productName} agregado al carrito`;
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                notification.remove();
-            }, 3000);
-        }
+    function addToCart(id, name, price) {
+      const existing = cart.find(i => i.id === id);
+      if (existing) existing.quantity += 1;
+      else cart.push({ id, name, price: Number(price), quantity: 1 });
+      updateCartDisplay();
+      showAddedToCartMessage(name);
+    }
 
-        function toggleMobileCart() {
-            const modal = document.getElementById('mobileCartModal');
-            modal.classList.toggle('hidden');
-        }
+    function removeFromCart(id) {
+      cart = cart.filter(i => i.id !== id);
+      updateCartDisplay();
+    }
 
-        function checkout() {
-            if (cart.length === 0) return;
-            
-            alert(`¡Gracias por tu compra!\nTotal: $${cart.reduce((sum, item) => sum + (item.price * item.quantity), 0).toFixed(2)}\n\nTu pedido será preparado en 15-20 minutos.`);
-            cart = [];
-            updateCartDisplay();
-            
-            // Close mobile cart if open
-            document.getElementById('mobileCartModal').classList.add('hidden');
-        }
+    function updateQuantity(id, change) {
+      const item = cart.find(i => i.id === id);
+      if (!item) return;
+      item.quantity += change;
+      if (item.quantity <= 0) removeFromCart(id);
+      else updateCartDisplay();
+    }
 
-        function logout() {
-            if (confirm('¿Estás seguro que deseas cerrar sesión?')) {
-                window.location.href = 'login.html';
-            }
-        }
+    function updateCartDisplay() {
+      const cartItems = document.getElementById('cartItems');
+      const mobileCartItems = document.getElementById('mobileCartItems');
+      const cartTotalEl = document.getElementById('cartTotal');
+      const mobileCartTotalEl = document.getElementById('mobileCartTotal');
+      const checkoutBtn = document.getElementById('checkoutBtn');
+      const cartBadge = document.getElementById('cartBadge');
 
-        // Close mobile cart when clicking outside
-        document.getElementById('mobileCartModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                toggleMobileCart();
-            }
-        });
-    </script>
+      if (cart.length === 0) {
+        const empty = '<p class="text-amber-700 text-center py-8">Tu carrito está vacío</p>';
+        cartItems.innerHTML = empty;
+        mobileCartItems.innerHTML = '<p class="text-amber-700 text-center py-4">Tu carrito está vacío</p>';
+        cartTotalEl.textContent = '$0.00';
+        mobileCartTotalEl.textContent = '$0.00';
+        checkoutBtn.disabled = true;
+        cartBadge.classList.add('hidden');
+        return;
+      }
+
+      let itemsHTML = '';
+      let total = 0;
+
+      cart.forEach(item => {
+        const itemTotal = item.price * item.quantity;
+        total += itemTotal;
+
+        itemsHTML += `
+          <div class="cart-item flex justify-between items-center p-3 bg-amber-50 rounded-lg">
+            <div class="flex-1">
+              <h4 class="font-semibold text-amber-800">${item.name}</h4>
+              <p class="text-amber-600">$${item.price.toFixed(2)} c/u</p>
+            </div>
+            <div class="flex items-center space-x-2">
+              <button onclick="updateQuantity(${JSON.stringify(item.id)}, -1)" class="bg-amber-200 text-amber-800 w-8 h-8 rounded-full hover:bg-amber-300 transition-colors">
+                <i class="fas fa-minus text-xs"></i>
+              </button>
+              <span class="font-semibold text-amber-800 w-8 text-center">${item.quantity}</span>
+              <button onclick="updateQuantity(${JSON.stringify(item.id)}, 1)" class="bg-amber-200 text-amber-800 w-8 h-8 rounded-full hover:bg-amber-300 transition-colors">
+                <i class="fas fa-plus text-xs"></i>
+              </button>
+            </div>
+            <div class="ml-4 text-right">
+              <p class="font-bold text-amber-800">$${itemTotal.toFixed(2)}</p>
+              <button onclick="removeFromCart(${JSON.stringify(item.id)})" class="text-red-500 hover:text-red-700 text-xs">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </div>
+        `;
+      });
+
+      cartItems.innerHTML = itemsHTML;
+      mobileCartItems.innerHTML = itemsHTML;
+      cartTotalEl.textContent = `$${total.toFixed(2)}`;
+      mobileCartTotalEl.textContent = `$${total.toFixed(2)}`;
+      checkoutBtn.disabled = false;
+
+      const totalItems = cart.reduce((s, i) => s + i.quantity, 0);
+      cartBadge.textContent = totalItems;
+      cartBadge.classList.remove('hidden');
+    }
+
+    function showAddedToCartMessage(productName) {
+      const notif = document.createElement('div');
+      notif.className = 'fixed top-20 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+      notif.innerHTML = `<i class="fas fa-check mr-2"></i>${productName} agregado al carrito`;
+      document.body.appendChild(notif);
+      setTimeout(() => notif.remove(), 2500);
+    }
+
+    function toggleMobileCart() {
+      document.getElementById('mobileCartModal').classList.toggle('hidden');
+    }
+
+    function checkout() {
+      if (cart.length === 0) return;
+      alert(
+        '¡Gracias por tu compra!\\n' +
+        'Total: $' + cart.reduce((s, i) => s + (i.price * i.quantity), 0).toFixed(2) +
+        '\\n\\nTu pedido será preparado en 15-20 minutos.'
+      );
+      cart = [];
+      updateCartDisplay();
+      document.getElementById('mobileCartModal').classList.add('hidden');
+    }
+
+    document.getElementById('mobileCartModal').addEventListener('click', function(e) {
+      if (e.target === this) toggleMobileCart();
+    });
+
+    document.addEventListener('DOMContentLoaded', updateCartDisplay);
+  </script>
 </body>
 </html>

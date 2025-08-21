@@ -35,7 +35,7 @@ def login():
     elif usuario.rol == 'empleado':
         return render_template('empleado.html', usuario=usuario)
     elif usuario.rol == 'cliente':
-        return render_template('cliente.html', usuario=usuario)
+        return redirect(url_for('cliente_routes.panel_cliente'))
 
     return render_template('login.html', error='Rol no reconocido')
 
@@ -111,3 +111,4 @@ def recuperar_contrasena():
         else:
             mensaje = 'El correo no está registrado.'
     return render_template('recuperar_contrasena.html', mensaje=mensaje)
+

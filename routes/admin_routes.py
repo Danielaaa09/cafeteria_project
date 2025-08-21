@@ -1,10 +1,11 @@
-
-from flask import Blueprint, request, jsonify, render_template
+from flask import Blueprint, request, jsonify, render_template, redirect, url_for, flash
 from models.usuario import Usuario
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from models.categoria import Categoria
+import os
+from werkzeug.utils import secure_filename
 
 admin_routes = Blueprint('admin_routes', __name__)
 
@@ -49,9 +50,17 @@ def anadir_producto():
         precio = float(request.form.get('precio'))
         es_rotativo = bool(int(request.form.get('es_rotativo')))
         categorias_id_raw = request.form.get('categorias_id')
-        mensaje = None
+        imagen = request.files.get('imagen')
+        imagen_url = None
+        if imagen and imagen.filename != '':
+            filename = secure_filename(imagen.filename)
+            carpeta_destino = os.path.join('static', 'img')
+            os.makedirs(carpeta_destino, exist_ok=True)
+            ruta = os.path.join(carpeta_destino, filename)
+            imagen.save(ruta)
+            imagen_url = f'/static/img/{filename}'
         if not categorias_id_raw:
-            mensaje = 'Debes seleccionar una categoría.'
+            flash('Debes seleccionar una categoría.', 'error')
         else:
             try:
                 categorias_id = int(categorias_id_raw)
@@ -62,35 +71,33 @@ def anadir_producto():
                     descripcion=descripcion,
                     precio=precio,
                     es_rotativo=es_rotativo,
-                    categorias_id=categorias_id
+                    categorias_id=categorias_id,
+                    imagen_url=imagen_url  # Asegúrate de tener este campo en tu modelo
                 )
                 db.session.add(nuevo_producto)
                 db.session.commit()
-                mensaje = 'Producto agregado correctamente.'
+                flash('Producto agregado correctamente.', 'success')
             except Exception as e:
-                mensaje = f'Error al agregar producto: {str(e)}'
-    else:
-        mensaje = None
-    categorias = Categoria.query.all()
-    return render_template('admin/anadir_producto.html', categorias=categorias, mensaje=mensaje)
+                flash(f'Error al agregar producto: {str(e)}', 'error')
+        return redirect(url_for('admin_routes.dashboard'))
+    return redirect(url_for('admin_routes.dashboard'))
 
 @admin_routes.route('/dashboard', methods=['GET'])
 def dashboard():
     usuarios = Usuario.query.all()
-    return render_template('admin/dashboard.html', usuarios=usuarios)
+    categorias = Categoria.query.all()  # <-- Agrega esta línea
+    return render_template('admin/dashboard.html', usuarios=usuarios, categorias=categorias)  # <-- Y pásala aquí
 
 @admin_routes.route('/add_empleado', methods=['GET', 'POST'])
 def add_empleado():
     if request.method == 'POST':
         nombre = request.form.get('nombre_completo')
         correo = request.form.get('correo')
-        telefono = request.form.get('telefono')
         contrasena_temporal = 'abc123Ñ'  
 
         nuevo_empleado = Usuario(
             nombre_completo=nombre,
             correo=correo,
-            telefono=telefono,
             rol='empleado',
             debe_cambiar_contrasena=True
         )
@@ -100,5 +107,11 @@ def add_empleado():
         db.session.commit()
 
         enviar_correo(correo, contrasena_temporal, nombre_completo=nombre)
-        return render_template('admin/anadir_empleado.html', mensaje='Empleado agregado y correo enviado.')
-    return render_template('admin/anadir_empleado.html')
+        flash('Empleado agregado y correo enviado.', 'success')
+        return redirect(url_for('admin_routes.dashboard'))
+    return redirect(url_for('admin_routes.dashboard'))
+
+
+
+
+

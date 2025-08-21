@@ -1,8 +1,8 @@
-"""Migración inicial a PostgreSQL
+"""Agregar columna imagen_url a producto
 
-Revision ID: 7264332d84fb
+Revision ID: deb55cb1f428
 Revises: 
-Create Date: 2025-08-12 16:49:34.004918
+Create Date: 2025-08-20 17:09:33.531972
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '7264332d84fb'
+revision = 'deb55cb1f428'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -42,6 +42,7 @@ def upgrade():
     sa.Column('precio', sa.Float(), nullable=False),
     sa.Column('es_rotativo', sa.Boolean(), nullable=False),
     sa.Column('categorias_id', sa.Integer(), nullable=True),
+    sa.Column('imagen_url', sa.String(length=255), nullable=True),
     sa.ForeignKeyConstraint(['categorias_id'], ['categorias.id'], ),
     sa.PrimaryKeyConstraint('id')
     )

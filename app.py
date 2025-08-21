@@ -37,6 +37,7 @@ def create_app():
     from routes.menu_routes import menu_routes
     from routes.reserva_routes import reserva_routes
     from routes.contacto_routes import contacto_routes
+    from routes.cliente_routes import cliente_routes
 
     app.register_blueprint(usuarios_bp, url_prefix='/api')
     app.register_blueprint(productos_bp, url_prefix='/api')
@@ -50,6 +51,7 @@ def create_app():
     app.register_blueprint(acerca_routes)
     app.register_blueprint(reserva_routes)
     app.register_blueprint(contacto_routes)
+    app.register_blueprint(cliente_routes)
 
     @app.route('/')
     def index():
