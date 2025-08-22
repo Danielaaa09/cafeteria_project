@@ -26,6 +26,8 @@ def login():
         return render_template('login.html', error='Credenciales inválidas')
 
     session['user_id'] = usuario.id
+    session['nombre_completo'] = usuario.nombre_completo
+
 
     if usuario.debe_cambiar_contrasena:
         return redirect(url_for('auth_routes.cambiar_contrasena'))

@@ -6,33 +6,8 @@
     <title>Iniciar Sesión - Cafetería Las Dos Amigas</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
-        * { font-family: 'Poppins', sans-serif; }
-        .coffee-particle {
-            position: absolute;
-            background: #92400e;
-            border-radius: 50%;
-            animation: float 6s ease-in-out infinite;
-        }
-        @keyframes float {
-            0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.7; }
-            50% { transform: translateY(-20px) rotate(180deg); opacity: 1; }
-        }
-        .glass-effect {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        .input-focus:focus {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(146, 64, 14, 0.2);
-        }
-        .btn-hover:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(146, 64, 14, 0.3);
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/Styles.css') }}">
+
 </head>
 <body class="min-h-screen bg-gradient-to-br from-amber-100 via-orange-50 to-amber-200 overflow-x-hidden">
 
@@ -150,13 +125,17 @@
                             Regístrate aquí
                         </a>
                     </p>
+                    <p class="text-amber-700 text-sm">
+                        <a href="{{ url_for('index') }}" class="text-amber-600 hover:text-amber-700 font-semibold transition-colors">
+                            volver a la pagina principal</a>
+
+                    </p>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // Toggle Password Visibility
         document.getElementById('togglePassword').addEventListener('click', function() {
             const password = document.getElementById('password');
             const eyeIcon = document.getElementById('eyeIcon');

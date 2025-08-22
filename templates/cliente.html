@@ -7,19 +7,7 @@
 
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
-    * { font-family: 'Poppins', sans-serif; }
-
-    .product-card { transition: all 0.3s ease; }
-    .product-card:hover { transform: translateY(-5px); box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
-    .cart-item { animation: slideIn 0.3s ease; }
-    @keyframes slideIn { from { opacity: 0; transform: translateX(20px);} to { opacity: 1; transform: translateX(0);} }
-    .floating-cart { position: fixed; bottom: 20px; right: 20px; z-index: 1000; }
-    .cart-badge { position: absolute; top: -8px; right: -8px; background: #dc2626; color: #fff; border-radius: 50%;
-                  width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; }
-  </style>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/Styles.css') }}">
 </head>
 <body class="bg-amber-50 min-h-screen">
   <!-- Header -->
@@ -65,7 +53,6 @@
                 <img src="{{ producto.imagen_url }}" 
                 alt="{{ producto.nombre }}" 
                 class="w-full h-48 object-cover rounded-lg mb-4">
-
 
                 <div class="p-6">
                   <h3 class="text-xl font-bold text-amber-800 mb-2">{{ producto.nombre }}</h3>
@@ -154,75 +141,51 @@
     </div>
   </div>
 
-  <!-- Scripts Carrito -->
   <script>
     let cart = [];
 
-    function addToCart(id, name, price) {
-      const existing = cart.find(i => i.id === id);
-      if (existing) existing.quantity += 1;
-      else cart.push({ id, name, price: Number(price), quantity: 1 });
-      updateCartDisplay();
-      showAddedToCartMessage(name);
+    function addToCart(id, nombre, precio) {
+      const existing = cart.find(item => item.id === id);
+      if (existing) {
+        existing.cantidad += 1;
+      } else {
+        cart.push({ id, nombre, precio, cantidad: 1 });
+      }
+      renderCart();
     }
 
     function removeFromCart(id) {
-      cart = cart.filter(i => i.id !== id);
-      updateCartDisplay();
+      cart = cart.filter(item => item.id !== id);
+      renderCart();
     }
 
-    function updateQuantity(id, change) {
-      const item = cart.find(i => i.id === id);
-      if (!item) return;
-      item.quantity += change;
-      if (item.quantity <= 0) removeFromCart(id);
-      else updateCartDisplay();
-    }
-
-    function updateCartDisplay() {
-      const cartItems = document.getElementById('cartItems');
-      const mobileCartItems = document.getElementById('mobileCartItems');
-      const cartTotalEl = document.getElementById('cartTotal');
-      const mobileCartTotalEl = document.getElementById('mobileCartTotal');
-      const checkoutBtn = document.getElementById('checkoutBtn');
-      const cartBadge = document.getElementById('cartBadge');
+    function renderCart() {
+      const cartItems = document.getElementById("cartItems");
+      const cartTotal = document.getElementById("cartTotal");
+      const checkoutBtn = document.getElementById("checkoutBtn");
 
       if (cart.length === 0) {
-        const empty = '<p class="text-amber-700 text-center py-8">Tu carrito está vacío</p>';
-        cartItems.innerHTML = empty;
-        mobileCartItems.innerHTML = '<p class="text-amber-700 text-center py-4">Tu carrito está vacío</p>';
-        cartTotalEl.textContent = '$0.00';
-        mobileCartTotalEl.textContent = '$0.00';
+        cartItems.innerHTML = `<p class="text-amber-700 text-center py-8">Tu carrito está vacío</p>`;
+        cartTotal.textContent = "$0.00";
         checkoutBtn.disabled = true;
-        cartBadge.classList.add('hidden');
         return;
       }
 
-      let itemsHTML = '';
+      cartItems.innerHTML = "";
       let total = 0;
 
       cart.forEach(item => {
-        const itemTotal = item.price * item.quantity;
-        total += itemTotal;
-
-        itemsHTML += `
-          <div class="cart-item flex justify-between items-center p-3 bg-amber-50 rounded-lg">
-            <div class="flex-1">
-              <h4 class="font-semibold text-amber-800">${item.name}</h4>
-              <p class="text-amber-600">$${item.price.toFixed(2)} c/u</p>
+        total += item.precio * item.cantidad;
+        cartItems.innerHTML += `
+          <div class="flex justify-between items-center bg-amber-50 p-3 rounded-lg shadow">
+            <div>
+              <p class="font-semibold text-amber-800">${item.nombre}</p>
+              <p class="text-sm text-amber-600">Cantidad: ${item.cantidad}</p>
             </div>
-            <div class="flex items-center space-x-2">
-              <button onclick="updateQuantity(${JSON.stringify(item.id)}, -1)" class="bg-amber-200 text-amber-800 w-8 h-8 rounded-full hover:bg-amber-300 transition-colors">
-                <i class="fas fa-minus text-xs"></i>
-              </button>
-              <span class="font-semibold text-amber-800 w-8 text-center">${item.quantity}</span>
-              <button onclick="updateQuantity(${JSON.stringify(item.id)}, 1)" class="bg-amber-200 text-amber-800 w-8 h-8 rounded-full hover:bg-amber-300 transition-colors">
-                <i class="fas fa-plus text-xs"></i>
-              </button>
-            </div>
-            <div class="ml-4 text-right">
-              <p class="font-bold text-amber-800">$${itemTotal.toFixed(2)}</p>
-              <button onclick="removeFromCart(${JSON.stringify(item.id)})" class="text-red-500 hover:text-red-700 text-xs">
+            <div class="flex items-center space-x-3">
+              <span class="text-amber-700 font-bold">$${(item.precio * item.cantidad).toFixed(2)}</span>
+              <button onclick="removeFromCart('${item.id}')"
+                      class="text-red-600 hover:text-red-800">
                 <i class="fas fa-trash"></i>
               </button>
             </div>
@@ -230,46 +193,28 @@
         `;
       });
 
-      cartItems.innerHTML = itemsHTML;
-      mobileCartItems.innerHTML = itemsHTML;
-      cartTotalEl.textContent = `$${total.toFixed(2)}`;
-      mobileCartTotalEl.textContent = `$${total.toFixed(2)}`;
+      cartTotal.textContent = "$" + total.toFixed(2);
       checkoutBtn.disabled = false;
-
-      const totalItems = cart.reduce((s, i) => s + i.quantity, 0);
-      cartBadge.textContent = totalItems;
-      cartBadge.classList.remove('hidden');
     }
 
-    function showAddedToCartMessage(productName) {
-      const notif = document.createElement('div');
-      notif.className = 'fixed top-20 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
-      notif.innerHTML = `<i class="fas fa-check mr-2"></i>${productName} agregado al carrito`;
-      document.body.appendChild(notif);
-      setTimeout(() => notif.remove(), 2500);
-    }
-
-    function toggleMobileCart() {
-      document.getElementById('mobileCartModal').classList.toggle('hidden');
-    }
-
-    function checkout() {
+    async function checkout() {
       if (cart.length === 0) return;
-      alert(
-        '¡Gracias por tu compra!\\n' +
-        'Total: $' + cart.reduce((s, i) => s + (i.price * i.quantity), 0).toFixed(2) +
-        '\\n\\nTu pedido será preparado en 15-20 minutos.'
-      );
-      cart = [];
-      updateCartDisplay();
-      document.getElementById('mobileCartModal').classList.add('hidden');
+      const response = await fetch("{{ url_for('cliente_routes.checkout') }}", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ carrito: cart })
+      });
+
+      const data = await response.json();
+      if (data.venta_id) {
+        alert("Compra realizada con éxito.");
+        window.open(`/factura/${data.venta_id}`, "_blank"); // abre factura en PDF
+        cart = [];
+        renderCart();
+      } else {
+        alert("Error: " + data.error);
+      }
     }
-
-    document.getElementById('mobileCartModal').addEventListener('click', function(e) {
-      if (e.target === this) toggleMobileCart();
-    });
-
-    document.addEventListener('DOMContentLoaded', updateCartDisplay);
   </script>
 </body>
 </html>

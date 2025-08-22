@@ -6,10 +6,8 @@
     <title>Contacto - Cafetería Las Dos Amigas</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
-        * { font-family: 'Poppins', sans-serif; }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/Styles.css') }}">
+
 </head>
 <body class="bg-amber-50">
     <!-- Header -->
@@ -137,12 +135,7 @@
         </div>
     </footer>
 
-    <script>
-        document.getElementById('contactForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            alert('¡Gracias por tu mensaje! Te contactaremos pronto.');
-            this.reset();
-        });
-    </script>
+        <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
 </body>
 </html>

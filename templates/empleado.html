@@ -6,32 +6,8 @@
     <title>Tomar Órdenes - Café Aroma</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
-        * { font-family: 'Poppins', sans-serif; }
-        
-        .table-occupied { background: linear-gradient(135deg, #dc2626, #ef4444); }
-        .table-available { background: linear-gradient(135deg, #059669, #10b981); }
-        .table-selected { background: linear-gradient(135deg, #d97706, #f59e0b); }
-        
-        .order-panel {
-            transform: translateX(100%);
-            transition: transform 0.3s ease-in-out;
-        }
-        
-        .order-panel.show {
-            transform: translateX(0);
-        }
-        
-        @media (max-width: 768px) {
-            .order-panel {
-                transform: translateY(100%);
-            }
-            .order-panel.show {
-                transform: translateY(0);
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/Styles.css') }}">
+
 </head>
 <body class="bg-amber-50 min-h-screen">
     <!-- Header -->
@@ -341,96 +317,7 @@
         </div>
     </div>
 
-    <script>
-        let currentTable = null;
-        let currentOrder = [];
-        let orderTotal = 0;
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 
-        function selectTable(tableNumber, status) {
-            currentTable = tableNumber;
-            document.getElementById('selectedTable').textContent = tableNumber;
-            
-            document.querySelectorAll('.table-available, .table-occupied').forEach(table => {
-                table.classList.remove('table-selected');
-            });
-            event.currentTarget.classList.add('table-selected');
-            
-            document.getElementById('orderPanel').classList.add('show');
-        }
-
-        function closeOrderPanel() {
-            document.getElementById('orderPanel').classList.remove('show');
-        }
-
-        function showCategory(category) {
-            document.querySelectorAll('.menu-category').forEach(cat => cat.classList.add('hidden'));
-            document.getElementById(category).classList.remove('hidden');
-            
-            document.querySelectorAll('.category-btn').forEach(btn => {
-                btn.classList.remove('bg-amber-600', 'text-white');
-                btn.classList.add('bg-amber-200', 'text-amber-800');
-            });
-            event.currentTarget.classList.remove('bg-amber-200', 'text-amber-800');
-            event.currentTarget.classList.add('bg-amber-600', 'text-white');
-        }
-
-        function addToOrder(itemName, price) {
-            const existingItem = currentOrder.find(item => item.name === itemName);
-            
-            if (existingItem) {
-                existingItem.quantity += 1;
-            } else {
-                currentOrder.push({ name: itemName, price: price, quantity: 1 });
-            }
-            
-            updateOrderDisplay();
-        }
-
-        function removeFromOrder(index) {
-            currentOrder.splice(index, 1);
-            updateOrderDisplay();
-        }
-
-        function updateOrderDisplay() {
-            const orderContainer = document.getElementById('currentOrder');
-            const totalElement = document.getElementById('orderTotal');
-            
-            if (currentOrder.length === 0) {
-                orderContainer.innerHTML = '<p class="text-amber-600 text-sm">Selecciona productos del menú</p>';
-                orderTotal = 0;
-            } else {
-                orderContainer.innerHTML = currentOrder.map((item, index) => `
-                    <div class="flex justify-between items-center text-sm">
-                        <span>${item.quantity}x ${item.name}</span>
-                        <div class="flex items-center space-x-2">
-                            <span>$${(item.price * item.quantity).toFixed(2)}</span>
-                            <button onclick="removeFromOrder(${index})" class="text-red-500 hover:text-red-700">
-                                <i class="fas fa-trash text-xs"></i>
-                            </button>
-                        </div>
-                    </div>
-                `).join('');
-                
-                orderTotal = currentOrder.reduce((total, item) => total + (item.price * item.quantity), 0);
-            }
-            
-            totalElement.textContent = `$${orderTotal.toFixed(2)}`;
-        }
-
-        function submitOrder() {
-            if (currentOrder.length === 0) {
-                alert('Agrega productos a la orden primero');
-                return;
-            }
-            
-            alert(`Orden enviada para Mesa ${currentTable}\nTotal: $${orderTotal.toFixed(2)}`);
-            currentOrder = [];
-            updateOrderDisplay();
-            closeOrderPanel();
-        }
-
-        // Initialize
-        showCategory('cafe');
-    </script>
 </body>
 </html>
