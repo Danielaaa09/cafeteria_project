@@ -9,6 +9,7 @@ class Producto(db.Model):
     es_rotativo = db.Column(db.Boolean, nullable=False)
     categorias_id = db.Column(db.Integer, db.ForeignKey('categorias.id'))
     imagen_url = db.Column(db.String(255))
+    cantidad = db.Column(db.Integer, nullable=False)
 
     inventario = db.relationship('Inventario', backref='producto', uselist=False)
     historial = db.relationship('HistorialInventario', backref='producto', lazy=True)
