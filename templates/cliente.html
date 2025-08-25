@@ -46,35 +46,48 @@
       <section class="lg:w-2/3">
         <h2 class="text-3xl font-bold text-amber-800 mb-8">Nuestros Productos</h2>
 
-        {% if productos %}
-          <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
-            {% for producto in productos %}
-              <div class="product-card bg-white rounded-xl shadow-lg overflow-hidden">
-                <img src="{{ producto.imagen_url }}" 
-                alt="{{ producto.nombre }}" 
-                class="w-full h-48 object-cover rounded-lg mb-4">
+        {% if categorias %}
+          <div class="space-y-4">
+            {% for categoria in categorias %}
+              <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                <!-- Header de categoría -->
+                <button onclick="toggleCategoria('cat{{ categoria.id }}')"
+                        class="w-full flex justify-between items-center px-6 py-4 text-left text-xl font-semibold text-amber-800 hover:bg-amber-100 transition">
+                  <span><i class="fas fa-tags mr-2 text-amber-600"></i>{{ categoria.nombre }}</span>
+                  <i class="fas fa-chevron-down transition-transform" id="icon-cat{{ categoria.id }}"></i>
+                </button>
 
-                <div class="p-6">
-                  <h3 class="text-xl font-bold text-amber-800 mb-2">{{ producto.nombre }}</h3>
-                  <p class="text-amber-700 mb-4">{{ producto.descripcion }}</p>
+                <!-- Productos -->
+                <div id="cat{{ categoria.id }}" class="hidden px-6 pb-6">
+                  <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    {% for producto in categoria.productos %}
+                      <div class="product-card bg-amber-50 rounded-lg shadow p-4">
+                        <img src="{{ producto.imagen_url or '/static/img/default.png' }}"
+                             alt="{{ producto.nombre }}"
+                             class="w-full h-40 object-cover rounded-lg mb-3">
 
-                  <div class="flex justify-between items-center">
-                    <span class="text-2xl font-bold text-amber-600">
-                      ${{ '%.2f'|format(producto.precio|float) }}
-                    </span>
+                        <h3 class="text-lg font-bold text-amber-800">{{ producto.nombre }}</h3>
+                        <p class="text-sm text-amber-700 mb-2">{{ producto.descripcion }}</p>
 
-                    <button
-                      onclick="addToCart('{{ producto.id_producto }}', '{{ producto.nombre }}', {{ producto.precio }})"
-                      class="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 transition-colors">
-                      <i class="fas fa-plus"></i> Agregar
-                    </button>
+                        <div class="flex justify-between items-center">
+                          <span class="font-bold text-amber-600">${{ '%.2f'|format(producto.precio|float) }}</span>
+                          <button
+                            onclick="addToCart('{{ producto.id }}', '{{ producto.nombre }}', {{ producto.precio }})"
+                            class="bg-amber-600 text-white px-3 py-1 rounded hover:bg-amber-700 text-sm">
+                            <i class="fas fa-plus"></i> Agregar
+                          </button>
+                        </div>
+                      </div>
+                    {% else %}
+                      <p class="text-amber-600 text-sm col-span-full">No hay productos en esta categoría.</p>
+                    {% endfor %}
                   </div>
                 </div>
               </div>
             {% endfor %}
           </div>
         {% else %}
-          <p class="text-amber-700 text-center">No hay productos disponibles en este momento.</p>
+          <p class="text-amber-700">No hay categorías disponibles en este momento.</p>
         {% endif %}
       </section>
 
@@ -141,7 +154,26 @@
     </div>
   </div>
 
+  <!-- JS -->
   <script>
+    // --- Acordeón categorías ---
+    function toggleCategoria(id) {
+      // Cierra todas
+      document.querySelectorAll('[id^="cat"]').forEach(div => {
+        if (div.id !== id) {
+          div.classList.add("hidden");
+          const icon = document.getElementById("icon-" + div.id);
+          if (icon) icon.classList.remove("rotate-180");
+        }
+      });
+      // Alterna la actual
+      const current = document.getElementById(id);
+      const icon = document.getElementById("icon-" + id);
+      current.classList.toggle("hidden");
+      if (icon) icon.classList.toggle("rotate-180");
+    }
+
+    // --- Carrito ---
     let cart = [];
 
     function addToCart(id, nombre, precio) {
@@ -208,7 +240,7 @@
       const data = await response.json();
       if (data.venta_id) {
         alert("Compra realizada con éxito.");
-        window.open(`/factura/${data.venta_id}`, "_blank"); // abre factura en PDF
+        window.open(`/factura/${data.venta_id}`, "_blank");
         cart = [];
         renderCart();
       } else {

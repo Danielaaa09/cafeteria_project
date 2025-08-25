@@ -9,7 +9,9 @@ from email.mime.multipart import MIMEMultipart
 import os
 from werkzeug.utils import secure_filename
 from flask import session
-
+from models.venta import Venta
+from models.detalle_venta import DetalleVenta
+from datetime import datetime, date
 admin_routes = Blueprint('admin_routes', __name__)
 
 def enviar_correo(destinatario, contrasena_temporal, nombre_completo=None):
@@ -51,25 +53,41 @@ def dashboard():
     categorias = Categoria.query.all()
     productos = Producto.query.all()
 
+    # Empleados (solo rol empleado)
+    empleados = Usuario.query.filter_by(rol='empleado').all()
+
     # últimos registros
     ultimos_empleados = Usuario.query.filter_by(rol='empleado').order_by(Usuario.id.desc()).limit(5).all()
     ultimos_productos = Producto.query.order_by(Producto.id.desc()).limit(5).all()
     nombre_admin = session.get('nombre_completo')
 
+    # estadísticas
+    total_empleados = len(empleados)
+    hoy = date.today()
+    ventas_hoy = (
+        db.session.query(db.func.sum(Venta.total))
+        .filter(db.func.date(Venta.fecha_venta) == hoy)
+        .scalar()
+    ) or 0
+    pedidos = (
+        db.session.query(Venta)
+        .filter(db.func.date(Venta.fecha_venta) == hoy)
+        .count()
+    )
+
     return render_template(
         'admin/dashboard.html',
         usuarios=usuarios,
+        empleados=empleados,   # 👈 lista filtrada
         categorias=categorias,
         productos=productos,
         ultimos_empleados=ultimos_empleados,
         ultimos_productos=ultimos_productos,
-        nombre_admin=nombre_admin 
+        nombre_admin=nombre_admin,
+        total_empleados=total_empleados,
+        ventas_hoy=ventas_hoy,
+        pedidos=pedidos
     )
-
-
-# ---------------------------
-# PRODUCTOS
-# ---------------------------
 @admin_routes.route('/anadir_producto', methods=['POST'])
 def anadir_producto():
     nombre = request.form.get('nombre')

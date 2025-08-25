@@ -10,19 +10,22 @@ from flask import make_response
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 import io
+from models.categoria import Categoria
 
 cliente_routes = Blueprint('cliente_routes', __name__)
 
 @cliente_routes.route('/cliente')
 def panel_cliente():
-    productos = Producto.query.all()
+    categorias = Categoria.query.all()
 
     usuario = None
     if 'user_id' in session:
         usuario = Usuario.query.get(session['user_id'])
 
-    return render_template('cliente.html', productos=productos, usuario=usuario)
+    return render_template('cliente.html', categorias=categorias, usuario=usuario)
+    
 
+    
 @cliente_routes.route('/checkout', methods=['POST'])
 def checkout():
     if 'user_id' not in session:
