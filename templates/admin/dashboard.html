@@ -111,6 +111,7 @@
                 <input type="number" step="0.01" name="precio" value="{{ p.precio }}" class="w-full border p-2 mb-3">
                 <textarea name="descripcion" class="w-full border p-2 mb-3">{{ p.descripcion }}</textarea>
                 <input type="file" name="imagen" class="mb-3">
+                <input type="number" name="cantidad" placeholder="Cantidad" class="w-full border p-2 mb-3" required>
                 <button type="submit" class="w-full bg-amber-600 text-white py-2 rounded">Guardar Cambios</button>
               </form>
               <button onclick="closeModal('editProduct{{ p.id }}')" class="mt-2 text-red-600">Cerrar</button>
@@ -188,10 +189,14 @@
           {% endfor %}
         </select>
         <textarea name="descripcion" placeholder="Descripción" class="w-full border p-2 mb-3"></textarea>
-        <label class="flex items-center space-x-2 mb-3">
-          <input type="checkbox" name="es_rotativo" value="1" class="form-checkbox">
-          <span>Es rotativo</span>
-        </label>
+        <input type="number" name="cantidad" placeholder="Cantidad" class="w-full border p-2 mb-3" required>
+
+       <label class="flex items-center space-x-2 mb-3">
+  <input type="hidden" name="es_rotativo" value="0">
+  <input type="checkbox" name="es_rotativo" value="1" class="form-checkbox">
+  <span>Es rotativo</span>
+</label>
+
         <input type="file" name="imagen" class="mb-3">
         <button type="submit" class="w-full bg-amber-600 text-white py-2 rounded">Agregar</button>
       </form>

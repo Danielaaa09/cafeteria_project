@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, render_template, redirect, url_for, flash
+from flask import Blueprint, request, jsonify, render_template, redirect, url_for, flash, session
 from models.usuario import Usuario
 from models.categoria import Categoria
 from models.producto import Producto
@@ -8,12 +8,15 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import os
 from werkzeug.utils import secure_filename
-from flask import session
 from models.venta import Venta
 from models.detalle_venta import DetalleVenta
-from datetime import datetime, date
+from datetime import date
+
 admin_routes = Blueprint('admin_routes', __name__)
 
+# ---------------------------
+# EMAIL
+# ---------------------------
 def enviar_correo(destinatario, contrasena_temporal, nombre_completo=None):
     remitente = 'cafeterialasdosamigas@gmail.com'
     password = 'doehmsrgujcalrrj'
@@ -78,7 +81,7 @@ def dashboard():
     return render_template(
         'admin/dashboard.html',
         usuarios=usuarios,
-        empleados=empleados,   # 👈 lista filtrada
+        empleados=empleados,
         categorias=categorias,
         productos=productos,
         ultimos_empleados=ultimos_empleados,
@@ -88,12 +91,18 @@ def dashboard():
         ventas_hoy=ventas_hoy,
         pedidos=pedidos
     )
+
+
+# ---------------------------
+# PRODUCTOS
+# ---------------------------
 @admin_routes.route('/anadir_producto', methods=['POST'])
 def anadir_producto():
     nombre = request.form.get('nombre')
     descripcion = request.form.get('descripcion')
     precio = float(request.form.get('precio'))
-    es_rotativo = bool(int(request.form.get('es_rotativo')))
+    es_rotativo = bool(int(request.form.get('es_rotativo', 0)))
+    cantidad = int(request.form.get('cantidad', 0))   # 👈 cantidad siempre int
     categorias_id_raw = request.form.get('categorias_id')
 
     imagen = request.files.get('imagen')
@@ -117,12 +126,14 @@ def anadir_producto():
                 precio=precio,
                 es_rotativo=es_rotativo,
                 categorias_id=categorias_id,
-                imagen_url=imagen_url
+                imagen_url=imagen_url,
+                cantidad=cantidad  # 👈 agregado
             )
             db.session.add(nuevo_producto)
             db.session.commit()
             flash('Producto agregado correctamente.', 'success')
         except Exception as e:
+            db.session.rollback()
             flash(f'Error al agregar producto: {str(e)}', 'error')
 
     return redirect(url_for('admin_routes.dashboard'))
@@ -135,6 +146,7 @@ def editar_producto(id):
     producto.nombre = request.form.get('nombre')
     producto.descripcion = request.form.get('descripcion')
     producto.precio = float(request.form.get('precio'))
+    producto.cantidad = int(request.form.get('cantidad', producto.cantidad or 0))  # 👈 se puede editar
 
     imagen = request.files.get('imagen')
     if imagen and imagen.filename != '':
