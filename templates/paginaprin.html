@@ -7,7 +7,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/Styles.css') }}">
-
 </head>
 <body class="bg-amber-50">
     <!-- Header -->
@@ -61,7 +60,9 @@
             <div class="space-x-4 scroll-reveal">
                 <a href="{{ url_for('menu_routes.menu') }}" class="bg-amber-600 text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-amber-700 transition-colors inline-block">
                     Ver Menú
-              
+                </a>
+                
+                </a>
             </div>
         </div>
     </section>
@@ -153,87 +154,76 @@
         </div>
     </section>
 
+    <!-- Features Section -->
+    <section class="py-16 bg-amber-50">
+        <div class="container mx-auto px-4">
+            <h2 class="text-4xl font-bold text-center text-amber-800 mb-12 scroll-reveal">¿Por qué elegirnos?</h2>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="text-center p-6 bg-white rounded-xl shadow-lg scroll-reveal">
+                    <i class="fas fa-seedling text-4xl text-green-600 mb-4"></i>
+                    <h3 class="text-xl font-semibold text-amber-800 mb-3">100% Orgánico</h3>
+                    <p class="text-amber-700">Granos cultivados sin pesticidas, respetando el medio ambiente.</p>
+                </div>
+                <div class="text-center p-6 bg-white rounded-xl shadow-lg scroll-reveal">
+                    <i class="fas fa-award text-4xl text-amber-600 mb-4"></i>
+                    <h3 class="text-xl font-semibold text-amber-800 mb-3">Calidad Premium</h3>
+                    <p class="text-amber-700">Selección cuidadosa de los mejores granos del mundo.</p>
+                </div>
+                <div class="text-center p-6 bg-white rounded-xl shadow-lg scroll-reveal">
+                    <i class="fas fa-heart text-4xl text-red-500 mb-4"></i>
+                    <h3 class="text-xl font-semibold text-amber-800 mb-3">Hecho con Amor</h3>
+                    <p class="text-amber-700">Cada taza preparada con pasión y dedicación.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- Footer -->
     <footer class="bg-amber-900 text-white py-12">
-
-    <div class="container mx-auto px-4">
-
-        <div class="grid md:grid-cols-4 gap-8">
-
-            <div>
-
-                <div class="flex items-center space-x-2 mb-4">
-
-                    <i class="fas fa-coffee text-2xl"></i>
-
-                    <h3 class="text-xl font-bold">Cafetería Las Dos Amigas</h3>
-
+        <div class="container mx-auto px-4">
+            <div class="grid md:grid-cols-4 gap-8">
+                <div>
+                    <div class="flex items-center space-x-2 mb-4">
+                        <i class="fas fa-coffee text-2xl"></i>
+                        <h3 class="text-xl font-bold">Cafetería Las Dos Amigas</h3>
+                    </div>
+                    <p class="text-amber-200">Tu cafetería de confianza desde 2020</p>
                 </div>
-
-                <p class="text-amber-200">Tu cafetería de confianza desde 2020</p>
-
+                <div>
+                    <h4 class="font-semibold mb-4">Enlaces</h4>
+                    <ul class="space-y-2">
+                        <li><a href="{{ url_for('index') }}" class="text-amber-200 hover:text-white transition-colors">Inicio</a></li>
+                        <li><a href="{{ url_for('menu_routes.menu') }}" class="text-amber-200 hover:text-white transition-colors">Menú</a></li>
+                        <li><a href="{{ url_for('acerca_routes.acerca') }}" class="text-amber-200 hover:text-white transition-colors">Nosotros</a></li>
+                        <li><a href="{{ url_for('contacto_routes.contacto') }}" class="text-amber-200 hover:text-white transition-colors">Contacto</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4">Servicios</h4>
+                    <ul class="space-y-2">
+                        <li><a href="{{url_for('reserva_routes.reserva')}}" class="text-amber-200 hover:text-white transition-colors">Reservas</a></li>
+                        <li><a href="{{ url_for('menu_routes.menu') }}" class="text-amber-200 hover:text-white transition-colors">Delivery</a></li>
+                        <li><a href="{{ url_for('acerca_routes.acerca') }}" class="text-amber-200 hover:text-white transition-colors">Eventos</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4">Contacto</h4>
+                    <p class="text-amber-200 mb-2"><i class="fas fa-map-marker-alt mr-2"></i>Vélez, Santander</p>
+                    <p class="text-amber-200 mb-2"><i class="fas fa-phone mr-2"></i>+57 320 3877964</p>
+                    <p class="text-amber-200"><i class="fas fa-envelope mr-2"></i>cafeterialasdosamigas@gmail.com</p>
+                </div>
             </div>
-
-            <div>
-
-                <h4 class="font-semibold mb-4">Enlaces</h4>
-
-                <ul class="space-y-2">
-
-                    <li><a href="index.html" class="text-amber-200 hover:text-white transition-colors">Inicio</a></li>
-
-                    <li><a href="menu.html" class="text-amber-200 hover:text-white transition-colors">Menú</a></li>
-
-                    <li><a href="about.html" class="text-amber-200 hover:text-white transition-colors">Nosotros</a></li>
-
-                    <li><a href="contact.html" class="text-amber-200 hover:text-white transition-colors">Contacto</a></li>
-
-                </ul>
-
+            <div class="border-t border-amber-800 mt-8 pt-8 text-center">
+                <p class="text-amber-200">&copy; 2024 Cafetería Las Dos Amigas. Todos los derechos reservados.</p>
             </div>
-
-            <div>
-
-                <h4 class="font-semibold mb-4">Servicios</h4>
-
-                <ul class="space-y-2">
-
-                    <li><a href="reservations.html" class="text-amber-200 hover:text-white transition-colors">Reservas</a></li>
-
-                    <li><a href="menu.html" class="text-amber-200 hover:text-white transition-colors">Delivery</a></li>
-
-                    <li><a href="about.html" class="text-amber-200 hover:text-white transition-colors">Eventos</a></li>
-
-                </ul>
-
-            </div>
-
-            <div>
-
-                <h4 class="font-semibold mb-4">Contacto</h4>
-
-                <p class="text-amber-200 mb-2"><i class="fas fa-map-marker-alt mr-2"></i>Velez, Santander</p>
-
-                <p class="text-amber-200 mb-2"><i class="fas fa-phone mr-2"></i>+57 320 3877964</p>
-
-                <p class="text-amber-200"><i class="fas fa-envelope mr-2"></i>cafeterialasdosamigas@gmail.com</p>
-
-            </div>
-
         </div>
-
-        <div class="border-t border-amber-800 mt-8 pt-8 text-center">
-
-            <p class="text-amber-200">&copy; 2024 Cafetería Las Dos Amigas. Todos los derechos reservados.</p>
-
-        </div>
-
-    </div>
+    </footer>
 
     <script>
         // Mobile menu toggle
         const mobileMenuBtn = document.getElementById('mobile-menu-btn');
         const mobileMenu = document.getElementById('mobile-menu');
+        
         mobileMenuBtn.addEventListener('click', () => {
             mobileMenu.classList.toggle('hidden');
         });
@@ -247,6 +237,7 @@
         function showSlide(index) {
             slides.forEach(slide => slide.classList.remove('active'));
             indicators.forEach(indicator => indicator.classList.remove('bg-white'));
+            
             slides[index].classList.add('active');
             indicators[index].classList.add('bg-white');
         }
@@ -261,6 +252,7 @@
             showSlide(currentSlide);
         }
 
+        // Event listeners
         document.getElementById('nextBtn').addEventListener('click', nextSlide);
         document.getElementById('prevBtn').addEventListener('click', prevSlide);
 
@@ -271,19 +263,27 @@
             });
         });
 
+        // Auto-play carousel
         let autoPlay = setInterval(nextSlide, 5000);
 
+        // Pause on hover
         const carouselContainer = document.querySelector('.carousel-container');
         carouselContainer.addEventListener('mouseenter', () => clearInterval(autoPlay));
         carouselContainer.addEventListener('mouseleave', () => {
             autoPlay = setInterval(nextSlide, 5000);
         });
 
+        // Initialize first slide
         showSlide(0);
 
         // Scroll reveal animation
-        const observerOptions = { threshold: 0.1, rootMargin: '0px 0px -50px 0px' };
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
         const revealElements = document.querySelectorAll('.scroll-reveal');
+
         const revealOnScroll = new IntersectionObserver((entries, observer) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
@@ -292,6 +292,7 @@
                 }
             });
         }, observerOptions);
+
         revealElements.forEach(element => {
             revealOnScroll.observe(element);
         });
