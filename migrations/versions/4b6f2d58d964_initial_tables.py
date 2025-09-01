@@ -1,8 +1,8 @@
-"""Agregar columna imagen_url a producto
+"""initial tables
 
-Revision ID: deb55cb1f428
+Revision ID: 4b6f2d58d964
 Revises: 
-Create Date: 2025-08-20 17:09:33.531972
+Create Date: 2025-08-31 09:49:18.774040
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'deb55cb1f428'
+revision = '4b6f2d58d964'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -38,31 +38,32 @@ def upgrade():
     op.create_table('producto',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('nombre', sa.String(length=100), nullable=False),
-    sa.Column('descripcion', sa.String(length=100), nullable=True),
+    sa.Column('descripcion', sa.String(length=255), nullable=True),
     sa.Column('precio', sa.Float(), nullable=False),
-    sa.Column('es_rotativo', sa.Boolean(), nullable=False),
-    sa.Column('categorias_id', sa.Integer(), nullable=True),
+    sa.Column('es_rotativo', sa.Boolean(), nullable=True),
+    sa.Column('categorias_id', sa.Integer(), nullable=False),
     sa.Column('imagen_url', sa.String(length=255), nullable=True),
+    sa.Column('cantidad', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['categorias_id'], ['categorias.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('ventas',
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('fecha_venta', sa.DateTime(), nullable=True),
+    sa.Column('fecha', sa.DateTime(), nullable=False),
+    sa.Column('cliente_id', sa.Integer(), nullable=False),
+    sa.Column('metodo_pago', sa.String(length=50), nullable=False),
     sa.Column('total', sa.Float(), nullable=False),
-    sa.Column('usuarios_id', sa.Integer(), nullable=True),
-    sa.ForeignKeyConstraint(['usuarios_id'], ['usuarios.id'], ),
+    sa.ForeignKeyConstraint(['cliente_id'], ['usuarios.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('detalle_ventas',
     sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('venta_id', sa.Integer(), nullable=False),
+    sa.Column('producto_id', sa.Integer(), nullable=False),
     sa.Column('cantidad', sa.Integer(), nullable=False),
-    sa.Column('precio_unitario', sa.Float(), nullable=False),
     sa.Column('subtotal', sa.Float(), nullable=False),
-    sa.Column('ventas_id', sa.Integer(), nullable=True),
-    sa.Column('producto_id', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['producto_id'], ['producto.id'], ),
-    sa.ForeignKeyConstraint(['ventas_id'], ['ventas.id'], ),
+    sa.ForeignKeyConstraint(['venta_id'], ['ventas.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('historial_inventario',

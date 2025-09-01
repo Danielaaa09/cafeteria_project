@@ -24,6 +24,7 @@ def create_app():
     from models.detalle_venta import DetalleVenta
     from models.historial_inventario import HistorialInventario
     from models.pedido_futuro import PedidoFuturo
+    
 
     from routes.usuarios_route import usuarios_bp
     from routes.productos_route import productos_bp
@@ -38,6 +39,7 @@ def create_app():
     from routes.reserva_routes import reserva_routes
     from routes.contacto_routes import contacto_routes
     from routes.cliente_routes import cliente_routes
+    from routes.empleados_routes import empleados_routes
 
     app.register_blueprint(usuarios_bp, url_prefix='/api')
     app.register_blueprint(productos_bp, url_prefix='/api')
@@ -52,6 +54,7 @@ def create_app():
     app.register_blueprint(reserva_routes)
     app.register_blueprint(contacto_routes)
     app.register_blueprint(cliente_routes)
+    app.register_blueprint(empleados_routes)
 
     @app.route('/')
     def index():

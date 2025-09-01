@@ -33,14 +33,16 @@ def checkout():
 
     data = request.json
     carrito = data.get('carrito', [])
+    metodo_pago = data.get('metodo_pago', 'Efectivo')  # 👈 capturamos el método
     total = sum(item['precio'] * item['cantidad'] for item in carrito)
 
     # Crear venta
     venta = Venta(
-    usuarios_id=session['user_id'],
-    fecha_venta=datetime.datetime.utcnow(),
-    total=total
-)
+        usuarios_id=session['user_id'],
+        fecha_venta=datetime.datetime.utcnow(),
+        total=total,
+        metodo_pago=metodo_pago  # 👈 guardamos en DB
+    )
 
     db.session.add(venta)
     db.session.commit()
@@ -59,6 +61,7 @@ def checkout():
     db.session.commit()
 
     return jsonify({'message': 'Compra realizada con éxito', 'venta_id': venta.id})
+
 @cliente_routes.route('/factura/<int:venta_id>')
 def factura_pdf(venta_id):
     venta = Venta.query.get_or_404(venta_id)
@@ -80,6 +83,8 @@ def factura_pdf(venta_id):
     p.drawString(50, height - 100, f"Cliente: {usuario.nombre_completo}")
     p.drawString(50, height - 120, f"Correo: {usuario.correo}")
     p.drawString(50, height - 140, f"Fecha: {venta.fecha_venta.strftime('%d/%m/%Y %H:%M')}")
+    p.drawString(50, height - 160, f"Método de pago: {venta.metodo_pago}")
+
 
     # Tabla de productos
     y = height - 180

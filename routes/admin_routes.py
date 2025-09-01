@@ -69,12 +69,12 @@ def dashboard():
     hoy = date.today()
     ventas_hoy = (
         db.session.query(db.func.sum(Venta.total))
-        .filter(db.func.date(Venta.fecha_venta) == hoy)
+        .filter(db.func.date(Venta.fecha) == hoy)
         .scalar()
     ) or 0
     pedidos = (
         db.session.query(Venta)
-        .filter(db.func.date(Venta.fecha_venta) == hoy)
+        .filter(db.func.date(Venta.fecha) == hoy)
         .count()
     )
 

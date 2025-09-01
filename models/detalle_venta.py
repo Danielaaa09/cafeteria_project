@@ -1,10 +1,14 @@
 from app import db
 
 class DetalleVenta(db.Model):
-    __tablename__ = 'detalle_ventas'
+    __tablename__ = "detalle_ventas"
+
     id = db.Column(db.Integer, primary_key=True)
+    venta_id = db.Column(db.Integer, db.ForeignKey("ventas.id"), nullable=False)
+    producto_id = db.Column(db.Integer, db.ForeignKey("producto.id"), nullable=False)
     cantidad = db.Column(db.Integer, nullable=False)
-    precio_unitario = db.Column(db.Float, nullable=False)
     subtotal = db.Column(db.Float, nullable=False)
-    ventas_id = db.Column(db.Integer, db.ForeignKey('ventas.id'))
-    producto_id = db.Column(db.Integer, db.ForeignKey('producto.id'))
+
+    # relaciones inversas
+    venta = db.relationship("Venta", back_populates="detalles")
+    producto = db.relationship("Producto", back_populates="detalle_ventas")

@@ -5,6 +5,7 @@ from app import db
 import datetime
 import random
 import string
+import json
 
 auth_routes = Blueprint('auth_routes', __name__)
 
@@ -28,18 +29,35 @@ def login():
     session['user_id'] = usuario.id
     session['nombre_completo'] = usuario.nombre_completo
 
-
     if usuario.debe_cambiar_contrasena:
         return redirect(url_for('auth_routes.cambiar_contrasena'))
 
     if usuario.rol == 'administrador':
         return redirect(url_for('admin_routes.dashboard'))
+
     elif usuario.rol == 'empleado':
-        return render_template('empleado.html', usuario=usuario)
+        mesas = [
+            {"id": 1, "estado": "Disponible"},
+            {"id": 2, "estado": "Ocupada"},
+            {"id": 3, "estado": "Disponible"},
+            {"id": 4, "estado": "Ocupada"},
+        ]
+        ordenes=[]
+
+        mesas_json = json.dumps(mesas)
+        ordenes_json = json.dumps(ordenes)
+        return render_template(
+            'empleado.html',
+             usuario=usuario,
+             mesas_json=[],
+             ordenes_json=[]
+                               )
+
     elif usuario.rol == 'cliente':
         return redirect(url_for('cliente_routes.panel_cliente'))
 
     return render_template('login.html', error='Rol no reconocido')
+
 
 @auth_routes.route('/register', methods=['POST'])
 def register():
@@ -68,6 +86,7 @@ def register():
 
     return render_template('register.html', mensaje='Usuario registrado correctamente')
 
+
 @auth_routes.route('/logout')
 def logout():
     session.clear()
@@ -78,6 +97,7 @@ def logout():
 def cambiar_contrasena():
     if 'user_id' not in session:
         return redirect(url_for('auth_routes.login_form'))
+
     usuario = Usuario.query.get(session['user_id'])
     if request.method == 'POST':
         nueva = request.form['nueva_contrasena']
@@ -88,13 +108,32 @@ def cambiar_contrasena():
         # Redirigir según el rol
         if usuario.rol == 'administrador':
             return redirect(url_for('admin_routes.dashboard'))
+
         elif usuario.rol == 'empleado':
-            return render_template('empleado.html', usuario=usuario)
+            mesas = [
+                {"id": 1, "estado": "Disponible"},
+                {"id": 2, "estado": "Ocupada"},
+                {"id": 3, "estado": "Disponible"},
+                {"id": 4, "estado": "Ocupada"},
+            ]
+            ordenes = []
+            mesas_json = json.dumps(mesas)
+            ordenes_json = json.drumps(ordenes)
+            return render_template(
+                 'empleado.html',
+             usuario=usuario,
+             mesas_json=[],
+             ordenes_json=[]
+                )
+
         elif usuario.rol == 'cliente':
             return render_template('cliente.html', usuario=usuario)
+
         else:
             return render_template('login.html', error='Rol no reconocido')
+
     return render_template('cambiar_contrasena.html', usuario=usuario)
+
 
 @auth_routes.route('/recuperar_contrasena', methods=['GET', 'POST'])
 def recuperar_contrasena():
@@ -113,4 +152,3 @@ def recuperar_contrasena():
         else:
             mensaje = 'El correo no está registrado.'
     return render_template('recuperar_contrasena.html', mensaje=mensaje)
-
