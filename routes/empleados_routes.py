@@ -50,60 +50,8 @@ def empleado_panel():
     )
 
 # Crear una nueva orden
-@empleados_routes.route("/empleado/orden/nueva", methods=["POST"])
-def nueva_orden():
-    try:
-        data = request.get_json()
-        if not data or "mesa_id" not in data or not data.get("productos"):
-            return jsonify({"success": False, "error": "Datos incompletos"}), 400
 
-        mesa_id = data.get("mesa_id")
-        productos = data.get("productos", [])
-
-        if not isinstance(mesa_id, int):
-            return jsonify({"success": False, "error": "ID de mesa inválido"}), 400
-
-        mesa = Mesa.query.get(mesa_id)
-        if not mesa:
-            return jsonify({"success": False, "error": "Mesa no encontrada"}), 404
-
-        mesa.estado = "ocupada"
-        orden = Orden(mesa_id=mesa_id, estado="pendiente", total=0)
-        db.session.add(orden)
-        db.session.flush()
-
-        total = 0
-        for item in productos:
-            if not isinstance(item, dict) or "id" not in item or "cantidad" not in item:
-                continue
-            producto = Producto.query.get(item["id"])
-            if not producto:
-                return jsonify({"success": False, "error": f"Producto con ID {item['id']} no encontrado"}), 404
-            cantidad = max(1, int(item.get("cantidad", 1)))
-            subtotal = producto.precio * cantidad
-            total += subtotal
-
-            detalle = DetalleOrden(
-                orden_id=orden.id,
-                producto_id=producto.id,
-                cantidad=cantidad,
-                subtotal=subtotal
-            )
-            db.session.add(detalle)
-
-        if total == 0 and not productos:
-            return jsonify({"success": False, "error": "No se agregaron productos"}), 400
-
-        orden.total = total
-        db.session.commit()
-
-        return jsonify({"success": True, "orden_id": orden.id, "total": total})
-
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"success": False, "error": str(e)}), 500
-
-@empleados_routes.route("/empleado/orden/nueva", methods=["POST"])
+@empleados_routes.route("/empleado/orden/nueva", methods=["POST"], endpoint="nueva_orden_unique")
 def nueva_orden():
     try:
         data = request.get_json()
@@ -156,7 +104,7 @@ def nueva_orden():
     except Exception as e:
         db.session.rollback()
         import traceback
-        traceback.print_exc()  # Imprime el traceback en la terminal
+        traceback.print_exc()
         return jsonify({"success": False, "error": str(e)}), 500
 
 # Finalizar orden (pagar) y enviar factura
