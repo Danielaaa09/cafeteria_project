@@ -91,9 +91,10 @@
         {% endif %}
       </section>
 
-      <!-- Carrito -->
+      <!-- Carrito y Historial -->
       <aside class="lg:w-1/3">
         <div class="bg-white rounded-xl shadow-lg p-6 sticky top-24">
+          <!-- Carrito -->
           <h3 class="text-2xl font-bold text-amber-800 mb-6 flex items-center">
             <i class="fas fa-shopping-cart mr-2"></i> Mi Carrito
           </h3>
@@ -126,6 +127,21 @@
               <i class="fas fa-credit-card mr-2"></i>
               Proceder al Pago
             </button>
+          </div>
+
+          <!-- Historial de Compras -->
+          <div class="mt-6">
+            <button id="toggleHistorialBtn" onclick="toggleHistorial()"
+                    class="w-full bg-amber-500 text-white py-2 rounded-lg font-semibold hover:bg-amber-600 transition-colors flex items-center justify-center">
+              <i class="fas fa-history mr-2"></i> Ver Historial de Compras
+            </button>
+
+            <div id="historialSection" class="hidden mt-4">
+              <h4 class="text-xl font-semibold text-amber-800 mb-2">Mis Compras</h4>
+              <div id="historialItems" class="space-y-4 max-h-60 overflow-y-auto">
+                <p class="text-amber-700 text-center py-2">Cargando historial...</p>
+              </div>
+            </div>
           </div>
         </div>
       </aside>
@@ -240,34 +256,120 @@
     }
 
     // --- Checkout con método de pago ---
-   async function checkout() {
-    if (cart.length === 0) return;
-    const metodo = document.getElementById("metodo_pago").value;
-    console.log('Enviando carrito:', { carrito: cart, metodo_pago: metodo }); // Depuración
+    async function checkout() {
+      if (cart.length === 0) return;
+      const metodo = document.getElementById("metodo_pago").value;
+      console.log('Enviando carrito:', { carrito: cart, metodo_pago: metodo }); // Depuración
 
-    try {
-        const response = await fetch('/checkout', {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ carrito: cart, metodo_pago: metodo })
+      try {
+          const response = await fetch('/checkout', {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ carrito: cart, metodo_pago: metodo })
+          });
+
+          const data = await response.json();
+          console.log('Respuesta del servidor:', data); // Depuración
+          if (data.venta_id) {
+              alert("Compra realizada con éxito.");
+              window.open(`/factura/${data.venta_id}`, "_blank");
+              cart = [];
+              renderCart();
+              loadHistorial(); // Recargar historial después de la compra
+          } else {
+              alert("Error: " + (data.error || 'Sin detalles del error'));
+          }
+      } catch (error) {
+          console.error('Error en la solicitud:', error);
+          alert('Error al procesar la compra: ' + error.message);
+      }
+    }
+
+    // --- Historial de Compras ---
+    function toggleHistorial() {
+      const historialSection = document.getElementById('historialSection');
+      historialSection.classList.toggle('hidden');
+      if (!historialSection.classList.contains('hidden')) {
+        loadHistorial();
+      }
+    }
+
+    async function loadHistorial() {
+      const historialItems = document.getElementById('historialItems');
+      historialItems.innerHTML = '<p class="text-amber-700 text-center py-2">Cargando historial...</p>';
+
+      try {
+        const response = await fetch('/obtener_historial', {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' }
         });
 
         const data = await response.json();
-        console.log('Respuesta del servidor:', data); // Depuración
-        if (data.venta_id) {
-            alert("Compra realizada con éxito.");
-            window.open(`/factura/${data.venta_id}`, "_blank");
-            cart = [];
-            renderCart();
+        if (data.historial) {
+          if (data.historial.length === 0) {
+            historialItems.innerHTML = '<p class="text-amber-700 text-center py-2">No hay compras registradas.</p>';
+          } else {
+            historialItems.innerHTML = data.historial.map(venta => `
+              <div class="bg-amber-50 p-3 rounded-lg shadow">
+                <div class="flex justify-between items-center mb-1">
+                  <span class="text-amber-800 font-semibold">Fecha: ${venta.fecha}</span>
+                  <span class="text-amber-600 font-bold">$${venta.total.toFixed(2)}</span>
+                </div>
+                <div class="text-amber-700">Método: ${venta.metodo_pago}</div>
+                <div class="ml-4 mt-1 text-sm text-amber-600">
+                  ${venta.detalles.map(d => `${d.nombre} (x${d.cantidad}) - $${d.subtotal.toFixed(2)}`).join('<br>')}
+                </div>
+              </div>
+            `).join('');
+          }
         } else {
-            alert("Error: " + (data.error || 'Sin detalles del error'));
+          historialItems.innerHTML = '<p class="text-red-600 text-center py-2">Error al cargar el historial.</p>';
         }
-    } catch (error) {
-        console.error('Error en la solicitud:', error);
-        alert('Error al procesar la compra: ' + error.message);
+      } catch (error) {
+        console.error('Error al cargar historial:', error);
+        historialItems.innerHTML = '<p class="text-red-600 text-center py-2">Error al cargar el historial.</p>';
+      }
     }
-}
 
+    // --- Funciones móviles ---
+    function toggleMobileCart() {
+      const modal = document.getElementById('mobileCartModal');
+      modal.classList.toggle('hidden');
+      if (!modal.classList.contains('hidden')) {
+        renderMobileCart();
+      }
+    }
+
+    function renderMobileCart() {
+      const mobileCartItems = document.getElementById('mobileCartItems');
+      const mobileCartTotal = document.getElementById('mobileCartTotal');
+      let total = 0;
+
+      if (cart.length === 0) {
+        mobileCartItems.innerHTML = '<p class="text-amber-700 text-center py-4">Tu carrito está vacío</p>';
+        mobileCartTotal.textContent = '$0.00';
+        return;
+      }
+
+      mobileCartItems.innerHTML = cart.map(item => `
+        <div class="flex justify-between items-center bg-amber-50 p-2 rounded-lg">
+          <div>
+            <p class="font-semibold text-amber-800">${item.nombre}</p>
+            <p class="text-sm text-amber-600">x${item.cantidad}</p>
+          </div>
+          <span class="text-amber-700 font-bold">$${item.precio.toFixed(2)}</span>
+        </div>
+      `).join('');
+      total = cart.reduce((sum, item) => sum + item.precio * item.cantidad, 0);
+      mobileCartTotal.textContent = '$' + total.toFixed(2);
+    }
+
+    // Cargar historial al iniciar si el usuario está logueado
+    window.onload = function() {
+      if (document.getElementById('historialSection')) {
+        loadHistorial();
+      }
+    };
   </script>
 </body>
 </html>

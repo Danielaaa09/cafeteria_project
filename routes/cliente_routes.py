@@ -79,22 +79,22 @@ def factura_pdf(venta_id):
         width, height = letter
 
         # Encabezado elegante
-        p.setFillColorRGB(0.87, 0.68, 0.21)  # Color ámbar
+        p.setFillColorRGB(0.87, 0.68, 0.21) 
         p.setFont("Helvetica-Bold", 24)
         p.drawString(200, height - 60, "Cafetería Las Dos Amigas")
-        p.line(50, height - 70, width - 50, height - 70)  # Línea decorativa
-        p.setFillColorRGB(0, 0, 0)  # Regresar a negro
+        p.line(50, height - 70, width - 50, height - 70) 
+        p.setFillColorRGB(0, 0, 0) 
         p.setFont("Helvetica", 10)
         p.drawString(50, height - 90, "Factura N° " + str(venta.id))
 
-        # Información de la venta
         p.setFont("Helvetica-Bold", 12)
         p.drawString(50, height - 120, "Detalles de la Factura")
         p.setFont("Helvetica", 10)
         p.drawString(50, height - 140, f"Cliente: {usuario.nombre_completo}")
         p.drawString(50, height - 160, f"Correo: {usuario.correo}")
         p.drawString(50, height - 180, f"Fecha: {venta.fecha.strftime('%d/%m/%Y %H:%M')}")
-        p.drawString(50, height - 200, f"Método de Pago: {venta.metodo_pago}")
+        p.drawString(50, height - 200, f"Dirección: {usuario.direccion}" )
+        p.drawString(50, height - 220, f"Método de Pago: {venta.metodo_pago}")
 
         # Tabla de productos
         y = height - 240
@@ -158,3 +158,30 @@ def factura_pdf(venta_id):
         return response
     except Exception as e:
         return jsonify({'error': f'Error al generar la factura: {str(e)}'}), 500
+    
+@cliente_routes.route('/obtener_historial', methods=['GET'])
+def obtener_historial():
+    try:
+        if 'user_id' not in session:
+            return jsonify({'error': 'Debes iniciar sesión para ver el historial'}), 403
+
+        usuario_id = session['user_id']
+        ventas = Venta.query.filter_by(usuarios_id=usuario_id).order_by(Venta.fecha.desc()).all()
+
+        if not ventas:
+            return jsonify({'error': 'No se encontraron compras'}), 404
+
+        historial = []
+        for venta in ventas:
+            detalles = DetalleVenta.query.filter_by(venta_id=venta.id).all()
+            historial.append({
+                'id': venta.id,
+                'fecha': venta.fecha.strftime('%d/%m/%Y %H:%M'),
+                'total': float(venta.total),
+                'metodo_pago': venta.metodo_pago,
+                'detalles': [{'nombre': d.producto.nombre, 'cantidad': d.cantidad, 'subtotal': float(d.subtotal)} for d in detalles]
+            })
+
+        return jsonify({'historial': historial})
+    except Exception as e:
+        return jsonify({'error': f'Error al obtener el historial: {str(e)}'}), 500

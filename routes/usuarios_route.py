@@ -16,6 +16,7 @@ def crear_usuario():
         nombre_completo=data['nombre_completo'],
         correo=data['correo'],
         telefono=data.get('telefono', ''),
+        direccion=data.get('direccion'),
         contrasena=hashed_password,
         rol=data['rol']
     )
@@ -35,6 +36,7 @@ def listar_usuarios():
             'nombre_completo': usuario.nombre_completo,
             'correo': usuario.correo,
             'telefono': usuario.telefono,
+            'direccion': usuario.direccion,
             'rol': usuario.rol,
             'fecha_creacion': usuario.fecha_creacion
         })
@@ -49,6 +51,7 @@ def obtener_usuario(id):
         'nombre_completo': usuario.nombre_completo,
         'correo': usuario.correo,
         'telefono': usuario.telefono,
+        'direccion': usuario.direccion,
         'rol': usuario.rol,
         'fecha_creacion': usuario.fecha_creacion
     })
@@ -61,6 +64,7 @@ def actualizar_usuario(id):
     usuario.nombre_completo = data.get('nombre_completo', usuario.nombre_completo)
     usuario.correo = data.get('correo', usuario.correo)
     usuario.telefono = data.get('telefono', usuario.telefono)
+    usuario.direccion = data.get('direccion', usuario.direccion)
     usuario.rol = data.get('rol', usuario.rol)
 
     db.session.commit()
@@ -82,10 +86,12 @@ def anadir_empleado():
         nombre = request.form['nombre_completo']
         correo = request.form['correo']
         telefono = request.form['telefono']
+        direccion = request.form['direccion']
         nuevo_usuario = Usuario(
             nombre_completo=nombre,
             correo=correo,
             telefono=telefono,
+            direccion=direccion,
             rol=2,  # O el rol que corresponda
             fecha_creacion=datetime.datetime.utcnow()
         )
@@ -101,6 +107,7 @@ def editar_empleado(id):
         usuario.nombre_completo = request.form['nombre_completo']
         usuario.correo = request.form['correo']
         usuario.telefono = request.form['telefono']
+        usuario.direccion = request.form['direccion']
         db.session.commit()
         return redirect(url_for('usuarios_bp.editar_empleado', id=usuario.id))
     return render_template('admin/editar_empleado.html', usuario=usuario)

@@ -9,6 +9,7 @@ class Usuario(db.Model):
     nombre_completo = db.Column(db.String(100), nullable=False)
     correo = db.Column(db.String(100), unique=True, nullable=False)
     telefono = db.Column(db.String(100))
+    direccion = db.Column(db.String(100))
     contrasena_hash = db.Column(db.String(255), nullable=False)
     rol = db.Column(db.Enum('cliente', 'empleado', 'administrador', name='rol_enum'), nullable=False)
     fecha_creacion = db.Column(db.DateTime, default=datetime.datetime.utcnow)
