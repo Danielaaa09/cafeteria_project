@@ -11,11 +11,9 @@ auth_routes = Blueprint('auth_routes', __name__)
 def login_form():
     return render_template('login.html')
 
-
 @auth_routes.route('/register', methods=['GET'])
 def register_form():
     return render_template('register.html')
-
 
 @auth_routes.route('/login', methods=['POST'])
 def login():
@@ -42,10 +40,9 @@ def login():
         return redirect(url_for('empleados_routes.empleado_panel'))
 
     elif usuario.rol == 'cliente':
-        return redirect(url_for('cliente_routes.panel_cliente'))
+        return redirect(url_for('cliente_routes.index'))
 
     return render_template('login.html', error='Rol no reconocido')
-
 
 @auth_routes.route('/register', methods=['POST'])
 def register():
@@ -74,12 +71,10 @@ def register():
 
     return render_template('register.html', mensaje='Usuario registrado correctamente')
 
-
 @auth_routes.route('/logout')
 def logout():
     session.clear()
     return render_template('paginaprin.html')
-
 
 @auth_routes.route('/cambiar_contrasena', methods=['GET', 'POST'])
 def cambiar_contrasena():
@@ -101,13 +96,12 @@ def cambiar_contrasena():
             return redirect(url_for('empleados_routes.empleado_panel'))
 
         elif usuario.rol == 'cliente':
-            return redirect(url_for('cliente_routes.panel_cliente'))
+            return redirect(url_for('cliente_routes.index'))  # Corregido
 
         else:
             return render_template('login.html', error='Rol no reconocido')
 
     return render_template('cambiar_contrasena.html', usuario=usuario)
-
 
 @auth_routes.route('/recuperar_contrasena', methods=['GET', 'POST'])
 def recuperar_contrasena():
