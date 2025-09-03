@@ -1,229 +1,321 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Dashboard - Cafetería Las Dos Amigas</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
-    * { font-family: 'Poppins', sans-serif; }
-    .modal { display: none; position: fixed; z-index: 1000; inset: 0; background: rgba(0,0,0,0.5); }
-    .modal.show { display: flex; align-items: center; justify-content: center; }
-  </style>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/Styles.css') }}">
 </head>
 <body class="bg-amber-50 min-h-screen">
-
   <!-- Header -->
-  <header class="bg-white shadow-lg sticky top-0 z-40">
-    <nav class="container mx-auto px-4 py-4 flex justify-between items-center">
-      <div class="flex items-center space-x-2">
-        <i class="fas fa-coffee text-amber-600 text-2xl"></i>
-        <h1 class="text-2xl font-bold text-amber-800">Cafetería Las Dos Amigas</h1>
+  <header class="bg-white shadow-lg sticky top-0 z-50">
+    <nav class="container mx-auto px-4 py-4">
+      <div class="flex justify-between items-center">
+        <div class="flex items-center space-x-2">
+          <i class="fas fa-coffee text-amber-600 text-2xl"></i>
+          <h1 class="text-2xl font-bold text-amber-800">Cafetería Las Dos Amigas</h1>
+        </div>
+        <div class="flex items-center space-x-4">
+          <span class="text-amber-800 font-medium">Bienvenido, {{ nombre_admin }}</span>
+          <a href="{{ url_for('auth_routes.logout') }}" class="text-amber-800 hover:text-amber-600 font-medium transition-colors">
+            <i class="fas fa-sign-out-alt"></i> Cerrar sesión
+          </a>
+        </div>
       </div>
-      <span class="text-amber-800">Bienvenido, {{ nombre_admin }}</span>
-      <a href="{{ url_for('auth_routes.logout') }}" class="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700">
-        <i class="fas fa-sign-out-alt mr-2"></i> Cerrar sesión
-      </a>
     </nav>
   </header>
 
+  <!-- Main Content -->
   <main class="container mx-auto px-4 py-8">
-
-    <!-- Flash messages -->
+    <!-- Flash Messages -->
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
-        <div class="mb-6">
-          {% for category, message in messages %}
-            <div class="p-3 rounded mb-2
-              {% if category == 'success' %} bg-green-100 text-green-700
-              {% elif category == 'error' %} bg-red-100 text-red-700
-              {% else %} bg-amber-100 text-amber-700 {% endif %}">
-              {{ message }}
-            </div>
-          {% endfor %}
-        </div>
+        {% for category, message in messages %}
+          <div class="bg-{{ 'green' if category == 'success' else 'red' }}-100 border border-{{ 'green' if category == 'success' else 'red' }}-400 text-{{ 'green' if category == 'success' else 'red' }}-700 px-4 py-3 rounded relative mb-4" role="alert">
+            <span class="block sm:inline">{{ message }}</span>
+          </div>
+        {% endfor %}
       {% endif %}
     {% endwith %}
 
-    <!-- Stats -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-      <div class="bg-white p-6 rounded-xl shadow-lg">
-        <p class="text-amber-600 text-sm">Total Productos</p>
-        <p class="text-3xl font-bold text-amber-800">{{ productos|length }}</p>
+    <!-- Estadísticas -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div class="bg-white p-6 rounded-lg shadow-md">
+        <h3 class="text-xl font-bold text-amber-800 mb-2">Total Productos</h3>
+        <p class="text-3xl text-amber-600">{{ productos|length }}</p>
       </div>
-      <div class="bg-white p-6 rounded-xl shadow-lg">
-        <p class="text-amber-600 text-sm">Empleados</p>
-        <p class="text-3xl font-bold text-amber-800">{{ total_empleados }}</p>
+      <div class="bg-white p-6 rounded-lg shadow-md">
+        <h3 class="text-xl font-bold text-amber-800 mb-2">Empleados</h3>
+        <p class="text-3xl text-amber-600">{{ total_empleados }}</p>
       </div>
-      <div class="bg-white p-6 rounded-xl shadow-lg">
-        <p class="text-amber-600 text-sm">Ventas Hoy</p>
-        <p class="text-3xl font-bold text-amber-800">${{ "%.2f"|format(ventas_hoy) }}</p>
+      <div class="bg-white p-6 rounded-lg shadow-md">
+        <h3 class="text-xl font-bold text-amber-800 mb-2">Clientes</h3>
+        <p class="text-3xl text-amber-600">{{ total_clientes }}</p>
       </div>
-      <div class="bg-white p-6 rounded-xl shadow-lg">
-        <p class="text-amber-600 text-sm">Pedidos</p>
-        <p class="text-3xl font-bold text-amber-800">{{ pedidos }}</p>
+      <div class="bg-white p-6 rounded-lg shadow-md">
+        <h3 class="text-xl font-bold text-amber-800 mb-2">Ventas Hoy</h3>
+        <p class="text-3xl text-amber-600">${{ "%.2f"|format(ventas_hoy) }}</p>
+      </div>
+      <div class="bg-white p-6 rounded-lg shadow-md">
+        <h3 class="text-xl font-bold text-amber-800 mb-2">Pedidos Hoy</h3>
+        <p class="text-3xl text-amber-600">{{ pedidos }}</p>
       </div>
     </div>
 
-    <!-- Action buttons -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
-      <button onclick="openModal('productModal')" class="bg-amber-600 hover:bg-amber-700 text-white p-6 rounded-xl shadow-lg">
-        <i class="fas fa-plus-circle text-3xl mb-2"></i>
-        <h3 class="text-xl font-bold">Agregar Producto</h3>
-      </button>
-      <button onclick="openModal('employeeModal')" class="bg-amber-600 hover:bg-amber-700 text-white p-6 rounded-xl shadow-lg">
-        <i class="fas fa-user-plus text-3xl mb-2"></i>
-        <h3 class="text-xl font-bold">Agregar Empleado</h3>
-      </button>
+    <!-- Secciones Adicionales -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <!-- Agregar Producto y Empleado -->
+      <div class="bg-white p-6 rounded-lg shadow-md">
+        <h2 class="text-2xl font-bold text-amber-800 mb-4">Agregar Producto</h2>
+        <form method="POST" action="{{ url_for('admin_routes.anadir_producto') }}" enctype="multipart/form-data" class="space-y-4">
+          <input type="text" name="nombre" placeholder="Nombre" class="w-full p-2 border rounded-lg text-amber-700" required>
+          <textarea name="descripcion" placeholder="Descripción" class="w-full p-2 border rounded-lg text-amber-700"></textarea>
+          <input type="number" name="precio" placeholder="Precio" step="0.01" class="w-full p-2 border rounded-lg text-amber-700" required>
+          <input type="number" name="cantidad" placeholder="Cantidad" class="w-full p-2 border rounded-lg text-amber-700" required>
+          <select name="categorias_id" class="w-full p-2 border rounded-lg text-amber-700" required>
+            <option value="">Seleccionar categoría</option>
+            {% for c in categorias %}
+              <option value="{{ c.id }}">{{ c.nombre }}</option>
+            {% endfor %}
+          </select>
+          <label class="flex items-center">
+            <input type="checkbox" name="es_rotativo" value="1" class="mr-2"> Es rotativo
+          </label>
+          <input type="file" name="imagen" class="w-full p-2 border rounded-lg text-amber-700">
+          <button type="submit" class="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700">Agregar</button>
+        </form>
+      </div>
+      <div class="bg-white p-6 rounded-lg shadow-md">
+        <h2 class="text-2xl font-bold text-amber-800 mb-4">Agregar Empleado</h2>
+        <form method="POST" action="{{ url_for('admin_routes.add_empleado') }}" class="space-y-4">
+          <input type="text" name="nombre_completo" placeholder="Nombre Completo" class="w-full p-2 border rounded-lg text-amber-700" required>
+          <input type="email" name="correo" placeholder="Correo" class="w-full p-2 border rounded-lg text-amber-700" required>
+          <button type="submit" class="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700">Agregar</button>
+        </form>
+      </div>
+      <div class="bg-white p-6 rounded-lg shadow-md">
+        <h2 class="text-2xl font-bold text-amber-800 mb-4">Agregar Cliente</h2>
+        <form method="POST" action="{{ url_for('admin_routes.add_cliente') }}" class="space-y-4">
+          <input type="text" name="nombre_completo" placeholder="Nombre Completo" class="w-full p-2 border rounded-lg text-amber-700" required>
+          <input type="email" name="correo" placeholder="Correo" class="w-full p-2 border rounded-lg text-amber-700" required>
+          <button type="submit" class="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700">Agregar</button>
+        </form>
+      </div>
     </div>
 
-    <!-- Productos agrupados por categoría -->
-    <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
-      <h3 class="text-xl font-bold text-amber-800 mb-4">Productos</h3>
-
+    <!-- Productos -->
+    <div class="bg-white p-6 rounded-lg shadow-md mt-6">
+      <h2 class="text-2xl font-bold text-amber-800 mb-4">Productos</h2>
       {% for categoria in categorias %}
-        <h4 class="text-lg font-semibold text-amber-700 mb-3">{{ categoria.nombre }}</h4>
-        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+        <h3 class="text-xl font-semibold text-amber-700 mb-2">{{ categoria.nombre }}</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
           {% for p in productos if p.categorias_id == categoria.id %}
-          <div class="border rounded-lg p-4">
-            <img src="{{ p.imagen_url or '/static/img/default.png' }}" class="w-full h-40 object-cover rounded mb-3">
-            <h4 class="font-bold text-amber-800">{{ p.nombre }}</h4>
-            <p class="text-sm text-amber-700">{{ p.descripcion }}</p>
-            <p class="text-lg font-bold text-amber-600">${{ "%.2f"|format(p.precio) }}</p>
-            <p class="text-xs text-gray-500">{{ "Rotativo" if p.es_rotativo else "Fijo" }}</p>
-
-            <div class="flex space-x-2 mt-3">
-              <button onclick="openModal('editProduct{{ p.id }}')" class="bg-amber-500 hover:bg-amber-600 text-white px-3 py-1 rounded">Editar</button>
-              <form action="{{ url_for('admin_routes.eliminar_producto', id=p.id) }}" method="POST">
-                <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded">Eliminar</button>
-              </form>
+            <div class="bg-amber-50 p-4 rounded-lg shadow {% if p.cantidad <= 10 %} border-2 border-red-500 {% endif %}">
+              <h4 class="font-bold text-amber-800">{{ p.nombre }}</h4>
+              <p class="text-amber-700">{{ p.descripcion }}</p>
+              <p class="font-bold text-amber-600">${{ "%.2f"|format(p.precio) }}</p>
+              <p class="text-amber-700">Cantidad: {{ p.cantidad }}</p>
+              <p class="text-amber-700">{{ "Rotativo" if p.es_rotativo else "Fijo" }}</p>
+              {% if p.imagen_url %}
+                <img src="{{ p.imagen_url }}" alt="{{ p.nombre }}" class="w-full h-40 object-cover rounded-lg mb-3">
+              {% endif %}
+              <div class="flex space-x-2">
+                <button onclick="openEditModal('producto', {{ p.id }}, '{{ p.nombre|safe }}', '{{ p.descripcion|safe }}', {{ p.precio }}, {{ p.cantidad }})" class="bg-blue-500 text-white px-2 py-1 rounded-lg hover:bg-blue-600">
+                  <i class="fas fa-edit"></i> Editar
+                </button>
+                <form method="POST" action="{{ url_for('admin_routes.eliminar_producto', id=p.id) }}" class="inline">
+                  <button type="submit" class="bg-red-500 text-white px-2 py-1 rounded-lg hover:bg-red-600">
+                    <i class="fas fa-trash"></i> Eliminar
+                  </button>
+                </form>
+              </div>
             </div>
-          </div>
-
-          <!-- Modal Editar Producto -->
-          <div id="editProduct{{ p.id }}" class="modal">
-            <div class="bg-white rounded-xl p-6 max-w-md w-full">
-              <h3 class="text-xl font-bold text-amber-800 mb-4">Editar Producto</h3>
-              <form action="{{ url_for('admin_routes.editar_producto', id=p.id) }}" method="POST" enctype="multipart/form-data">
-                <input type="text" name="nombre" value="{{ p.nombre }}" class="w-full border p-2 mb-3">
-                <input type="number" step="0.01" name="precio" value="{{ p.precio }}" class="w-full border p-2 mb-3">
-                <textarea name="descripcion" class="w-full border p-2 mb-3">{{ p.descripcion }}</textarea>
-                <input type="file" name="imagen" class="mb-3">
-                <input type="number" name="cantidad" placeholder="Cantidad" class="w-full border p-2 mb-3" required>
-                <button type="submit" class="w-full bg-amber-600 text-white py-2 rounded">Guardar Cambios</button>
-              </form>
-              <button onclick="closeModal('editProduct{{ p.id }}')" class="mt-2 text-red-600">Cerrar</button>
-            </div>
-          </div>
           {% endfor %}
         </div>
       {% endfor %}
     </div>
 
     <!-- Empleados -->
-    <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
-      <h3 class="text-xl font-bold text-amber-800 mb-4">Empleados</h3>
-      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div class="bg-white p-6 rounded-lg shadow-md mt-6">
+      <h2 class="text-2xl font-bold text-amber-800 mb-4">Empleados</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {% for e in empleados %}
-        <div class="border rounded-lg p-4">
-          <h4 class="font-bold text-amber-800">{{ e.nombre_completo }}</h4>
-          <p class="text-sm text-amber-700">{{ e.correo }}</p>
-          <div class="flex space-x-2 mt-3">
-            <button onclick="openModal('editEmpleado{{ e.id }}')" class="bg-amber-500 hover:bg-amber-600 text-white px-3 py-1 rounded">Editar</button>
-            <form action="{{ url_for('admin_routes.eliminar_empleado', id=e.id) }}" method="POST">
-              <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded">Eliminar</button>
-            </form>
+          <div class="bg-amber-50 p-4 rounded-lg shadow">
+            <h4 class="font-bold text-amber-800">{{ e.nombre_completo }}</h4>
+            <p class="text-amber-700">{{ e.correo }}</p>
+            <div class="flex space-x-2 mt-2">
+              <button onclick="openEditModal('empleado', {{ e.id }}, '{{ e.nombre_completo|safe }}', '{{ e.correo|safe }}')" class="bg-blue-500 text-white px-2 py-1 rounded-lg hover:bg-blue-600">
+                <i class="fas fa-edit"></i> Editar
+              </button>
+              <form method="POST" action="{{ url_for('admin_routes.eliminar_empleado', id=e.id) }}" class="inline">
+                <button type="submit" class="bg-red-500 text-white px-2 py-1 rounded-lg hover:bg-red-600">
+                  <i class="fas fa-trash"></i> Eliminar
+                </button>
+              </form>
+            </div>
           </div>
-        </div>
-
-        <!-- Modal Editar Empleado -->
-        <div id="editEmpleado{{ e.id }}" class="modal">
-          <div class="bg-white rounded-xl p-6 max-w-md w-full">
-            <h3 class="text-xl font-bold text-amber-800 mb-4">Editar Empleado</h3>
-            <form action="{{ url_for('admin_routes.editar_empleado', id=e.id) }}" method="POST">
-              <input type="text" name="nombre_completo" value="{{ e.nombre_completo }}" class="w-full border p-2 mb-3">
-              <input type="email" name="correo" value="{{ e.correo }}" class="w-full border p-2 mb-3">
-              <button type="submit" class="w-full bg-amber-600 text-white py-2 rounded">Guardar Cambios</button>
-            </form>
-            <button onclick="closeModal('editEmpleado{{ e.id }}')" class="mt-2 text-red-600">Cerrar</button>
-          </div>
-        </div>
         {% endfor %}
       </div>
     </div>
 
-    <!-- Actividad Reciente -->
-    <div class="bg-white rounded-xl shadow-lg p-6">
-      <h3 class="text-xl font-bold text-amber-800 mb-4">Actividad Reciente</h3>
-      <div class="grid md:grid-cols-2 gap-6">
-        <div>
-          <h4 class="font-semibold text-amber-700 mb-2">Últimos Productos</h4>
-          {% for p in ultimos_productos %}
-            <p class="text-sm text-amber-800">➤ {{ p.nombre }} agregado</p>
-          {% endfor %}
-        </div>
-        <div>
-          <h4 class="font-semibold text-amber-700 mb-2">Últimos Empleados</h4>
-          {% for e in ultimos_empleados %}
-            <p class="text-sm text-amber-800">➤ {{ e.nombre_completo }} agregado</p>
-          {% endfor %}
-        </div>
+    <!-- Clientes -->
+    <div class="bg-white p-6 rounded-lg shadow-md mt-6">
+      <h2 class="text-2xl font-bold text-amber-800 mb-4">Clientes</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for c in clientes %}
+          <div class="bg-amber-50 p-4 rounded-lg shadow">
+            <h4 class="font-bold text-amber-800">{{ c.nombre_completo }}</h4>
+            <p class="text-amber-700">{{ c.correo }}</p>
+            <div class="flex space-x-2 mt-2">
+              <button onclick="openEditModal('cliente', {{ c.id }}, '{{ c.nombre_completo|safe }}', '{{ c.correo|safe }}')" class="bg-blue-500 text-white px-2 py-1 rounded-lg hover:bg-blue-600">
+                <i class="fas fa-edit"></i> Editar
+              </button>
+              <form method="POST" action="{{ url_for('admin_routes.eliminar_cliente', id=c.id) }}" class="inline">
+                <button type="submit" class="bg-red-500 text-white px-2 py-1 rounded-lg hover:bg-red-600">
+                  <i class="fas fa-trash"></i> Eliminar
+                </button>
+              </form>
+            </div>
+          </div>
+        {% endfor %}
       </div>
     </div>
 
+    <!-- Productos con Bajo Stock -->
+    {% if productos_bajo_stock %}
+      <div class="bg-red-100 p-6 rounded-lg shadow-md mt-6">
+        <h2 class="text-2xl font-bold text-red-600 mb-4">Alerta: Productos con Bajo Stock (≤ 10 unidades)</h2>
+        <ul class="list-disc pl-6 text-amber-700">
+          {% for p in productos_bajo_stock %}
+            <li>{{ p.nombre }} - Cantidad: {{ p.cantidad }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+
+    <!-- Historial de Ventas -->
+    <div class="bg-white p-6 rounded-lg shadow-md mt-6">
+      <h2 class="text-2xl font-bold text-amber-800 mb-4">Historial de Ventas Hoy</h2>
+      <p class="text-amber-700 mb-2">Ventas en Efectivo: ${{ "%.2f"|format(ventas_efectivo) }}</p>
+      <p class="text-amber-700 mb-2">Ventas con Tarjeta: ${{ "%.2f"|format(ventas_tarjeta) }}</p>
+      <p class="text-amber-700 mb-2">Ventas por Transferencia: ${{ "%.2f"|format(ventas_transferencia) }}</p>
+      <p class="text-amber-800 font-bold">Total del Día: ${{ "%.2f"|format(ventas_hoy) }}</p>
+      <p class="text-sm text-amber-500 mt-2">Los totales se reinician automáticamente al siguiente día.</p>
+    </div>
+
+    <!-- Actividad Reciente -->
+    <div class="bg-white p-6 rounded-lg shadow-md mt-6">
+      <h2 class="text-2xl font-bold text-amber-800 mb-4">Actividad Reciente</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div>
+          <h3 class="text-xl font-semibold text-amber-700 mb-2">Últimos Productos</h3>
+          <ul class="list-disc pl-6 text-amber-600">
+            {% for p in ultimos_productos %}
+              <li>➤ {{ p.nombre }} agregado</li>
+            {% endfor %}
+          </ul>
+        </div>
+        <div>
+          <h3 class="text-xl font-semibold text-amber-700 mb-2">Últimos Empleados</h3>
+          <ul class="list-disc pl-6 text-amber-600">
+            {% for e in ultimos_empleados %}
+              <li>➤ {{ e.nombre_completo }} agregado</li>
+            {% endfor %}
+          </ul>
+        </div>
+        <div>
+          <h3 class="text-xl font-semibold text-amber-700 mb-2">Últimos Clientes</h3>
+          <ul class="list-disc pl-6 text-amber-600">
+            {% for c in ultimos_clientes %}
+              <li>➤ {{ c.nombre_completo }} agregado</li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    </div>
   </main>
 
-  <!-- Modal Agregar Producto -->
-  <div id="productModal" class="modal">
-    <div class="bg-white rounded-xl p-6 max-w-md w-full">
-      <h3 class="text-xl font-bold text-amber-800 mb-4">Agregar Producto</h3>
-      <form action="{{ url_for('admin_routes.anadir_producto') }}" method="POST" enctype="multipart/form-data">
-        <input type="text" name="nombre" placeholder="Nombre" class="w-full border p-2 mb-3" required>
-        <input type="number" step="0.01" name="precio" placeholder="Precio" class="w-full border p-2 mb-3" required>
-        <select name="categorias_id" class="w-full border p-2 mb-3" required>
-          <option value="">Seleccionar categoría</option>
-          {% for c in categorias %}
-          <option value="{{ c.id }}">{{ c.nombre }}</option>
-          {% endfor %}
-        </select>
-        <textarea name="descripcion" placeholder="Descripción" class="w-full border p-2 mb-3"></textarea>
-        <input type="number" name="cantidad" placeholder="Cantidad" class="w-full border p-2 mb-3" required>
-
-       <label class="flex items-center space-x-2 mb-3">
-  <input type="hidden" name="es_rotativo" value="0">
-  <input type="checkbox" name="es_rotativo" value="1" class="form-checkbox">
-  <span>Es rotativo</span>
-</label>
-
-        <input type="file" name="imagen" class="mb-3">
-        <button type="submit" class="w-full bg-amber-600 text-white py-2 rounded">Agregar</button>
+  <!-- Modal para Editar Producto -->
+  <div id="editProductoModal" class="fixed inset-0 flex items-center justify-center hidden bg-black bg-opacity-50 z-50">
+    <div class="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+      <h2 class="text-xl font-bold text-amber-800 mb-4">Editar Producto</h2>
+      <form id="editProductoForm" method="POST" action="" class="space-y-4">
+        <input type="hidden" name="id" id="editProductoId">
+        <input type="text" name="nombre" id="editProductoNombre" placeholder="Nombre" class="w-full p-2 border rounded-lg text-amber-700" required>
+        <textarea name="descripcion" id="editProductoDescripcion" placeholder="Descripción" class="w-full p-2 border rounded-lg text-amber-700"></textarea>
+        <input type="number" name="precio" id="editProductoPrecio" placeholder="Precio" step="0.01" class="w-full p-2 border rounded-lg text-amber-700" required>
+        <input type="number" name="cantidad" id="editProductoCantidad" placeholder="Cantidad" class="w-full p-2 border rounded-lg text-amber-700" required>
+        <button type="submit" class="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700">Guardar Cambios</button>
       </form>
-      <button onclick="closeModal('productModal')" class="mt-2 text-red-600">Cerrar</button>
+      <button onclick="closeEditModal('producto')" class="mt-2 text-red-500 hover:text-red-700">Cerrar</button>
     </div>
   </div>
 
-  <!-- Modal Agregar Empleado -->
-  <div id="employeeModal" class="modal">
-    <div class="bg-white rounded-xl p-6 max-w-md w-full">
-      <h3 class="text-xl font-bold text-amber-800 mb-4">Agregar Empleado</h3>
-      <form action="{{ url_for('admin_routes.add_empleado') }}" method="POST">
-        <input type="text" name="nombre_completo" placeholder="Nombre Completo" class="w-full border p-2 mb-3" required>
-        <input type="email" name="correo" placeholder="Correo" class="w-full border p-2 mb-3" required>
-        <button type="submit" class="w-full bg-amber-600 text-white py-2 rounded">Agregar</button>
+  <!-- Modal para Editar Empleado -->
+  <div id="editEmpleadoModal" class="fixed inset-0 flex items-center justify-center hidden bg-black bg-opacity-50 z-50">
+    <div class="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+      <h2 class="text-xl font-bold text-amber-800 mb-4">Editar Empleado</h2>
+      <form id="editEmpleadoForm" method="POST" action="" class="space-y-4">
+        <input type="hidden" name="id" id="editEmpleadoId">
+        <input type="text" name="nombre_completo" id="editEmpleadoNombre" placeholder="Nombre Completo" class="w-full p-2 border rounded-lg text-amber-700" required>
+        <input type="email" name="correo" id="editEmpleadoCorreo" placeholder="Correo" class="w-full p-2 border rounded-lg text-amber-700" required>
+        <button type="submit" class="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700">Guardar Cambios</button>
       </form>
-      <button onclick="closeModal('employeeModal')" class="mt-2 text-red-600">Cerrar</button>
+      <button onclick="closeEditModal('empleado')" class="mt-2 text-red-500 hover:text-red-700">Cerrar</button>
     </div>
   </div>
 
-  <!-- JS -->
+  <!-- Modal para Editar Cliente -->
+  <div id="editClienteModal" class="fixed inset-0 flex items-center justify-center hidden bg-black bg-opacity-50 z-50">
+    <div class="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+      <h2 class="text-xl font-bold text-amber-800 mb-4">Editar Cliente</h2>
+      <form id="editClienteForm" method="POST" action="" class="space-y-4">
+        <input type="hidden" name="id" id="editClienteId">
+        <input type="text" name="nombre_completo" id="editClienteNombre" placeholder="Nombre Completo" class="w-full p-2 border rounded-lg text-amber-700" required>
+        <input type="email" name="correo" id="editClienteCorreo" placeholder="Correo" class="w-full p-2 border rounded-lg text-amber-700" required>
+        <button type="submit" class="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700">Guardar Cambios</button>
+      </form>
+      <button onclick="closeEditModal('cliente')" class="mt-2 text-red-500 hover:text-red-700">Cerrar</button>
+    </div>
+  </div>
+
+  <!-- JavaScript -->
   <script>
-    function openModal(id) { document.getElementById(id).classList.add("show"); }
-    function closeModal(id) { document.getElementById(id).classList.remove("show"); }
-    window.onclick = function(e) {
-      if (e.target.classList.contains('modal')) { e.target.classList.remove('show'); }
+    function openEditModal(type, id, nombre, descripcion, precio, cantidad) {
+      if (type === 'producto') {
+        document.getElementById('editProductoId').value = id;
+        document.getElementById('editProductoNombre').value = nombre;
+        document.getElementById('editProductoDescripcion').value = descripcion;
+        document.getElementById('editProductoPrecio').value = precio;
+        document.getElementById('editProductoCantidad').value = cantidad;
+        document.getElementById('editProductoForm').action = `/editar_producto/${id}`;
+        document.getElementById('editProductoModal').classList.remove('hidden');
+      } else if (type === 'empleado') {
+        document.getElementById('editEmpleadoId').value = id;
+        document.getElementById('editEmpleadoNombre').value = nombre;
+        document.getElementById('editEmpleadoCorreo').value = descripcion;
+        document.getElementById('editEmpleadoForm').action = `/editar_empleado/${id}`;
+        document.getElementById('editEmpleadoModal').classList.remove('hidden');
+      } else if (type === 'cliente') {
+        document.getElementById('editClienteId').value = id;
+        document.getElementById('editClienteNombre').value = nombre;
+        document.getElementById('editClienteCorreo').value = descripcion;
+        document.getElementById('editClienteForm').action = `/editar_cliente/${id}`;
+        document.getElementById('editClienteModal').classList.remove('hidden');
+      }
+    }
+
+    function closeEditModal(type) {
+      if (type === 'producto') {
+        document.getElementById('editProductoModal').classList.add('hidden');
+      } else if (type === 'empleado') {
+        document.getElementById('editEmpleadoModal').classList.add('hidden');
+      } else if (type === 'cliente') {
+        document.getElementById('editClienteModal').classList.add('hidden');
+      }
     }
   </script>
 </body>
-</html>
+</html> 

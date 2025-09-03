@@ -13,5 +13,6 @@ class Orden(db.Model):
     metodo_pago = db.Column(db.String(20), nullable=True)  
     total = db.Column(db.Float, default=0.0)
     fecha_creacion = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    correo_cliente = db.Column(db.String(120))
 
     detalles = db.relationship("DetalleOrden", backref="orden", lazy=True)

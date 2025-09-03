@@ -1,199 +1,411 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tomar Órdenes - Café Aroma</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Café Aroma - Empleado</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <style>
+    /* Estilos adicionales para complementar Tailwind */
+    #productos-orden li {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #f5e8d0;
+      color: #7c2d12;
+    }
+    .cantidad-input {
+      appearance: textfield;
+      -webkit-appearance: none;
+      -moz-appearance: textfield;
+    }
+    .cantidad-input::-webkit-outer-spin-button,
+    .cantidad-input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    .mesa-btn:hover, .btn-agregar:hover, .btn-ver-orden:hover, .btn-cerrar-modal:hover {
+      transform: translateY(-1px);
+      transition: all 0.2s ease;
+    }
+    #categorias-productos {
+      scrollbar-width: thin;
+      scrollbar-color: #b45309 #f5e8d0;
+    }
+    #categorias-productos::-webkit-scrollbar {
+      width: 8px;
+    }
+    #categorias-productos::-webkit-scrollbar-track {
+      background: #f5e8d0;
+    }
+    #categorias-productos::-webkit-scrollbar-thumb {
+      background: #b45309;
+      border-radius: 4px;
+    }
+  </style>
 </head>
 <body class="bg-amber-50 min-h-screen">
-    <!-- Header -->
-    <header class="bg-white shadow-lg sticky top-0 z-40">
-        <nav class="container mx-auto px-4 py-4">
-            <div class="flex justify-between items-center">
-                <div class="flex items-center space-x-2">
-                    <i class="fas fa-coffee text-amber-600 text-2xl"></i>
-                    <h1 class="text-2xl font-bold text-amber-800">Café Aroma - Empleado</h1>
-                </div>
-                <div class="flex items-center space-x-4">
-                    <span class="text-amber-800">Mesero: {{ session['nombre_completo'] }}</span>
-                    <a href="{{ url_for('admin_routes.dashboard') }}" 
-                       class="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 transition-colors">
-                        <i class="fas fa-cog mr-2"></i>Admin
-                    </a>
-                </div>
-            </div>
-        </nav>
-    </header>
-
-    <div class="flex h-screen pt-20">
-        <!-- Mesas -->
-        <div class="flex-1 p-6 overflow-auto">
-            <h2 class="text-2xl font-bold text-amber-800 mb-6">Seleccionar Mesa</h2>
-            <div id="mesasGrid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-8"></div>
-
-            <!-- Leyenda -->
-            <div class="flex flex-wrap gap-4 mb-6">
-                <div class="flex items-center space-x-2">
-                    <div class="w-4 h-4 bg-green-500 rounded"></div>
-                    <span class="text-amber-800">Disponible</span>
-                </div>
-                <div class="flex items-center space-x-2">
-                    <div class="w-4 h-4 bg-red-500 rounded"></div>
-                    <span class="text-amber-800">Ocupada</span>
-                </div>
-                <div class="flex items-center space-x-2">
-                    <div class="w-4 h-4 bg-amber-500 rounded"></div>
-                    <span class="text-amber-800">Seleccionada</span>
-                </div>
-            </div>
-
-            <!-- Órdenes activas -->
-            <div class="bg-white rounded-xl shadow-lg p-6">
-                <h3 class="text-xl font-bold text-amber-800 mb-4">Órdenes Activas</h3>
-                <div id="ordenesActivas" class="space-y-3"></div>
-            </div>
+  <!-- Header -->
+  <header class="bg-white shadow-lg sticky top-0 z-50">
+    <nav class="container mx-auto px-4 py-4">
+      <div class="flex justify-between items-center">
+        <div class="flex items-center space-x-2">
+          <i class="fas fa-coffee text-amber-600 text-2xl"></i>
+          <h1 class="text-2xl font-bold text-amber-800">Café Aroma - Empleado</h1>
         </div>
-
-        <!-- Panel de Órdenes -->
-        <div id="orderPanel" class="order-panel fixed md:relative top-20 md:top-0 right-0 w-full md:w-96 h-full bg-white shadow-2xl z-30 hidden">
-            <div class="p-6 h-full flex flex-col">
-                <div class="flex justify-between items-center mb-6">
-                    <h3 class="text-xl font-bold text-amber-800">Mesa <span id="selectedTable">-</span></h3>
-                    <button onclick="closeOrderPanel()" class="md:hidden text-amber-600 hover:text-amber-800">
-                        <i class="fas fa-times text-xl"></i>
-                    </button>
-                </div>
-
-                <!-- Categorías -->
-                <div id="categorias" class="flex space-x-2 mb-4 overflow-x-auto"></div>
-
-                <!-- Productos -->
-                <div id="productosList" class="flex-1 overflow-auto mb-4"></div>
-
-                <!-- Orden actual -->
-                <div class="border-t pt-4">
-                    <h4 class="font-bold text-amber-800 mb-3">Orden Actual</h4>
-                    <div id="currentOrder" class="space-y-2 mb-4 max-h-32 overflow-auto"></div>
-                    <div class="flex justify-between items-center mb-4">
-                        <span class="font-bold text-amber-800">Total:</span>
-                        <span id="orderTotal" class="font-bold text-amber-800 text-lg">$0.00</span>
-                    </div>
-                    <button onclick="pagarOrden()" class="w-full bg-amber-600 text-white py-3 rounded-lg font-semibold hover:bg-amber-700 transition-colors">
-                        Pagar Orden
-                    </button>
-                </div>
-            </div>
+        <div class="flex items-center space-x-4">
+          <span class="text-amber-800 font-medium">Mesero: {{ nombre_mesero }}</span>
+          <a href="{{ url_for('auth_routes.logout') }}" class="text-amber-800 hover:text-amber-600 font-medium transition-colors">
+            <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+          </a>
+          <a href="{{ url_for('admin_routes.dashboard') }}" class="text-amber-800 hover:text-amber-600 font-medium transition-colors">
+            <i class="fas fa-user-shield"></i> Admin
+          </a>
         </div>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Main Content -->
+  <main class="container mx-auto px-4 py-8">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Seleccionar Mesa -->
+      <div class="bg-white p-6 rounded-lg shadow-md lg:col-span-1">
+        <h2 class="text-2xl font-bold text-amber-800 mb-4">Seleccionar Mesa</h2>
+        <div id="mesas" class="grid grid-cols-2 md:grid-cols-3 gap-4">
+          {% for mesa in mesas_json %}
+            <button class="mesa-btn p-4 rounded-lg text-center {% if mesa.estado == 'ocupada' %}bg-red-200{% elif mesa.estado == 'seleccionada' %}bg-amber-200{% else %}bg-green-200{% endif %} hover:bg-amber-100 transition-colors"
+                    data-mesa-id="{{ mesa.id }}" data-estado="{{ mesa.estado }}">
+              <span class="text-amber-800 font-semibold">Mesa {{ mesa.numero }}</span>
+              <p class="text-sm text-amber-600">{{ mesa.estado }}</p>
+            </button>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Órdenes Activas -->
+      <div class="bg-white p-6 rounded-lg shadow-md lg:col-span-1">
+        <h2 class="text-2xl font-bold text-amber-800 mb-4">Órdenes Activas</h2>
+        <div id="ordenes-activas" class="space-y-4">
+          {% for orden in ordenes_json %}
+            <div class="orden-card bg-amber-50 p-4 rounded-lg shadow" data-orden-id="{{ orden.id }}" data-mesa-id="{{ orden.mesa_id }}">
+              <p class="text-amber-800 font-semibold">Orden #{{ orden.id }} - Mesa {{ orden.mesa_id }}</p>
+              <p class="text-amber-600">Total: ${{ "%.2f"|format(orden.total) }}</p>
+              <button class="btn-ver-orden bg-amber-600 text-white px-2 py-1 rounded-lg hover:bg-amber-700 mt-2">
+                <i class="fas fa-eye"></i> Ver
+              </button>
+            </div>
+          {% endfor %}
+          {% if not ordenes_json %}
+            <p class="text-amber-700 text-center py-4">No hay órdenes activas.</p>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Orden Actual -->
+      <div class="bg-white p-6 rounded-lg shadow-md lg:col-span-1">
+        <h2 class="text-2xl font-bold text-amber-800 mb-4">Orden Actual</h2>
+        <div id="orden-actual" class="space-y-4">
+          <p id="mesa-seleccionada" class="text-amber-700 font-semibold hidden">Mesa -</p>
+          <ul id="productos-orden" class="space-y-2"></ul>
+          <p id="total-orden" class="text-amber-800 font-bold">Total: $0.00</p>
+          <button id="btn-pagar" class="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 mt-2 hidden">
+            <i class="fas fa-credit-card"></i> Pagar Orden
+          </button>
+        </div>
+      </div>
     </div>
 
-    <!-- 🔥 Variables inyectadas desde Flask -->
-    <script>
-        const productosData = {{ productos_json | tojson }};
-        const mesasData = {{ mesas_json | tojson }};
-        const ordenesData = {{ ordenes_json | tojson }};
-    </script>
-
-    <!-- 🔥 Lógica en JS -->
-    <script>
-        let mesaSeleccionada = null;
-        let ordenActual = [];
-
-        function renderMesas() {
-            const grid = document.getElementById("mesasGrid");
-            grid.innerHTML = "";
-            mesasData.forEach(m => {
-                const div = document.createElement("div");
-                div.className = `p-6 rounded-xl shadow-lg cursor-pointer text-white 
-                                ${m.estado === "disponible" ? "bg-green-500" : "bg-red-500"}
-                                hover:scale-105 transition-all`;
-                div.innerHTML = `
-                    <div class="text-center">
-                        <i class="fas fa-chair text-2xl mb-2"></i>
-                        <p class="font-bold">Mesa ${m.numero}</p>
-                        <p class="text-sm">${m.estado}</p>
-                    </div>`;
-                div.onclick = () => selectTable(m);
-                grid.appendChild(div);
-            });
-        }
-
-        function renderCategorias() {
-            const categorias = [...new Set(productosData.map(p => p.categoria))];
-            const cont = document.getElementById("categorias");
-            cont.innerHTML = "";
-            categorias.forEach(cat => {
-                const btn = document.createElement("button");
-                btn.className = "category-btn bg-amber-200 text-amber-800 px-4 py-2 rounded-lg whitespace-nowrap";
-                btn.textContent = cat;
-                btn.onclick = () => renderProductos(cat);
-                cont.appendChild(btn);
-            });
-            if (categorias.length) renderProductos(categorias[0]);
-        }
-
-        function renderProductos(categoria) {
-            const cont = document.getElementById("productosList");
-            cont.innerHTML = "";
-            productosData.filter(p => p.categoria === categoria).forEach(p => {
-                const div = document.createElement("div");
-                div.className = "flex justify-between items-center p-3 bg-amber-50 rounded-lg mb-2";
-                div.innerHTML = `
-                    <div>
-                        <p class="font-medium text-amber-800">${p.nombre}</p>
-                        <p class="text-sm text-amber-600">$${p.precio.toFixed(2)}</p>
-                    </div>
-                    <button class="bg-amber-600 text-white px-3 py-1 rounded-lg hover:bg-amber-700">
+    <!-- Modal para Productos por Categoría -->
+    <div id="modal-productos" class="fixed inset-0 flex items-center justify-center hidden bg-black bg-opacity-50 z-50">
+      <div class="bg-white p-6 rounded-lg shadow-lg max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-2xl font-bold text-amber-800">Seleccionar Productos - Mesa <span id="mesa-modal"></span></h2>
+          <button class="close-modal text-amber-800 hover:text-amber-600 text-2xl" onclick="cerrarModal()">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div id="categorias-productos" class="space-y-4">
+          {% for categoria, productos in productos_por_categoria.items() %}
+            <div class="bg-amber-50 p-4 rounded-lg shadow">
+              <h3 class="text-xl font-semibold text-amber-700 mb-2">{{ categoria }}</h3>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {% for producto in productos %}
+                  <div class="producto-card flex items-center justify-between bg-white p-2 rounded-lg shadow" data-producto-id="{{ producto.id }}">
+                    <span class="text-amber-800">{{ producto.nombre }} - ${{ "%.2f"|format(producto.precio) }}</span>
+                    <div class="flex items-center space-x-2">
+                      <input type="number" min="1" value="1" class="cantidad-input w-16 p-1 border rounded-lg text-amber-700" data-id="{{ producto.id }}">
+                      <button class="btn-agregar bg-amber-600 text-white px-2 py-1 rounded-lg hover:bg-amber-700">
                         <i class="fas fa-plus"></i>
-                    </button>`;
-                div.querySelector("button").onclick = () => addToOrder(p);
-                cont.appendChild(div);
-            });
-        }
+                      </button>
+                    </div>
+                  </div>
+                {% endfor %}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+        <button class="btn-cerrar-modal mt-4 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">Cerrar</button>
+      </div>
+    </div>
 
-        function selectTable(mesa) {
-            mesaSeleccionada = mesa;
-            document.getElementById("selectedTable").textContent = mesa.numero;
-            document.getElementById("orderPanel").classList.remove("hidden");
-            ordenActual = [];
-            renderCurrentOrder();
-        }
+    <!-- Modal para Pago -->
+    <div id="modal-pago" class="fixed inset-0 flex items-center justify-center hidden bg-black bg-opacity-50 z-50">
+      <div class="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-2xl font-bold text-amber-800">Pagar Orden</h2>
+          <button class="close-modal text-amber-800 hover:text-amber-600 text-2xl" onclick="cerrarModalPago()">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <form id="form-pago" class="space-y-4">
+          <div>
+            <label for="metodo_pago" class="block text-amber-700 font-semibold">Método de pago</label>
+            <select name="metodo_pago" id="metodo_pago" class="w-full p-2 border rounded-lg text-amber-700" required>
+              <option value="">Seleccione método de pago</option>
+              <option value="efectivo">Efectivo</option>
+              <option value="tarjeta">Tarjeta</option>
+              <option value="transferencia">Transferencia</option>
+            </select>
+          </div>
+          <div>
+            <label for="correo_cliente" class="block text-amber-700 font-semibold">Correo para factura (opcional)</label>
+            <input type="email" name="correo_cliente" id="correo_cliente" placeholder="ejemplo@correo.com" class="w-full p-2 border rounded-lg text-amber-700">
+          </div>
+          <button type="submit" class="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 w-full">Confirmar Pago</button>
+        </form>
+        <button class="btn-cerrar-modal mt-2 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 w-full">Cerrar</button>
+      </div>
+    </div>
+  </main>
 
-        function addToOrder(producto) {
-            ordenActual.push(producto);
-            renderCurrentOrder();
-        }
+  <script>
+    // Estado
+    let mesaSeleccionada = null;
+    let ordenActual = null;
+    let productosEnOrden = [];
+    let totalOrden = 0;
 
-        function renderCurrentOrder() {
-            const cont = document.getElementById("currentOrder");
-            cont.innerHTML = "";
-            let total = 0;
-            ordenActual.forEach(p => {
-                total += p.precio;
-                const item = document.createElement("div");
-                item.className = "flex justify-between text-amber-700 bg-amber-100 px-2 py-1 rounded";
-                item.innerHTML = `<span>${p.nombre}</span><span>$${p.precio.toFixed(2)}</span>`;
-                cont.appendChild(item);
-            });
-            document.getElementById("orderTotal").textContent = `$${total.toFixed(2)}`;
-        }
+    // Elementos del DOM
+    const mesas = document.querySelectorAll('.mesa-btn');
+    const modalProductos = document.getElementById('modal-productos');
+    const modalPago = document.getElementById('modal-pago');
+    const mesaSeleccionadaText = document.getElementById('mesa-seleccionada');
+    const productosOrdenList = document.getElementById('productos-orden');
+    const totalOrdenText = document.getElementById('total-orden');
+    const btnPagar = document.getElementById('btn-pagar');
+    const formPago = document.getElementById('form-pago');
+    const mesaModalText = document.getElementById('mesa-modal');
+    const closeModals = document.querySelectorAll('.close-modal, .btn-cerrar-modal');
 
-        function pagarOrden() {
-            if (!mesaSeleccionada) return alert("Selecciona una mesa primero");
-            alert(`Orden de Mesa ${mesaSeleccionada.numero} pagada ✅`);
-            mesaSeleccionada.estado = "disponible";
-            renderMesas();
-            document.getElementById("orderPanel").classList.add("hidden");
+    // Seleccionar mesa
+    mesas.forEach(mesa => {
+      mesa.addEventListener('click', () => {
+        const estado = mesa.dataset.estado;
+        if (estado === 'ocupada') {
+          alert('Mesa ocupada, elija otra.');
+          return;
         }
+        mesaSeleccionada = parseInt(mesa.dataset.mesaId);
+        mesaSeleccionadaText.textContent = `Mesa ${mesa.querySelector('span').textContent.split(' ')[1]}`;
+        mesaSeleccionadaText.classList.remove('hidden');
+        mesaModalText.textContent = mesa.querySelector('span').textContent.split(' ')[1];
+        modalProductos.classList.remove('hidden');
+        btnPagar.classList.add('hidden');
+        productosEnOrden = [];
+        totalOrden = 0;
+        actualizarOrdenUI();
 
-        function closeOrderPanel() {
-            document.getElementById("orderPanel").classList.add("hidden");
+        // Actualizar estado visual
+        mesas.forEach(btn => {
+          btn.classList.remove('bg-amber-200');
+          if (parseInt(btn.dataset.mesaId) === mesaSeleccionada) {
+            btn.classList.add('bg-amber-200');
+            btn.dataset.estado = 'seleccionada';
+          } else if (btn.dataset.estado !== 'ocupada') {
+            btn.classList.add('bg-green-200');
+            btn.dataset.estado = 'disponible';
+          }
+        });
+      });
+    });
+
+    // Cerrar modales
+    closeModals.forEach(button => {
+      button.addEventListener('click', () => {
+        modalProductos.classList.add('hidden');
+        modalPago.classList.add('hidden');
+        if (!ordenActual) {
+          mesaSeleccionada = null;
+          productosEnOrden = [];
+          totalOrden = 0;
+          mesaSeleccionadaText.classList.add('hidden');
+          actualizarOrdenUI();
+          mesas.forEach(btn => {
+            if (btn.dataset.estado === 'seleccionada') {
+              btn.classList.remove('bg-amber-200');
+              btn.classList.add('bg-green-200');
+              btn.dataset.estado = 'disponible';
+            }
+          });
         }
+      });
+    });
 
-        // Inicialización
-        renderMesas();
-        renderCategorias();
-    </script>
+    // Agregar producto
+    document.querySelectorAll('.btn-agregar').forEach(button => {
+      button.addEventListener('click', () => {
+        const productoCard = button.closest('.producto-card');
+        const productoId = parseInt(productoCard.dataset.productoId);
+        const nombre = productoCard.querySelector('span').textContent.split(' - ')[0];
+        const precio = parseFloat(productoCard.querySelector('span').textContent.split('$')[1]);
+        const cantidad = parseInt(productoCard.querySelector('.cantidad-input').value) || 1;
+
+        const producto = { id: productoId, nombre, precio, cantidad, subtotal: precio * cantidad };
+        const productoExistente = productosEnOrden.find(p => p.id === productoId);
+        if (productoExistente) {
+          productoExistente.cantidad += cantidad;
+          productoExistente.subtotal += precio * cantidad;
+        } else {
+          productosEnOrden.push(producto);
+        }
+        totalOrden += precio * cantidad;
+
+        const endpoint = ordenActual ? `/empleado/orden/${ordenActual}/agregar` : '/empleado/orden/nueva';
+        fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            mesa_id: mesaSeleccionada,
+            productos: productosEnOrden.map(p => ({ id: p.id, cantidad: p.cantidad }))
+          })
+        })
+        .then(response => {
+          if (!response.ok) throw new Error('Error en la solicitud al servidor');
+          return response.json();
+        })
+        .then(data => {
+          if (data.success) {
+            if (!ordenActual) ordenActual = data.orden_id;
+            btnPagar.classList.remove('hidden');
+            actualizarOrdenUI();
+          } else {
+            alert('Error: ' + data.error);
+            // Revertir si falla
+            productosEnOrden = productosEnOrden.filter(p => p.id !== productoId);
+            totalOrden -= precio * cantidad;
+            actualizarOrdenUI();
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          alert('Error al agregar el producto. Verifica la conexión o contacta al administrador.');
+          // Revertir si falla
+          productosEnOrden = productosEnOrden.filter(p => p.id !== productoId);
+          totalOrden -= precio * cantidad;
+          actualizarOrdenUI();
+        });
+      });
+    });
+
+    // Actualizar UI de la orden
+    function actualizarOrdenUI() {
+      productosOrdenList.innerHTML = '';
+      productosEnOrden.forEach(producto => {
+        const li = document.createElement('li');
+        li.textContent = `${producto.nombre} x${producto.cantidad} - $${producto.subtotal.toFixed(2)}`;
+        productosOrdenList.appendChild(li);
+      });
+      totalOrdenText.textContent = `Total: $${totalOrden.toFixed(2)}`;
+    }
+
+    // Cargar orden activa
+    document.querySelectorAll('.btn-ver-orden').forEach(button => {
+      button.addEventListener('click', () => {
+        const ordenCard = button.closest('.orden-card');
+        ordenActual = parseInt(ordenCard.dataset.ordenId);
+        mesaSeleccionada = parseInt(ordenCard.dataset.mesaId);
+
+        fetch(`/empleado/orden/${ordenActual}/detalles`)
+          .then(response => {
+            if (!response.ok) throw new Error('Error al cargar detalles');
+            return response.json();
+          })
+          .then(data => {
+            if (data.success) {
+              productosEnOrden = data.orden.productos;
+              totalOrden = data.orden.total;
+              mesaSeleccionadaText.textContent = `Mesa ${ordenCard.querySelector('p').textContent.split(' - ')[1]}`;
+              mesaSeleccionadaText.classList.remove('hidden');
+              btnPagar.classList.remove('hidden');
+              actualizarOrdenUI();
+
+              mesas.forEach(btn => {
+                btn.classList.remove('bg-amber-200');
+                if (parseInt(btn.dataset.mesaId) === mesaSeleccionada) {
+                  btn.classList.add('bg-amber-200');
+                  btn.dataset.estado = 'seleccionada';
+                } else if (btn.dataset.estado !== 'ocupada') {
+                  btn.classList.add('bg-green-200');
+                  btn.dataset.estado = 'disponible';
+                }
+              });
+            } else {
+              alert('Error al cargar detalles: ' + data.error);
+            }
+          })
+          .catch(error => console.error('Error:', error));
+      });
+    });
+
+    // Mostrar modal de pago
+    btnPagar.addEventListener('click', () => {
+      if (!ordenActual) {
+        alert('No hay una orden activa para pagar.');
+        return;
+      }
+      modalPago.classList.remove('hidden');
+    });
+
+    // Procesar pago
+    formPago.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const metodoPago = document.getElementById('metodo_pago').value;
+      const correoCliente = document.getElementById('correo_cliente').value;
+
+      if (!metodoPago) {
+        alert('Por favor, seleccione un método de pago.');
+        return;
+      }
+
+      fetch(`/empleado/orden/${ordenActual}/pagar`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ metodo_pago: metodoPago, correo_cliente: correoCliente })
+      })
+      .then(response => {
+        if (!response.ok) throw new Error('Error en el pago');
+        return response.json();
+      })
+      .then(data => {
+        if (data.success) {
+          alert(data.mensaje);
+          ordenActual = null;
+          mesaSeleccionada = null;
+          productosEnOrden = [];
+          totalOrden = 0;
+          mesaSeleccionadaText.classList.add('hidden');
+          btnPagar.classList.add('hidden');
+          actualizarOrdenUI();
+          modalPago.classList.add('hidden');
+          location.reload();
+        } else {
+          alert('Error: ' + data.error);
+        }
+      })
+      .catch(error => console.error('Error:', error));
+    });
+  </script>
 </body>
 </html>
