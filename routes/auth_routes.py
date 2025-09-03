@@ -1,11 +1,9 @@
 from flask import Blueprint, request, render_template, redirect, url_for, session
-from werkzeug.security import check_password_hash
 from models.usuario import Usuario
 from app import db
 import datetime
 import random
 import string
-import json
 
 auth_routes = Blueprint('auth_routes', __name__)
 
@@ -13,9 +11,11 @@ auth_routes = Blueprint('auth_routes', __name__)
 def login_form():
     return render_template('login.html')
 
+
 @auth_routes.route('/register', methods=['GET'])
 def register_form():
     return render_template('register.html')
+
 
 @auth_routes.route('/login', methods=['POST'])
 def login():
@@ -32,26 +32,14 @@ def login():
     if usuario.debe_cambiar_contrasena:
         return redirect(url_for('auth_routes.cambiar_contrasena'))
 
+    # Redirecciones por rol
     if usuario.rol == 'administrador':
         return redirect(url_for('admin_routes.dashboard'))
 
     elif usuario.rol == 'empleado':
-        mesas = [
-            {"id": 1, "estado": "Disponible"},
-            {"id": 2, "estado": "Ocupada"},
-            {"id": 3, "estado": "Disponible"},
-            {"id": 4, "estado": "Ocupada"},
-        ]
-        ordenes=[]
-
-        mesas_json = json.dumps(mesas)
-        ordenes_json = json.dumps(ordenes)
-        return render_template(
-            'empleado.html',
-             usuario=usuario,
-             mesas_json=[],
-             ordenes_json=[]
-                               )
+        # 🔥 Importante: redirigimos al panel de empleados,
+        # que ya carga mesas, productos y órdenes correctamente.
+        return redirect(url_for('empleados_routes.empleado_panel'))
 
     elif usuario.rol == 'cliente':
         return redirect(url_for('cliente_routes.panel_cliente'))
@@ -110,24 +98,10 @@ def cambiar_contrasena():
             return redirect(url_for('admin_routes.dashboard'))
 
         elif usuario.rol == 'empleado':
-            mesas = [
-                {"id": 1, "estado": "Disponible"},
-                {"id": 2, "estado": "Ocupada"},
-                {"id": 3, "estado": "Disponible"},
-                {"id": 4, "estado": "Ocupada"},
-            ]
-            ordenes = []
-            mesas_json = json.dumps(mesas)
-            ordenes_json = json.drumps(ordenes)
-            return render_template(
-                 'empleado.html',
-             usuario=usuario,
-             mesas_json=[],
-             ordenes_json=[]
-                )
+            return redirect(url_for('empleados_routes.empleado_panel'))
 
         elif usuario.rol == 'cliente':
-            return render_template('cliente.html', usuario=usuario)
+            return redirect(url_for('cliente_routes.panel_cliente'))
 
         else:
             return render_template('login.html', error='Rol no reconocido')

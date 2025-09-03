@@ -240,26 +240,34 @@
     }
 
     // --- Checkout con método de pago ---
-    async function checkout() {
-      if (cart.length === 0) return;
-      const metodo = document.getElementById("metodo_pago").value;
+   async function checkout() {
+    if (cart.length === 0) return;
+    const metodo = document.getElementById("metodo_pago").value;
+    console.log('Enviando carrito:', { carrito: cart, metodo_pago: metodo }); // Depuración
 
-      const response = await fetch("{{ url_for('cliente_routes.checkout') }}", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ carrito: cart, metodo_pago: metodo })
-      });
+    try {
+        const response = await fetch('/checkout', {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ carrito: cart, metodo_pago: metodo })
+        });
 
-      const data = await response.json();
-      if (data.venta_id) {
-        alert("Compra realizada con éxito.");
-        window.open(`/factura/${data.venta_id}`, "_blank");
-        cart = [];
-        renderCart();
-      } else {
-        alert("Error: " + data.error);
-      }
+        const data = await response.json();
+        console.log('Respuesta del servidor:', data); // Depuración
+        if (data.venta_id) {
+            alert("Compra realizada con éxito.");
+            window.open(`/factura/${data.venta_id}`, "_blank");
+            cart = [];
+            renderCart();
+        } else {
+            alert("Error: " + (data.error || 'Sin detalles del error'));
+        }
+    } catch (error) {
+        console.error('Error en la solicitud:', error);
+        alert('Error al procesar la compra: ' + error.message);
     }
+}
+
   </script>
 </body>
 </html>

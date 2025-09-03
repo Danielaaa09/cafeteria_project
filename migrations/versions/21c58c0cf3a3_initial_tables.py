@@ -1,8 +1,8 @@
 """initial tables
 
-Revision ID: 4b6f2d58d964
+Revision ID: 21c58c0cf3a3
 Revises: 
-Create Date: 2025-08-31 09:49:18.774040
+Create Date: 2025-09-02 16:26:19.421770
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '4b6f2d58d964'
+revision = '21c58c0cf3a3'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -23,6 +23,13 @@ def upgrade():
     sa.Column('nombre', sa.String(length=100), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
+    op.create_table('mesas',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('numero', sa.Integer(), nullable=False),
+    sa.Column('estado', sa.String(length=20), nullable=True),
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('numero')
+    )
     op.create_table('usuarios',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('nombre_completo', sa.String(length=100), nullable=False),
@@ -34,6 +41,16 @@ def upgrade():
     sa.Column('debe_cambiar_contrasena', sa.Boolean(), nullable=True),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('correo')
+    )
+    op.create_table('ordenes',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('mesa_id', sa.Integer(), nullable=False),
+    sa.Column('estado', sa.String(length=20), nullable=True),
+    sa.Column('metodo_pago', sa.String(length=20), nullable=True),
+    sa.Column('total', sa.Float(), nullable=True),
+    sa.Column('fecha_creacion', sa.DateTime(), nullable=True),
+    sa.ForeignKeyConstraint(['mesa_id'], ['mesas.id'], ),
+    sa.PrimaryKeyConstraint('id')
     )
     op.create_table('producto',
     sa.Column('id', sa.Integer(), nullable=False),
@@ -64,6 +81,16 @@ def upgrade():
     sa.Column('subtotal', sa.Float(), nullable=False),
     sa.ForeignKeyConstraint(['producto_id'], ['producto.id'], ),
     sa.ForeignKeyConstraint(['venta_id'], ['ventas.id'], ),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_table('detalles_orden',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('orden_id', sa.Integer(), nullable=False),
+    sa.Column('producto_id', sa.Integer(), nullable=False),
+    sa.Column('cantidad', sa.Integer(), nullable=True),
+    sa.Column('precio_unitario', sa.Float(), nullable=False),
+    sa.ForeignKeyConstraint(['orden_id'], ['ordenes.id'], ),
+    sa.ForeignKeyConstraint(['producto_id'], ['producto.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('historial_inventario',
@@ -104,9 +131,12 @@ def downgrade():
     op.drop_table('pedidos_futuros')
     op.drop_table('inventario')
     op.drop_table('historial_inventario')
+    op.drop_table('detalles_orden')
     op.drop_table('detalle_ventas')
     op.drop_table('ventas')
     op.drop_table('producto')
+    op.drop_table('ordenes')
     op.drop_table('usuarios')
+    op.drop_table('mesas')
     op.drop_table('categorias')
     # ### end Alembic commands ###

@@ -24,8 +24,10 @@ def create_app():
     from models.detalle_venta import DetalleVenta
     from models.historial_inventario import HistorialInventario
     from models.pedido_futuro import PedidoFuturo
+    from models.mesa import Mesa
+    from models.detalle_orden import DetalleOrden
+    from models.orden import Orden
     
-
     from routes.usuarios_route import usuarios_bp
     from routes.productos_route import productos_bp
     from routes.inventario_route import inventario_bp

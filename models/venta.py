@@ -6,7 +6,7 @@ class Venta(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     fecha = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    cliente_id = db.Column(db.Integer, db.ForeignKey("usuarios.id"), nullable=False)
+    usuarios_id = db.Column(db.Integer, db.ForeignKey("usuarios.id"), nullable=False)
     metodo_pago = db.Column(db.String(50), nullable=False)
     total = db.Column(db.Float, nullable=False)
 
