@@ -59,84 +59,84 @@ def checkout():
 
 @cliente_routes.route('/factura/<int:venta_id>')
 def factura_pdf(venta_id):
-    try:
-        venta = Venta.query.get_or_404(venta_id)
-        detalles = DetalleVenta.query.filter_by(venta_id=venta.id).all()
-        usuario = Usuario.query.get(venta.usuarios_id)
-        if not usuario:
-            return jsonify({'error': 'Usuario no encontrado'}), 404
-        buffer = io.BytesIO()
-        p = canvas.Canvas(buffer, pagesize=letter)
-        width, height = letter
-        p.setFillColorRGB(0.87, 0.68, 0.21)
-        p.setFont("Helvetica-Bold", 24)
-        p.drawString(200, height - 60, "Cafetería Las Dos Amigas")
-        p.line(50, height - 70, width - 50, height - 70)
-        p.setFillColorRGB(0, 0, 0)
-        p.setFont("Helvetica", 10)
-        p.drawString(50, height - 90, "Factura N° " + str(venta.id))
-        p.setFont("Helvetica-Bold", 12)
-        p.drawString(50, height - 120, "Detalles de la Factura")
-        p.setFont("Helvetica", 10)
-        p.drawString(50, height - 140, f"Cliente: {usuario.nombre_completo}")
-        p.drawString(50, height - 160, f"Correo: {usuario.correo}")
-        p.drawString(50, height - 180, f"Fecha: {venta.fecha.strftime('%d/%m/%Y %H:%M')}")
-        p.drawString(50, height - 200, f"Dirección: {usuario.direccion}")
-        p.drawString(50, height - 220, f"Método de Pago: {venta.metodo_pago}")
-        y = height - 240
-        p.setFont("Helvetica-Bold", 10)
-        p.drawString(50, y, "Producto")
-        p.drawString(250, y, "Cantidad")
-        p.drawString(350, y, "Precio Unit.")
-        p.drawString(450, y, "Subtotal")
-        y -= 20
-        p.setFillColorRGB(0.95, 0.95, 0.95)
-        p.rect(50, y, 500, 20, fill=True, stroke=False)
-        p.setFillColorRGB(0, 0, 0)
-        p.setFont("Helvetica", 10)
-        for detalle in detalles:
-            producto = detalle.producto
-            if not producto:
-                return jsonify({'error': f'Producto no encontrado para detalle {detalle.id}'}), 404
+        try:
+            venta = Venta.query.get_or_404(venta_id)
+            detalles = DetalleVenta.query.filter_by(venta_id=venta.id).all()
+            usuario = Usuario.query.get(venta.usuarios_id)
+            if not usuario:
+                return jsonify({'error': 'Usuario no encontrado'}), 404
+            buffer = io.BytesIO()
+            p = canvas.Canvas(buffer, pagesize=letter)
+            width, height = letter
+            p.setFillColorRGB(0.87, 0.68, 0.21)
+            p.setFont("Helvetica-Bold", 24)
+            p.drawString(200, height - 60, "Cafetería Las Dos Amigas")
+            p.line(50, height - 70, width - 50, height - 70)
+            p.setFillColorRGB(0, 0, 0)
+            p.setFont("Helvetica", 10)
+            p.drawString(50, height - 90, "Factura N° " + str(venta.id))
+            p.setFont("Helvetica-Bold", 12)
+            p.drawString(50, height - 120, "Detalles de la Factura")
+            p.setFont("Helvetica", 10)
+            p.drawString(50, height - 140, f"Cliente: {usuario.nombre_completo}")
+            p.drawString(50, height - 160, f"Correo: {usuario.correo}")
+            p.drawString(50, height - 180, f"Fecha: {venta.fecha.strftime('%d/%m/%Y %H:%M')}")
+            p.drawString(50, height - 200, f"Dirección: {usuario.direccion}")
+            p.drawString(50, height - 220, f"Método de Pago: {venta.metodo_pago}")
+            y = height - 240
+            p.setFont("Helvetica-Bold", 10)
+            p.drawString(50, y, "Producto")
+            p.drawString(250, y, "Cantidad")
+            p.drawString(350, y, "Precio Unit.")
+            p.drawString(450, y, "Subtotal")
             y -= 20
-            if y < 50:
-                p.showPage()
-                y = height - 60
-                p.setFont("Helvetica-Bold", 10)
-                p.drawString(50, y, "Producto")
-                p.drawString(250, y, "Cantidad")
-                p.drawString(350, y, "Precio Unit.")
-                p.drawString(450, y, "Subtotal")
+            p.setFillColorRGB(0.95, 0.95, 0.95)
+            p.rect(50, y, 500, 20, fill=True, stroke=False)
+            p.setFillColorRGB(0, 0, 0)
+            p.setFont("Helvetica", 10)
+            for detalle in detalles:
+                producto = detalle.producto
+                if not producto:
+                    return jsonify({'error': f'Producto no encontrado para detalle {detalle.id}'}), 404
                 y -= 20
-                p.setFillColorRGB(0.95, 0.95, 0.95)
-                p.rect(50, y, 500, 20, fill=True, stroke=False)
-                p.setFillColorRGB(0, 0, 0)
-            p.drawString(50, y, producto.nombre)
-            p.drawString(250, y, str(detalle.cantidad))
-            p.drawString(350, y, f"${producto.precio:.2f}")
-            p.drawString(450, y, f"${detalle.subtotal:.2f}")
-        y -= 30
-        p.setFillColorRGB(0.87, 0.68, 0.21)
-        p.rect(350, y, 200, 20, fill=True, stroke=False)
-        p.setFillColorRGB(1, 1, 1)
-        p.setFont("Helvetica-Bold", 12)
-        p.drawString(350, y + 5, "TOTAL:")
-        p.drawString(450, y + 5, f"${venta.total:.2f}")
-        p.setFillColorRGB(0, 0, 0)
-        y -= 40
-        p.setFont("Helvetica-Oblique", 10)
-        p.setFillColorRGB(0.4, 0.4, 0.4)
-        p.drawString(200, y, "¡Gracias por tu compra en Cafetería Las Dos Amigas!")
-        p.setFillColorRGB(0, 0, 0)
-        p.showPage()
-        p.save()
-        buffer.seek(0)
-        response = make_response(buffer.getvalue())
-        response.headers['Content-Type'] = 'application/pdf'
-        response.headers['Content-Disposition'] = f'inline; filename=factura_{venta.id}.pdf'
-        return response
-    except Exception as e:
-        return jsonify({'error': f'Error al generar la factura: {str(e)}'}), 500
+                if y < 50:
+                    p.showPage()
+                    y = height - 60
+                    p.setFont("Helvetica-Bold", 10)
+                    p.drawString(50, y, "Producto")
+                    p.drawString(250, y, "Cantidad")
+                    p.drawString(350, y, "Precio Unit.")
+                    p.drawString(450, y, "Subtotal")
+                    y -= 20
+                    p.setFillColorRGB(0.95, 0.95, 0.95)
+                    p.rect(50, y, 500, 20, fill=True, stroke=False)
+                    p.setFillColorRGB(0, 0, 0)
+                p.drawString(50, y, producto.nombre)
+                p.drawString(250, y, str(detalle.cantidad))
+                p.drawString(350, y, f"${producto.precio:.2f}")
+                p.drawString(450, y, f"${detalle.subtotal:.2f}")
+            y -= 30
+            p.setFillColorRGB(0.87, 0.68, 0.21)
+            p.rect(350, y, 200, 20, fill=True, stroke=False)
+            p.setFillColorRGB(1, 1, 1)
+            p.setFont("Helvetica-Bold", 12)
+            p.drawString(350, y + 5, "TOTAL:")
+            p.drawString(450, y + 5, f"${venta.total:.2f}")
+            p.setFillColorRGB(0, 0, 0)
+            y -= 40
+            p.setFont("Helvetica-Oblique", 10)
+            p.setFillColorRGB(0.4, 0.4, 0.4)
+            p.drawString(200, y, "¡Gracias por tu compra en Cafetería Las Dos Amigas!")
+            p.setFillColorRGB(0, 0, 0)
+            p.showPage()
+            p.save()
+            buffer.seek(0)
+            response = make_response(buffer.getvalue())
+            response.headers['Content-Type'] = 'application/pdf'
+            response.headers['Content-Disposition'] = f'inline; filename=factura_{venta.id}.pdf'
+            return response
+        except Exception as e:
+            return jsonify({'error': f'Error al generar la factura: {str(e)}'}), 500
     
 @cliente_routes.route('/obtener_historial', methods=['GET'])
 def obtener_historial():

@@ -8,27 +8,45 @@
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/Styles.css') }}">
 </head>
-<body class="bg-amber-50 min-h-screen">
+<body class="bg-amber-50 min-h-screen flex flex-col">
   <!-- Header -->
-  <header class="bg-white shadow-lg sticky top-0 z-50">
-    <nav class="container mx-auto px-4 py-4">
-      <div class="flex justify-between items-center">
-        <div class="flex items-center space-x-2">
-          <i class="fas fa-coffee text-amber-600 text-2xl"></i>
-          <h1 class="text-2xl font-bold text-amber-800">Cafetería Las Dos Amigas</h1>
-        </div>
-        <div class="flex items-center space-x-4">
-          <span class="text-amber-800 font-medium">Bienvenido, {{ nombre_admin }}</span>
-          <a href="{{ url_for('auth_routes.logout') }}" class="text-amber-800 hover:text-amber-600 font-medium transition-colors">
-            <i class="fas fa-sign-out-alt"></i> Cerrar sesión
-          </a>
-        </div>
+  <header class="bg-white shadow-lg sticky top-0 z-50 p-4">
+    <div class="container mx-auto flex justify-between items-center">
+      <button id="menu-toggle" class="text-amber-800 text-2xl">
+        <i class="fas fa-bars"></i>
+      </button>
+      <div class="flex items-center space-x-2">
+        <i class="fas fa-coffee text-amber-600 text-2xl"></i>
+        <h1 class="text-2xl font-bold text-amber-800">Cafetería Las Dos Amigas</h1>
       </div>
-    </nav>
+      <div class="flex items-center space-x-4">
+        <button id="notification-toggle" class="text-amber-800 text-xl relative">
+          <i class="fas fa-bell"></i>
+          <span class="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">{{ notificaciones|length }}</span>
+        </button>
+        <span class="text-amber-800 font-medium">Bienvenido, {{ nombre_admin }}</span>
+        <a href="{{ url_for('auth_routes.logout') }}" class="text-amber-800 hover:text-amber-600 font-medium transition-colors">
+          <i class="fas fa-sign-out-alt"></i> Cerrar sesión
+        </a>
+      </div>
+    </div>
   </header>
 
+  <!-- Menú Lateral -->
+  <aside id="sidebar" class="bg-white w-64 min-h-screen p-4 shadow-lg fixed top-0 left-0 z-50 transform -translate-x-full transition-transform duration-300 ease-in-out">
+    <button id="close-menu" class="text-amber-800 text-2xl absolute top-4 right-4">
+      <i class="fas fa-times"></i>
+    </button>
+    <div class="mt-12">
+      <h2 class="text-lg font-semibold text-amber-800 mb-2">Panel de Administrador</h2>
+      <button class="w-full bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 mb-2" onclick="showSection('agregar-producto')">Productos</button>
+      <button class="w-full bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 mb-2" onclick="showSection('agregar-empleado')">Empleados</button>
+      <button class="w-full bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 mb-2" onclick="showSection('agregar-cliente')">Clientes</button>
+    </div>
+  </aside>
+
   <!-- Main Content -->
-  <main class="container mx-auto px-4 py-8">
+  <main class="container mx-auto px-4 py-8 flex-1">
     <!-- Flash Messages -->
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
@@ -41,7 +59,7 @@
     {% endwith %}
 
     <!-- Estadísticas -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <div id="stats-section" class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
       <div class="bg-white p-6 rounded-lg shadow-md">
         <h3 class="text-xl font-bold text-amber-800 mb-2">Total Productos</h3>
         <p class="text-3xl text-amber-600">{{ productos|length }}</p>
@@ -64,149 +82,51 @@
       </div>
     </div>
 
-    <!-- Secciones Adicionales -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <!-- Agregar Producto y Empleado -->
-      <div class="bg-white p-6 rounded-lg shadow-md">
-        <h2 class="text-2xl font-bold text-amber-800 mb-4">Agregar Producto</h2>
-        <form method="POST" action="{{ url_for('admin_routes.anadir_producto') }}" enctype="multipart/form-data" class="space-y-4">
-          <input type="text" name="nombre" placeholder="Nombre" class="w-full p-2 border rounded-lg text-amber-700" required>
-          <textarea name="descripcion" placeholder="Descripción" class="w-full p-2 border rounded-lg text-amber-700"></textarea>
-          <input type="number" name="precio" placeholder="Precio" step="0.01" class="w-full p-2 border rounded-lg text-amber-700" required>
-          <input type="number" name="cantidad" placeholder="Cantidad" class="w-full p-2 border rounded-lg text-amber-700" required>
-          <select name="categorias_id" class="w-full p-2 border rounded-lg text-amber-700" required>
-            <option value="">Seleccionar categoría</option>
-            {% for c in categorias %}
-              <option value="{{ c.id }}">{{ c.nombre }}</option>
+    <!-- Historial de Ventas por Día -->
+    <div class="bg-white p-6 rounded-lg shadow-md mb-6">
+      <h2 class="text-2xl font-bold text-amber-800 mb-4">Historial de Ventas por Día</h2>
+      {% if sales_history %}
+        <table class="w-full text-left text-amber-700">
+          <thead>
+            <tr>
+              <th class="border-b py-2">Fecha</th>
+              <th class="border-b py-2">Total</th>
+              <th class="border-b py-2">Efectivo</th>
+              <th class="border-b py-2">Tarjeta</th>
+              <th class="border-b py-2">Transferencia</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for day in sales_history %}
+              <tr>
+                <td class="border-b py-2">{{ day.date }}</td>
+                <td class="border-b py-2">${{ "%.2f"|format(day.total) }}</td>
+                <td class="border-b py-2">${{ "%.2f"|format(day.efectivo) }}</td>
+                <td class="border-b py-2">${{ "%.2f"|format(day.tarjeta) }}</td>
+                <td class="border-b py-2">${{ "%.2f"|format(day.transferencia) }}</td>
+              </tr>
             {% endfor %}
-          </select>
-          <label class="flex items-center">
-            <input type="checkbox" name="es_rotativo" value="1" class="mr-2"> Es rotativo
-          </label>
-          <input type="file" name="imagen" class="w-full p-2 border rounded-lg text-amber-700">
-          <button type="submit" class="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700">Agregar</button>
-        </form>
-      </div>
-      <div class="bg-white p-6 rounded-lg shadow-md">
-        <h2 class="text-2xl font-bold text-amber-800 mb-4">Agregar Empleado</h2>
-        <form method="POST" action="{{ url_for('admin_routes.add_empleado') }}" class="space-y-4">
-          <input type="text" name="nombre_completo" placeholder="Nombre Completo" class="w-full p-2 border rounded-lg text-amber-700" required>
-          <input type="email" name="correo" placeholder="Correo" class="w-full p-2 border rounded-lg text-amber-700" required>
-          <button type="submit" class="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700">Agregar</button>
-        </form>
-      </div>
-      <div class="bg-white p-6 rounded-lg shadow-md">
-        <h2 class="text-2xl font-bold text-amber-800 mb-4">Agregar Cliente</h2>
-        <form method="POST" action="{{ url_for('admin_routes.add_cliente') }}" class="space-y-4">
-          <input type="text" name="nombre_completo" placeholder="Nombre Completo" class="w-full p-2 border rounded-lg text-amber-700" required>
-          <input type="email" name="correo" placeholder="Correo" class="w-full p-2 border rounded-lg text-amber-700" required>
-          <button type="submit" class="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700">Agregar</button>
-        </form>
-      </div>
+          </tbody>
+        </table>
+      {% else %}
+        <p class="text-amber-700">No hay ventas registradas.</p>
+      {% endif %}
     </div>
-
-    <!-- Productos -->
-    <div class="bg-white p-6 rounded-lg shadow-md mt-6">
-      <h2 class="text-2xl font-bold text-amber-800 mb-4">Productos</h2>
-      {% for categoria in categorias %}
-        <h3 class="text-xl font-semibold text-amber-700 mb-2">{{ categoria.nombre }}</h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-          {% for p in productos if p.categorias_id == categoria.id %}
-            <div class="bg-amber-50 p-4 rounded-lg shadow {% if p.cantidad <= 10 %} border-2 border-red-500 {% endif %}">
-              <h4 class="font-bold text-amber-800">{{ p.nombre }}</h4>
-              <p class="text-amber-700">{{ p.descripcion }}</p>
-              <p class="font-bold text-amber-600">${{ "%.2f"|format(p.precio) }}</p>
-              <p class="text-amber-700">Cantidad: {{ p.cantidad }}</p>
-              <p class="text-amber-700">{{ "Rotativo" if p.es_rotativo else "Fijo" }}</p>
-              {% if p.imagen_url %}
-                <img src="{{ p.imagen_url }}" alt="{{ p.nombre }}" class="w-full h-40 object-cover rounded-lg mb-3">
-              {% endif %}
-              <div class="flex space-x-2">
-                <button onclick="openEditModal('producto', {{ p.id }}, '{{ p.nombre|safe }}', '{{ p.descripcion|safe }}', {{ p.precio }}, {{ p.cantidad }})" class="bg-blue-500 text-white px-2 py-1 rounded-lg hover:bg-blue-600">
-                  <i class="fas fa-edit"></i> Editar
-                </button>
-                <form method="POST" action="{{ url_for('admin_routes.eliminar_producto', id=p.id) }}" class="inline">
-                  <button type="submit" class="bg-red-500 text-white px-2 py-1 rounded-lg hover:bg-red-600">
-                    <i class="fas fa-trash"></i> Eliminar
-                  </button>
-                </form>
-              </div>
-            </div>
-          {% endfor %}
-        </div>
-      {% endfor %}
-    </div>
-
-    <!-- Empleados -->
-    <div class="bg-white p-6 rounded-lg shadow-md mt-6">
-      <h2 class="text-2xl font-bold text-amber-800 mb-4">Empleados</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {% for e in empleados %}
-          <div class="bg-amber-50 p-4 rounded-lg shadow">
-            <h4 class="font-bold text-amber-800">{{ e.nombre_completo }}</h4>
-            <p class="text-amber-700">{{ e.correo }}</p>
-            <div class="flex space-x-2 mt-2">
-              <button onclick="openEditModal('empleado', {{ e.id }}, '{{ e.nombre_completo|safe }}', '{{ e.correo|safe }}')" class="bg-blue-500 text-white px-2 py-1 rounded-lg hover:bg-blue-600">
-                <i class="fas fa-edit"></i> Editar
-              </button>
-              <form method="POST" action="{{ url_for('admin_routes.eliminar_empleado', id=e.id) }}" class="inline">
-                <button type="submit" class="bg-red-500 text-white px-2 py-1 rounded-lg hover:bg-red-600">
-                  <i class="fas fa-trash"></i> Eliminar
-                </button>
-              </form>
-            </div>
-          </div>
-        {% endfor %}
-      </div>
-    </div>
-
-    <!-- Clientes -->
-    <div class="bg-white p-6 rounded-lg shadow-md mt-6">
-      <h2 class="text-2xl font-bold text-amber-800 mb-4">Clientes</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {% for c in clientes %}
-          <div class="bg-amber-50 p-4 rounded-lg shadow">
-            <h4 class="font-bold text-amber-800">{{ c.nombre_completo }}</h4>
-            <p class="text-amber-700">{{ c.correo }}</p>
-            <div class="flex space-x-2 mt-2">
-              <button onclick="openEditModal('cliente', {{ c.id }}, '{{ c.nombre_completo|safe }}', '{{ c.correo|safe }}')" class="bg-blue-500 text-white px-2 py-1 rounded-lg hover:bg-blue-600">
-                <i class="fas fa-edit"></i> Editar
-              </button>
-              <form method="POST" action="{{ url_for('admin_routes.eliminar_cliente', id=c.id) }}" class="inline">
-                <button type="submit" class="bg-red-500 text-white px-2 py-1 rounded-lg hover:bg-red-600">
-                  <i class="fas fa-trash"></i> Eliminar
-                </button>
-              </form>
-            </div>
-          </div>
-        {% endfor %}
-      </div>
-    </div>
-
-    <!-- Productos con Bajo Stock -->
-    {% if productos_bajo_stock %}
-      <div class="bg-red-100 p-6 rounded-lg shadow-md mt-6">
-        <h2 class="text-2xl font-bold text-red-600 mb-4">Alerta: Productos con Bajo Stock (≤ 10 unidades)</h2>
-        <ul class="list-disc pl-6 text-amber-700">
-          {% for p in productos_bajo_stock %}
-            <li>{{ p.nombre }} - Cantidad: {{ p.cantidad }}</li>
-          {% endfor %}
-        </ul>
-      </div>
-    {% endif %}
 
     <!-- Historial de Ventas -->
-    <div class="bg-white p-6 rounded-lg shadow-md mt-6">
-      <h2 class="text-2xl font-bold text-amber-800 mb-4">Historial de Ventas Hoy</h2>
-      <p class="text-amber-700 mb-2">Ventas en Efectivo: ${{ "%.2f"|format(ventas_efectivo) }}</p>
-      <p class="text-amber-700 mb-2">Ventas con Tarjeta: ${{ "%.2f"|format(ventas_tarjeta) }}</p>
-      <p class="text-amber-700 mb-2">Ventas por Transferencia: ${{ "%.2f"|format(ventas_transferencia) }}</p>
-      <p class="text-amber-800 font-bold">Total del Día: ${{ "%.2f"|format(ventas_hoy) }}</p>
-      <p class="text-sm text-amber-500 mt-2">Los totales se reinician automáticamente al siguiente día.</p>
+    <div class="bg-white p-6 rounded-lg shadow-md mb-6">
+      <h2 class="text-2xl font-bold text-amber-800 mb-4">Historial de Ventas</h2>
+      <div>
+        <p class="text-amber-700 mb-2">Ventas en Efectivo: ${{ "%.2f"|format(ventas_efectivo) }}</p>
+        <p class="text-amber-700 mb-2">Ventas con Tarjeta: ${{ "%.2f"|format(ventas_tarjeta) }}</p>
+        <p class="text-amber-700 mb-2">Ventas por Transferencia: ${{ "%.2f"|format(ventas_transferencia) }}</p>
+        <p class="text-amber-800 font-bold">Total del Día: ${{ "%.2f"|format(ventas_hoy) }} (incluye ventas de clientes y órdenes de empleados)</p>
+        <p class="text-sm text-amber-500 mt-2">Los totales se reinician automáticamente al siguiente día.</p>
+      </div>
     </div>
 
     <!-- Actividad Reciente -->
-    <div class="bg-white p-6 rounded-lg shadow-md mt-6">
+    <div id="activity-section" class="bg-white p-6 rounded-lg shadow-md mb-6">
       <h2 class="text-2xl font-bold text-amber-800 mb-4">Actividad Reciente</h2>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div>
@@ -235,18 +155,167 @@
         </div>
       </div>
     </div>
+
+    <!-- Secciones Dinámicas -->
+    <div id="dynamic-content" class="hidden">
+      <!-- Agregar Producto -->
+      <div id="agregar-producto" class="bg-white p-6 rounded-lg shadow-md mb-6">
+        <h2 class="text-2xl font-bold text-amber-800 mb-4">Agregar Producto</h2>
+        <form method="POST" action="{{ url_for('admin_routes.anadir_producto') }}" enctype="multipart/form-data" class="space-y-4">
+          <input type="text" name="nombre" placeholder="Nombre" class="w-full p-2 border rounded-lg text-amber-700" required>
+          <textarea name="descripcion" placeholder="Descripción" class="w-full p-2 border rounded-lg text-amber-700"></textarea>
+          <input type="number" name="precio" placeholder="Precio" step="0.01" class="w-full p-2 border rounded-lg text-amber-700" required>
+          <input type="number" name="cantidad" placeholder="Cantidad" class="w-full p-2 border rounded-lg text-amber-700" required>
+          <select name="categorias_id" class="w-full p-2 border rounded-lg text-amber-700" required>
+            <option value="">Seleccionar categoría</option>
+            {% for c in categorias %}
+              <option value="{{ c.id }}">{{ c.nombre }}</option>
+            {% endfor %}
+          </select>
+          <label class="flex items-center">
+            <input type="checkbox" name="es_rotativo" value="1" class="mr-2"> Es rotativo
+          </label>
+          <input type="file" name="imagen" class="w-full p-2 border rounded-lg text-amber-700">
+          <button type="submit" class="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700">Agregar</button>
+        </form>
+        <!-- Modificar Productos -->
+        <div id="agregar-productos" class="bg-white p-6 rounded-lg shadow-md mb-6">
+          <h2 class="text-2xl font-bold text-amber-800 mb-4">Modificar Productos</h2>
+          {% for categoria in categorias %}
+            <h3 class="text-xl font-semibold text-amber-700 mb-2">{{ categoria.nombre }}</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+              {% for p in productos if p.categorias_id == categoria.id %}
+                <div class="bg-amber-50 p-4 rounded-lg shadow {% if p.cantidad <= 10 %} border-2 border-red-500 {% endif %}">
+                  <h4 class="font-bold text-amber-800">{{ p.nombre }}</h4>
+                  <p class="text-amber-700">{{ p.descripcion }}</p>
+                  <p class="font-bold text-amber-600">${{ "%.2f"|format(p.precio) }}</p>
+                  <p class="text-amber-700">Cantidad: {{ p.cantidad }}</p>
+                  <p class="text-amber-700">{{ "Rotativo" if p.es_rotativo else "Fijo" }}</p>
+                  {% if p.imagen_url %}
+                    <img src="{{ p.imagen_url }}" alt="{{ p.nombre }}" class="w-full h-40 object-cover rounded-lg mb-3">
+                  {% endif %}
+                  <div class="flex space-x-2">
+                    <button onclick="openEditModal('producto', {{ p.id }}, '{{ p.nombre|safe }}', '{{ p.descripcion|safe }}', {{ p.precio }}, {{ p.cantidad }}, {{ p.categorias_id }})" class="bg-blue-500 text-white px-2 py-1 rounded-lg hover:bg-blue-600">
+                      <i class="fas fa-edit"></i> Editar
+                    </button>
+                    <form method="POST" action="{{ url_for('admin_routes.eliminar_producto', id=p.id) }}" class="inline">
+                      <button type="submit" class="bg-red-500 text-white px-2 py-1 rounded-lg hover:bg-red-600">
+                        <i class="fas fa-trash"></i> Eliminar
+                      </button>
+                    </form>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Agregar Empleado -->
+      <div id="agregar-empleado" class="bg-white p-6 rounded-lg shadow-md mb-6">
+        <h2 class="text-2xl font-bold text-amber-800 mb-4">Agregar Empleado</h2>
+        <form method="POST" action="{{ url_for('admin_routes.add_empleado') }}" class="space-y-4">
+          <input type="text" name="nombre_completo" placeholder="Nombre Completo" class="w-full p-2 border rounded-lg text-amber-700" required>
+          <input type="email" name="correo" placeholder="Correo" class="w-full p-2 border rounded-lg text-amber-700" required>
+          <button type="submit" class="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700">Agregar</button>
+        </form>
+        <!-- Modificar Empleados -->
+        <div id="agregar-empleados" class="bg-white p-6 rounded-lg shadow-md mb-6">
+          <h2 class="text-2xl font-bold text-amber-800 mb-4">Modificar Empleados</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for e in empleados %}
+              <div class="bg-amber-50 p-4 rounded-lg shadow">
+                <h4 class="font-bold text-amber-800">{{ e.nombre_completo }}</h4>
+                <p class="text-amber-700">{{ e.correo }}</p>
+                <div class="flex space-x-2 mt-2">
+                  <button onclick="openEditModal('empleado', {{ e.id }}, '{{ e.nombre_completo|safe }}', '{{ e.correo|safe }}')" class="bg-blue-500 text-white px-2 py-1 rounded-lg hover:bg-blue-600">
+                    <i class="fas fa-edit"></i> Editar
+                  </button>
+                  <form method="POST" action="{{ url_for('admin_routes.eliminar_empleado', id=e.id) }}" class="inline">
+                    <button type="submit" class="bg-red-500 text-white px-2 py-1 rounded-lg hover:bg-red-600">
+                      <i class="fas fa-trash"></i> Eliminar
+                    </button>
+                  </form>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Agregar Cliente -->
+      <div id="agregar-cliente" class="bg-white p-6 rounded-lg shadow-md mb-6">
+        <h2 class="text-2xl font-bold text-amber-800 mb-4">Agregar Cliente</h2>
+        <form method="POST" action="{{ url_for('admin_routes.add_cliente') }}" class="space-y-4">
+          <input type="text" name="nombre_completo" placeholder="Nombre Completo" class="w-full p-2 border rounded-lg text-amber-700" required>
+          <input type="email" name="correo" placeholder="Correo" class="w-full p-2 border rounded-lg text-amber-700" required>
+          <input type="text" name="telefono" placeholder="Teléfono" class="w-full p-2 border rounded-lg text-amber-700" required>
+          <input type="text" name="direccion" placeholder="Dirección" class="w-full p-2 border rounded-lg text-amber-700" required>
+          <button type="submit" class="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700">Agregar</button>
+        </form>
+        <!-- Modificar Clientes -->
+        <div id="modificar-clientes" class="bg-white p-6 rounded-lg shadow-md mb-6">
+          <h2 class="text-2xl font-bold text-amber-800 mb-4">Modificar Clientes</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for c in clientes %}
+              <div class="bg-amber-50 p-4 rounded-lg shadow">
+                <h4 class="font-bold text-amber-800">{{ c.nombre_completo }}</h4>
+                <p class="text-amber-700">{{ c.correo }}</p>
+                <div class="flex space-x-2 mt-2">
+                  <button onclick="openEditModal('cliente', {{ c.id }}, '{{ c.nombre_completo|safe }}', '{{ c.correo|safe }}')" class="bg-blue-500 text-white px-2 py-1 rounded-lg hover:bg-blue-600">
+                    <i class="fas fa-edit"></i> Editar
+                  </button>
+                  <form method="POST" action="{{ url_for('admin_routes.eliminar_cliente', id=c.id) }}" class="inline">
+                    <button type="submit" class="bg-red-500 text-white px-2 py-1 rounded-lg hover:bg-red-600">
+                      <i class="fas fa-trash"></i> Eliminar
+                    </button>
+                  </form>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
   </main>
+
+  <!-- Modal de Notificaciones -->
+  <div id="notificationModal" class="fixed inset-0 flex items-center justify-center hidden bg-black bg-opacity-50 z-50">
+    <div class="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+      <h2 class="text-xl font-bold text-amber-800 mb-4">Notificaciones</h2>
+      {% if notificaciones %}
+        <ul class="space-y-2">
+          {% for notificacion in notificaciones %}
+            <li class="text-amber-700">
+              {{ notificacion.mensaje }} - {{ notificacion.fecha.strftime('%d/%m/%Y %H:%M') }}
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="text-amber-700">No hay notificaciones.</p>
+      {% endif %}
+      <button onclick="document.getElementById('notificationModal').classList.add('hidden')" class="mt-4 text-red-500 hover:text-red-700">Cerrar</button>
+    </div>
+  </div>
 
   <!-- Modal para Editar Producto -->
   <div id="editProductoModal" class="fixed inset-0 flex items-center justify-center hidden bg-black bg-opacity-50 z-50">
     <div class="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
       <h2 class="text-xl font-bold text-amber-800 mb-4">Editar Producto</h2>
-      <form id="editProductoForm" method="POST" action="" class="space-y-4">
+      <form id="editProductoForm" method="POST" action="" enctype="multipart/form-data" class="space-y-4">
         <input type="hidden" name="id" id="editProductoId">
         <input type="text" name="nombre" id="editProductoNombre" placeholder="Nombre" class="w-full p-2 border rounded-lg text-amber-700" required>
         <textarea name="descripcion" id="editProductoDescripcion" placeholder="Descripción" class="w-full p-2 border rounded-lg text-amber-700"></textarea>
         <input type="number" name="precio" id="editProductoPrecio" placeholder="Precio" step="0.01" class="w-full p-2 border rounded-lg text-amber-700" required>
         <input type="number" name="cantidad" id="editProductoCantidad" placeholder="Cantidad" class="w-full p-2 border rounded-lg text-amber-700" required>
+        <select name="categorias_id" id="editProductoCategoriasId" class="w-full p-2 border rounded-lg text-amber-700" required>
+          <option value="">Seleccionar categoría</option>
+          {% for c in categorias %}
+            <option value="{{ c.id }}">{{ c.nombre }}</option>
+          {% endfor %}
+        </select>
+        <label for="editarImagen">Imagen (opcional):</label>
+        <input type="file" name="imagen" id="editarImagen" accept="image/*">
         <button type="submit" class="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700">Guardar Cambios</button>
       </form>
       <button onclick="closeEditModal('producto')" class="mt-2 text-red-500 hover:text-red-700">Cerrar</button>
@@ -283,26 +352,66 @@
 
   <!-- JavaScript -->
   <script>
-    function openEditModal(type, id, nombre, descripcion, precio, cantidad) {
+    // Toggle Menú Lateral
+    document.getElementById('menu-toggle').addEventListener('click', function() {
+      document.getElementById('sidebar').classList.remove('-translate-x-full');
+    });
+
+    document.getElementById('close-menu').addEventListener('click', function() {
+      document.getElementById('sidebar').classList.add('-translate-x-full');
+      resetDashboard();
+    });
+
+    // Toggle Notificaciones
+    document.getElementById('notification-toggle').addEventListener('click', function() {
+      document.getElementById('notificationModal').classList.toggle('hidden');
+    });
+
+    // Mostrar Secciones en el Dashboard
+    function showSection(sectionId) {
+      document.getElementById('dynamic-content').classList.remove('hidden');
+      document.querySelectorAll('#dynamic-content > div').forEach(div => {
+        div.classList.add('hidden');
+      });
+      document.getElementById(sectionId).classList.remove('hidden');
+      document.getElementById('stats-section').classList.add('hidden');
+      document.getElementById('activity-section').classList.add('hidden');
+      document.getElementById('sidebar').classList.add('-translate-x-full');
+    }
+
+    // Restaurar Dashboard a estado inicial
+    function resetDashboard() {
+      document.getElementById('dynamic-content').classList.add('hidden');
+      document.querySelectorAll('#dynamic-content > div').forEach(div => {
+        div.classList.add('hidden');
+      });
+      document.getElementById('stats-section').classList.remove('hidden');
+      document.getElementById('activity-section').classList.remove('hidden');
+    }
+
+    // Modal Functions
+    function openEditModal(type, id, nombre, descripcion, precio, cantidad, categorias_id) {
       if (type === 'producto') {
         document.getElementById('editProductoId').value = id;
         document.getElementById('editProductoNombre').value = nombre;
         document.getElementById('editProductoDescripcion').value = descripcion;
         document.getElementById('editProductoPrecio').value = precio;
         document.getElementById('editProductoCantidad').value = cantidad;
-        document.getElementById('editProductoForm').action = `/editar_producto/${id}`;
+        document.getElementById('editProductoForm').action = `/admin/editar_producto/${id}`;
+        const selectCategorias = document.getElementById('editProductoCategoriasId');
+        selectCategorias.value = categorias_id;
         document.getElementById('editProductoModal').classList.remove('hidden');
       } else if (type === 'empleado') {
         document.getElementById('editEmpleadoId').value = id;
         document.getElementById('editEmpleadoNombre').value = nombre;
         document.getElementById('editEmpleadoCorreo').value = descripcion;
-        document.getElementById('editEmpleadoForm').action = `/editar_empleado/${id}`;
+        document.getElementById('editEmpleadoForm').action = `/admin/editar_empleado/${id}`;
         document.getElementById('editEmpleadoModal').classList.remove('hidden');
       } else if (type === 'cliente') {
         document.getElementById('editClienteId').value = id;
         document.getElementById('editClienteNombre').value = nombre;
         document.getElementById('editClienteCorreo').value = descripcion;
-        document.getElementById('editClienteForm').action = `/editar_cliente/${id}`;
+        document.getElementById('editClienteForm').action = `/admin/editar_cliente/${id}`;
         document.getElementById('editClienteModal').classList.remove('hidden');
       }
     }
@@ -318,4 +427,4 @@
     }
   </script>
 </body>
-</html> 
+</html>

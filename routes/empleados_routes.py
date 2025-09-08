@@ -11,6 +11,7 @@ from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter
 import smtplib
 from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 from email.mime.application import MIMEApplication
 from datetime import datetime
 
@@ -50,11 +51,11 @@ def empleado_panel():
     )
 
 # Crear una nueva orden
-
 @empleados_routes.route("/empleado/orden/nueva", methods=["POST"], endpoint="nueva_orden_unique")
 def nueva_orden():
     try:
         data = request.get_json()
+        print(f"Datos recibidos: {data}")  # Depuración
         if not data or "mesa_id" not in data or not data.get("productos"):
             return jsonify({"success": False, "error": "Datos incompletos"}), 400
 
@@ -76,22 +77,36 @@ def nueva_orden():
         total = 0
         for item in productos:
             if not isinstance(item, dict) or "id" not in item or "cantidad" not in item:
+                print(f"Producto inválido ignorado: {item}")
                 continue
             producto_id = item["id"]
             producto = Producto.query.get(producto_id)
             if not producto:
                 return jsonify({"success": False, "error": f"Producto con ID {producto_id} no encontrado"}), 404
+            print(f"Producto cargado - Atributos antes: {producto.__dict__}")  # Depuración antes
+            # Verifica y asigna el precio
+            if hasattr(producto, 'precio') and producto.precio is not None:
+                precio_unitario = float(producto.precio)
+                print(f"Precio encontrado: {precio_unitario}")  # Depuración
+            elif hasattr(producto, 'precio_unitario') and producto.precio_unitario is not None:
+                precio_unitario = float(producto.precio_unitario)
+                print(f"Precio_unitario encontrado: {precio_unitario}")  # Depuración
+            else:
+                return jsonify({"success": False, "error": f"Campo de precio no encontrado o nulo para producto ID {producto_id}"}), 400
+            print(f"Producto cargado - Atributos después: {producto.__dict__}")  # Depuración después
             cantidad = max(1, int(item.get("cantidad", 1)))
-            subtotal = producto.precio * cantidad
+            subtotal = precio_unitario * cantidad
             total += subtotal
 
             detalle = DetalleOrden(
                 orden_id=orden.id,
                 producto_id=producto.id,
                 cantidad=cantidad,
+                precio_unitario=precio_unitario,
                 subtotal=subtotal
             )
             db.session.add(detalle)
+            print(f"Detalle creado: orden_id={orden.id}, producto_id={producto_id}, cantidad={cantidad}, precio_unitario={precio_unitario}, subtotal={subtotal}")
 
         if total == 0 and not productos:
             return jsonify({"success": False, "error": "No se agregaron productos"}), 400
@@ -105,6 +120,7 @@ def nueva_orden():
         db.session.rollback()
         import traceback
         traceback.print_exc()
+        print(f"Error details: {str(e)}")
         return jsonify({"success": False, "error": str(e)}), 500
 
 # Finalizar orden (pagar) y enviar factura
@@ -119,7 +135,7 @@ def pagar_orden(orden_id):
         if not orden or orden.estado != "pendiente":
             return jsonify({"success": False, "error": "Orden no válida"}), 400
 
-        orden.estado = "pagada"
+        orden.estado = "pagado"
         orden.metodo_pago = metodo_pago
         orden.correo_cliente = correo_cliente
 
@@ -137,7 +153,7 @@ def pagar_orden(orden_id):
             elements.append(Spacer(1, 12))
             elements.append(Paragraph(f"Factura #{orden.id}", styles['Heading2']))
             elements.append(Paragraph(f"Cliente: {orden.correo_cliente.split('@')[0]}", styles['Normal']))
-            elements.append(Paragraph(f"Fecha: {orden.fecha.strftime('%Y-%m-%d %H:%M:%S')}", styles['Normal']))
+            elements.append(Paragraph(f"Fecha: {orden.fecha_creacion.strftime('%Y-%m-%d %H:%M:%S')}", styles['Normal']))
             elements.append(Paragraph(f"Método de Pago: {metodo_pago}", styles['Normal']))
             elements.append(Spacer(1, 12))
 
@@ -154,15 +170,15 @@ def pagar_orden(orden_id):
 
             table = Table(data)
             table.setStyle(TableStyle([
-                ('BACKGROUND', (0, 0), (-1, 0), colors.amber),
-                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-                ('FONTSIZE', (0, 0), (-1, 0), 14),
-                ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-                ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-                ('GRID', (0, 0), (-1, -1), 1, colors.black)
-            ]))
+    ('BACKGROUND', (0, 0), (-1, 0), colors.yellow),  # Cambiado de 'amber' a 'yellow'
+    ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+    ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+    ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+    ('FONTSIZE', (0, 0), (-1, 0), 14),
+    ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+    ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+    ('GRID', (0, 0), (-1, -1), 1, colors.black)
+]))
             elements.append(table)
 
             doc.build(elements)
@@ -176,7 +192,7 @@ def pagar_orden(orden_id):
             msg['To'] = correo_cliente
             msg['Subject'] = f'Factura #{orden.id} - Cafetería Las Dos Amigas'
 
-            msg.attach(MIMEText(f"Adjunto encontrará su factura #{orden.id}. Gracias por su compra."))
+            msg.attach(MIMEText(f"Adjunto encontrará su factura #{orden.id}. Gracias por su compra.", 'plain'))
             with buffer as attachment:
                 part = MIMEApplication(attachment.read(), Name=f"factura_{orden.id}.pdf")
                 part['Content-Disposition'] = f'attachment; filename="factura_{orden.id}.pdf"'

@@ -27,6 +27,7 @@ def create_app():
     from models.mesa import Mesa
     from models.detalle_orden import DetalleOrden
     from models.orden import Orden
+    from models.notificacion import Notificacion
     
     from routes.usuarios_route import usuarios_bp
     from routes.productos_route import productos_bp

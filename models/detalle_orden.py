@@ -9,3 +9,6 @@ class DetalleOrden(db.Model):
     producto_id = db.Column(db.Integer, db.ForeignKey("producto.id"), nullable=False)
     cantidad = db.Column(db.Integer, default=1)
     precio_unitario = db.Column(db.Float, nullable=False)
+    subtotal = db.Column(db.Float, nullable=False)
+    
+    producto = db.relationship("Producto", backref="detalles_orden", lazy=True)

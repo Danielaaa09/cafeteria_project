@@ -35,8 +35,6 @@ def login():
         return redirect(url_for('admin_routes.dashboard'))
 
     elif usuario.rol == 'empleado':
-        # 🔥 Importante: redirigimos al panel de empleados,
-        # que ya carga mesas, productos y órdenes correctamente.
         return redirect(url_for('empleados_routes.empleado_panel'))
 
     elif usuario.rol == 'cliente':
@@ -96,7 +94,7 @@ def cambiar_contrasena():
             return redirect(url_for('empleados_routes.empleado_panel'))
 
         elif usuario.rol == 'cliente':
-            return redirect(url_for('cliente_routes.index'))  # Corregido
+            return redirect(url_for('cliente_routes.index'))
 
         else:
             return render_template('login.html', error='Rol no reconocido')
@@ -115,8 +113,10 @@ def recuperar_contrasena():
             usuario.debe_cambiar_contrasena = True
             db.session.commit()
             from routes.admin_routes import enviar_correo
-            enviar_correo(correo, temp_pass, nombre_completo=usuario.nombre_completo)
-            mensaje = 'Se ha enviado una nueva contraseña temporal a tu correo.'
+            if enviar_correo(correo, temp_pass, nombre_completo=usuario.nombre_completo):
+                mensaje = 'Se ha enviado una nueva contraseña temporal a tu correo.'
+            else:
+                mensaje = 'El correo no se pudo enviar. Intenta de nuevo o contacta al admin.'
         else:
             mensaje = 'El correo no está registrado.'
     return render_template('recuperar_contrasena.html', mensaje=mensaje)
