@@ -11,7 +11,7 @@ from reportlab.pdfgen import canvas
 import io
 from models.categoria import Categoria
 
-cliente_routes = Blueprint('cliente_routes', __name__)
+cliente_routes = Blueprint('cliente_routes', __name__) 
 
 @cliente_routes.route('/cliente')
 def index():

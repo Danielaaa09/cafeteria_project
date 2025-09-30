@@ -145,43 +145,70 @@ def pagar_orden(orden_id):
         # Generar y enviar factura PDF si se proporciona un correo
         if correo_cliente:
             buffer = BytesIO()
-            doc = SimpleDocTemplate(buffer, pagesize=letter)
-            styles = getSampleStyleSheet()
-            elements = []
-
-            elements.append(Paragraph("Cafetería Las Dos Amigas", styles['Title']))
-            elements.append(Spacer(1, 12))
-            elements.append(Paragraph(f"Factura #{orden.id}", styles['Heading2']))
-            elements.append(Paragraph(f"Cliente: {orden.correo_cliente.split('@')[0]}", styles['Normal']))
-            elements.append(Paragraph(f"Fecha: {orden.fecha_creacion.strftime('%Y-%m-%d %H:%M:%S')}", styles['Normal']))
-            elements.append(Paragraph(f"Método de Pago: {metodo_pago}", styles['Normal']))
-            elements.append(Spacer(1, 12))
-
+            from reportlab.pdfgen import canvas
+            from reportlab.lib.pagesizes import letter
+            width, height = letter
+            p = canvas.Canvas(buffer, pagesize=letter)
+            # Encabezado
+            p.setFillColorRGB(0.87, 0.68, 0.21)
+            p.setFont("Helvetica-Bold", 24)
+            p.drawString(200, height - 60, "Cafetería Las Dos Amigas")
+            p.line(50, height - 70, width - 50, height - 70)
+            p.setFillColorRGB(0, 0, 0)
+            p.setFont("Helvetica", 10)
+            p.drawString(50, height - 90, "Factura N° " + str(orden.id))
+            p.setFont("Helvetica-Bold", 12)
+            p.drawString(50, height - 120, "Detalles de la Factura")
+            p.setFont("Helvetica", 10)
+            p.drawString(50, height - 140, f"Cliente: {orden.correo_cliente.split('@')[0]}")
+            p.drawString(50, height - 160, f"Fecha: {orden.fecha_creacion.strftime('%d/%m/%Y %H:%M')}")
+            p.drawString(50, height - 180, f"Método de Pago: {metodo_pago}")
+            y = height - 200
+            p.setFont("Helvetica-Bold", 10)
+            p.drawString(50, y, "Producto")
+            p.drawString(250, y, "Cantidad")
+            p.drawString(350, y, "Precio Unit.")
+            p.drawString(450, y, "Subtotal")
+            y -= 20
+            p.setFillColorRGB(0.95, 0.95, 0.95)
+            p.rect(50, y, 500, 20, fill=True, stroke=False)
+            p.setFillColorRGB(0, 0, 0)
+            p.setFont("Helvetica", 10)
             detalles = DetalleOrden.query.filter_by(orden_id=orden.id).all()
-            data = [['Producto', 'Cantidad', 'Precio Unitario', 'Subtotal']]
             for detalle in detalles:
-                data.append([
-                    detalle.producto.nombre,
-                    detalle.cantidad,
-                    f"${detalle.subtotal / detalle.cantidad:.2f}",
-                    f"${detalle.subtotal:.2f}"
-                ])
-            data.append(['Total', '', '', f"${orden.total:.2f}"])
-
-            table = Table(data)
-            table.setStyle(TableStyle([
-    ('BACKGROUND', (0, 0), (-1, 0), colors.yellow),  # Cambiado de 'amber' a 'yellow'
-    ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-    ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-    ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-    ('FONTSIZE', (0, 0), (-1, 0), 14),
-    ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-    ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-    ('GRID', (0, 0), (-1, -1), 1, colors.black)
-]))
-            elements.append(table)
-
-            doc.build(elements)
+                producto = detalle.producto
+                y -= 20
+                if y < 50:
+                    p.showPage()
+                    y = height - 60
+                    p.setFont("Helvetica-Bold", 10)
+                    p.drawString(50, y, "Producto")
+                    p.drawString(250, y, "Cantidad")
+                    p.drawString(350, y, "Precio Unit.")
+                    p.drawString(450, y, "Subtotal")
+                    y -= 20
+                    p.setFillColorRGB(0.95, 0.95, 0.95)
+                    p.rect(50, y, 500, 20, fill=True, stroke=False)
+                    p.setFillColorRGB(0, 0, 0)
+                p.drawString(50, y, producto.nombre)
+                p.drawString(250, y, str(detalle.cantidad))
+                p.drawString(350, y, f"${detalle.subtotal / detalle.cantidad:.2f}")
+                p.drawString(450, y, f"${detalle.subtotal:.2f}")
+            y -= 30
+            p.setFillColorRGB(0.87, 0.68, 0.21)
+            p.rect(350, y, 200, 20, fill=True, stroke=False)
+            p.setFillColorRGB(1, 1, 1)
+            p.setFont("Helvetica-Bold", 12)
+            p.drawString(350, y + 5, "TOTAL:")
+            p.drawString(450, y + 5, f"${orden.total:.2f}")
+            p.setFillColorRGB(0, 0, 0)
+            y -= 40
+            p.setFont("Helvetica-Oblique", 10)
+            p.setFillColorRGB(0.4, 0.4, 0.4)
+            p.drawString(200, y, "¡Gracias por tu compra en Cafetería Las Dos Amigas!")
+            p.setFillColorRGB(0, 0, 0)
+            p.showPage()
+            p.save()
             buffer.seek(0)
 
             # Enviar correo con la factura
