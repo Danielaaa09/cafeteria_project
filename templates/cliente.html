@@ -13,38 +13,46 @@
   <header class="bg-white shadow-lg sticky top-0 z-50">
     <nav class="container mx-auto px-4 py-4">
       <div class="flex justify-between items-center">
+        <!-- <CHANGE> Added hamburger menu button like admin dashboard -->
+        <button id="menu-toggle" class="text-amber-800 text-2xl mr-4">
+          <i class="fas fa-bars"></i>
+        </button>
         <div class="flex items-center space-x-2">
           <i class="fas fa-coffee text-amber-600 text-2xl"></i>
           <h1 class="text-2xl font-bold text-amber-800">Cafetería Las Dos Amigas</h1>
         </div>
-        <div class="hidden md:flex space-x-8">
-          <a href="{{ url_for('cliente_routes.index') }}" class="text-amber-600 font-medium">Mi Tienda</a>
-        </div>
         <div class="flex items-center space-x-4">
-          <div class="relative">
-            <div class="flex items-center space-x-2 text-amber-800 font-medium">
-              <i class="fas fa-user-circle text-amber-600 text-xl"></i>
-              <span>Hola, {{ usuario.nombre_completo }}</span>
-            </div>
-            <div class="flex space-x-2 mt-2">
-              <button id="ver-perfil-btn" class="text-amber-700 hover:text-amber-900 text-sm">Ver Perfil</button>
-              <button id="ver-historial-btn" class="text-amber-700 hover:text-amber-900 text-sm">Ver Historial</button>
-              <button onclick="window.location.href='{{ url_for('auth_routes.logout') }}'" 
-                      class="text-amber-800 hover:text-amber-600 font-medium transition-colors">
-                <i class="fas fa-sign-out-alt"></i> Cerrar sesión
-              </button>
-            </div>
+          <div class="flex items-center space-x-2 text-amber-800 font-medium">
+            <i class="fas fa-user-circle text-amber-600 text-xl"></i>
+            <span>Hola, {{ usuario.nombre_completo }}</span>
           </div>
+          <button onclick="window.location.href='{{ url_for('auth_routes.logout') }}'" 
+                  class="text-amber-800 hover:text-amber-600 font-medium transition-colors">
+            <i class="fas fa-sign-out-alt"></i> Cerrar sesión
+          </button>
         </div>
       </div>
     </nav>
   </header>
 
+  <!-- <CHANGE> Sidebar menu like admin dashboard - hidden by default, slides in from left -->
+  <aside id="sidebar" class="bg-white w-64 min-h-screen p-4 shadow-lg fixed top-0 left-0 z-50 transform -translate-x-full transition-transform duration-300 ease-in-out">
+    <button id="close-menu" class="text-amber-800 text-2xl absolute top-4 right-4">
+      <i class="fas fa-times"></i>
+    </button>
+    <div class="mt-12">
+      <h2 class="text-lg font-semibold text-amber-800 mb-2">Panel de Cliente</h2>
+      <button class="w-full bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 mb-2" onclick="showSection('productos')">Mi Tienda</button>
+      <button class="w-full bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 mb-2" onclick="showSection('perfil')">Ver Perfil</button>
+      <button class="w-full bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 mb-2" onclick="showSection('historial')">Ver Historial</button>
+    </div>
+  </aside>
+
   <!-- Main -->
   <main class="container mx-auto px-4 py-8">
-    <div class="flex flex-col lg:flex-row gap-8">
+    <div class="flex gap-8">
       <!-- Contenido principal -->
-      <section class="lg:w-2/3">
+      <section class="flex-1">
         <!-- Sección de productos -->
         <div id="productos-section">
           <h2 class="text-3xl font-bold text-amber-800 mb-8">Nuestros Productos</h2>
@@ -125,8 +133,8 @@
         </div>
       </section>
 
-      <!-- Carrito -->
-      <aside class="lg:w-1/3">
+      <!-- <CHANGE> Carrito sidebar - will be hidden when viewing profile or history -->
+      <aside id="carrito-sidebar" class="w-96 flex-shrink-0">
         <div class="bg-white rounded-xl shadow-lg p-6 sticky top-24">
           <h3 class="text-2xl font-bold text-amber-800 mb-6 flex items-center">
             <i class="fas fa-shopping-cart mr-2"></i> Mi Carrito
@@ -161,7 +169,7 @@
   </main>
 
   <!-- Flotante móvil -->
-  <div class="floating-cart lg:hidden">
+  <div id="floating-cart" class="floating-cart lg:hidden">
     <button onclick="toggleMobileCart()" class="bg-amber-600 text-white p-4 rounded-full shadow-lg hover:bg-amber-700 transition-colors relative">
       <i class="fas fa-shopping-cart text-xl"></i>
       <span id="cartBadge" class="cart-badge hidden">0</span>
@@ -194,28 +202,49 @@
 
   <!-- JavaScript -->
   <script>
-    // --- Mostrar/ocultar secciones ---
+    // <CHANGE> Variables globales para las secciones
     const productosSection = document.getElementById('productos-section');
     const editarPerfilSection = document.getElementById('editar-perfil-section');
     const historialSection = document.getElementById('historial-section');
-    const verPerfilBtn = document.getElementById('ver-perfil-btn');
-    const verHistorialBtn = document.getElementById('ver-historial-btn');
+    const carritoSidebar = document.getElementById('carrito-sidebar');
+    const floatingCart = document.getElementById('floating-cart');
 
-    function mostrarSeccion(seccion) {
+    // <CHANGE> Toggle menu lateral (igual que admin dashboard)
+    document.getElementById('menu-toggle').addEventListener('click', function() {
+      document.getElementById('sidebar').classList.remove('-translate-x-full');
+    });
+
+    document.getElementById('close-menu').addEventListener('click', function() {
+      document.getElementById('sidebar').classList.add('-translate-x-full');
+    });
+
+    // <CHANGE> Función para mostrar secciones (igual que admin dashboard)
+    function showSection(sectionId) {
+      // Ocultar todas las secciones
       productosSection.classList.add('hidden');
       editarPerfilSection.classList.add('hidden');
       historialSection.classList.add('hidden');
-      seccion.classList.remove('hidden');
+
+      // Mostrar la sección seleccionada
+      if (sectionId === 'productos') {
+        productosSection.classList.remove('hidden');
+        carritoSidebar.classList.remove('hidden');
+        floatingCart.classList.remove('hidden');
+      } else if (sectionId === 'perfil') {
+        editarPerfilSection.classList.remove('hidden');
+        carritoSidebar.classList.add('hidden');
+        floatingCart.classList.add('hidden');
+      } else if (sectionId === 'historial') {
+        historialSection.classList.remove('hidden');
+        carritoSidebar.classList.add('hidden');
+        floatingCart.classList.add('hidden');
+        // <CHANGE> Fixed: Load history when showing history section
+        loadHistorial();
+      }
+
+      // Cerrar el menú lateral
+      document.getElementById('sidebar').classList.add('-translate-x-full');
     }
-
-    verPerfilBtn.addEventListener('click', () => {
-      mostrarSeccion(editarPerfilSection);
-    });
-
-    verHistorialBtn.addEventListener('click', () => {
-      mostrarSeccion(historialSection);
-      loadHistorial();
-    });
 
     // --- Acordeón categorías ---
     function toggleCategoria(id) {
@@ -335,7 +364,6 @@
           cart = [];
           renderCart();
           renderMobileCart();
-          loadHistorial();
         } else {
           alert("Error: " + (data.error || 'Sin detalles del error'));
         }
@@ -344,7 +372,7 @@
       }
     }
 
-    // --- Historial de Compras ---
+    // <CHANGE> Fixed: Historial de Compras function restored to original logic
     async function loadHistorial() {
       const historialItems = document.getElementById('historial-items');
       historialItems.innerHTML = '<p class="text-amber-700 text-center py-2">Cargando historial...</p>';
@@ -359,7 +387,7 @@
             historialItems.innerHTML = '<p class="text-amber-700 text-center py-2">No hay compras registradas.</p>';
           } else {
             historialItems.innerHTML = data.historial.map(venta => `
-              <div class="bg-amber-50 p-3 rounded-lg shadow">
+              <div class="bg-amber-50 p-3 rounded-lg shadow mb-3">
                 <div class="flex justify-between items-center mb-1">
                   <span class="text-amber-800 font-semibold">Fecha: ${venta.fecha}</span>
                   <span class="text-amber-600 font-bold">$${venta.total.toFixed(2)}</span>
@@ -400,7 +428,7 @@
           if (!data.error) {
             setTimeout(() => {
               mensajePerfil.classList.add('hidden');
-              mostrarSeccion(productosSection);
+              showSection('productos');
               location.reload();
             }, 2000);
           }
