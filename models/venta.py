@@ -9,6 +9,6 @@ class Venta(db.Model):
     usuarios_id = db.Column(db.Integer, db.ForeignKey("usuarios.id"), nullable=False)
     metodo_pago = db.Column(db.String(50), nullable=False)
     total = db.Column(db.Float, nullable=False)
-
+ 
     # relación con DetalleVenta
     detalles = db.relationship("DetalleVenta", back_populates="venta", lazy=True)

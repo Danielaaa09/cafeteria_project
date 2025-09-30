@@ -39,7 +39,6 @@ def checkout():
             metodo_pago=metodo_pago
         )
         db.session.add(venta)
-        db.session.commit()
         for item in carrito:
             producto = Producto.query.get(item['id'])
             if not producto:

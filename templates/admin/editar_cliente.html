@@ -1,0 +1,64 @@
+{% extends 'admin/dashboard.html' %} {% block content %}
+<div
+  class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
+>
+  <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
+    <h2 class="text-xl font-bold mb-4">Editar Cliente</h2>
+    <form method="POST" action="">
+      <div class="mb-4">
+        <label class="block text-gray-700">Nombre completo</label>
+        <input
+          type="text"
+          name="nombre_completo"
+          value="{{ cliente.nombre_completo }}"
+          class="w-full border rounded px-3 py-2"
+          required
+        />
+      </div>
+      <div class="mb-4">
+        <label class="block text-gray-700">Correo</label>
+        <input
+          type="email"
+          name="correo"
+          value="{{ cliente.correo }}"
+          class="w-full border rounded px-3 py-2"
+          required
+        />
+      </div>
+      <div class="mb-4">
+        <label class="block text-gray-700">Teléfono</label>
+        <input
+          type="text"
+          name="telefono"
+          value="{{ cliente.telefono }}"
+          class="w-full border rounded px-3 py-2"
+          required
+        />
+      </div>
+      <div class="mb-4">
+        <label class="block text-gray-700">Dirección</label>
+        <input
+          type="text"
+          name="direccion"
+          value="{{ cliente.direccion }}"
+          class="w-full border rounded px-3 py-2"
+          required
+        />
+      </div>
+      <div class="flex justify-end gap-2">
+        <a
+          href="{{ url_for('admin_routes.dashboard') }}"
+          class="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500"
+          >Cancelar</a
+        >
+        <button
+          type="submit"
+          class="bg-amber-600 text-white px-4 py-2 rounded hover:bg-amber-700"
+        >
+          Guardar
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
