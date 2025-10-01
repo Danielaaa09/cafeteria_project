@@ -13,6 +13,8 @@ import os
 from werkzeug.utils import secure_filename
 from datetime import date, datetime, timedelta
 from config import settings
+from models.notificacion import Notificacion
+import json
 
 admin_routes = Blueprint('admin_routes', __name__)
 
@@ -132,11 +134,17 @@ def dashboard():
         })
 
     productos_bajo_stock = [p for p in productos if p.cantidad <= 10]
-
+    notificaciones = Notificacion.query.order_by(Notificacion.fecha.desc()).limit(10).all()
+    # Procesar datos JSON
+    for n in notificaciones:
+        try:
+            n.datos_dict = json.loads(n.datos) if n.datos else {}
+        except Exception:
+            n.datos_dict = {}
     return render_template(
         'admin/dashboard.html',
         usuarios=usuarios,
-        empleados=empleados,
+        empleados=empleados, 
         clientes=clientes,
         categorias=categorias,
         productos=productos,
@@ -152,7 +160,8 @@ def dashboard():
         ventas_tarjeta=ventas_tarjeta,
         ventas_transferencia=ventas_transferencia,
         productos_bajo_stock=productos_bajo_stock,
-        sales_history=sales_history
+        sales_history=sales_history,
+        notificaciones=notificaciones,
     )
 
 # ---------------------------

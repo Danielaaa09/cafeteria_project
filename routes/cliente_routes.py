@@ -10,6 +10,8 @@ from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 import io
 from models.categoria import Categoria
+from models.notificacion import Notificacion
+import json
 
 cliente_routes = Blueprint('cliente_routes', __name__) 
 
@@ -50,6 +52,42 @@ def checkout():
                 subtotal=float(item['precio']) * int(item['cantidad'])
             )
             db.session.add(detalle)
+        # Notificación de nuevo pedido
+        cliente = Usuario.query.get(session['user_id'])
+        mensaje = f"Nuevo pedido de {cliente.nombre_completo}"
+        datos_pedido = {
+            "cliente": cliente.nombre_completo,
+            "productos": [detalle.producto.nombre for detalle in venta.detalles],
+            "total": venta.total,
+            "fecha": str(venta.fecha)
+        }
+        notificacion = Notificacion(
+            mensaje=mensaje,
+            tipo='pedido',
+            datos=json.dumps(datos_pedido)
+        )
+        db.session.add(notificacion)
+        db.session.commit()
+        detalles_venta = DetalleVenta.query.filter_by(venta_id=venta.id).all()
+        for detalle in detalles_venta:  # detalles_venta es la lista de productos comprados
+            producto = Producto.query.get(detalle.producto_id)
+            if producto:
+                producto.cantidad -= detalle.cantidad
+                if producto.cantidad < 0:
+                    producto.cantidad = 0
+                # Notificación de stock bajo
+                if producto.cantidad <= 5:
+                    mensaje = f"Stock bajo para {producto.nombre}: quedan {producto.cantidad} unidades."
+                    datos = {
+                        "producto": producto.nombre,
+                        "cantidad": producto.cantidad
+                    }
+                    notificacion = Notificacion(
+                        mensaje=mensaje,
+                        tipo='stock_bajo',
+                        datos=json.dumps(datos)
+                    )
+                    db.session.add(notificacion)
         db.session.commit()
         return jsonify({'message': 'Compra realizada con éxito', 'venta_id': venta.id})
     except Exception as e:

@@ -4,6 +4,7 @@ from models.producto import Producto
 from models.mesa import Mesa
 from models.orden import Orden
 from models.detalle_orden import DetalleOrden
+from models.notificacion import Notificacion
 from io import BytesIO
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
 from reportlab.lib.styles import getSampleStyleSheet
@@ -14,6 +15,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.application import MIMEApplication
 from datetime import datetime
+import json
 
 empleados_routes = Blueprint("empleados_routes", __name__)
 
@@ -24,7 +26,7 @@ def empleado_panel():
     mesas_json = [{"id": m.id, "numero": m.numero, "estado": m.estado} for m in mesas]
 
     # Agrupar productos por categoría
-    productos = Producto.query.all()
+    productos = Producto.query.filter(Producto.cantidad > 0).all()
     productos_por_categoria = {}
     for p in productos:
         categoria_nombre = p.categoria.nombre if p.categoria else "Sin categoría"
@@ -106,6 +108,23 @@ def nueva_orden():
                 subtotal=subtotal
             )
             db.session.add(detalle)
+            # --- ACTUALIZAR STOCK Y NOTIFICAR ---
+            producto.cantidad -= cantidad
+            if producto.cantidad < 0:
+                producto.cantidad = 0
+            # Notificación de stock bajo
+            if producto.cantidad <= 5:
+                mensaje = f"Stock bajo para {producto.nombre}: quedan {producto.cantidad} unidades."
+                datos = {
+                    "producto": producto.nombre,
+                    "cantidad": producto.cantidad
+                }
+                notificacion = Notificacion(
+                    mensaje=mensaje,
+                    tipo='stock_bajo',
+                    datos=json.dumps(datos)
+                )
+                db.session.add(notificacion)
             print(f"Detalle creado: orden_id={orden.id}, producto_id={producto_id}, cantidad={cantidad}, precio_unitario={precio_unitario}, subtotal={subtotal}")
 
         if total == 0 and not productos:

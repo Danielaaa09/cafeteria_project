@@ -48,6 +48,7 @@ def register():
     correo = request.form.get('correo') or request.json.get('correo')
     contrasena = request.form.get('contrasena') or request.json.get('contrasena')
     telefono = request.form.get('telefono') or request.json.get('telefono')
+    direccion = request.form.get('direccion') or request.json.get('direccion')
 
     if not nombre or not correo or not contrasena:
         return render_template('register.html', error='Faltan campos requeridos')
@@ -59,6 +60,7 @@ def register():
         nombre_completo=nombre,
         correo=correo,
         telefono=telefono,
+        direccion=direccion,
         rol='cliente',
         fecha_creacion=datetime.datetime.utcnow()
     )
