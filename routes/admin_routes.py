@@ -22,8 +22,8 @@ admin_routes = Blueprint('admin_routes', __name__)
 # EMAIL
 # ---------------------------
 def enviar_correo(destinatario, contrasena_temporal, nombre_completo=None):
-    remitente = settings.EMAIL_USER or 'cafeterialasdosamigas@gmail.com'
-    password = settings.EMAIL_PASS or 'doehmsrgujcalrrlr'
+    remitente = 'cafeterialasdosamigas@gmail.com'
+    password = 'doehmsrgujcalrrj'
 
     mensaje = MIMEMultipart()
     mensaje['From'] = remitente
