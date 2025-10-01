@@ -19,8 +19,10 @@
     <header class="bg-white shadow-lg sticky top-0 z-50">
       <nav class="container mx-auto px-4 py-4">
         <div class="flex justify-between items-center">
-          <!-- <CHANGE> Added hamburger menu button like admin dashboard -->
-          <button id="menu-toggle" class="text-amber-800 text-2xl mr-4">
+          <button
+            id="menu-toggle"
+            class="text-amber-800 text-2xl mr-4 lg:hidden"
+          >
             <i class="fas fa-bars"></i>
           </button>
           <div class="flex items-center space-x-2">
@@ -45,10 +47,10 @@
       </nav>
     </header>
 
-    <!-- <CHANGE> Sidebar menu like admin dashboard - hidden by default, slides in from left -->
+    <!-- Sidebar menu (overlay en móvil) -->
     <aside
       id="sidebar"
-      class="bg-white w-64 min-h-screen p-4 shadow-lg fixed top-0 left-0 z-50 transform -translate-x-full transition-transform duration-300 ease-in-out"
+      class="bg-white w-64 min-h-screen p-4 shadow-lg fixed top-0 left-0 z-50 transform -translate-x-full transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 lg:w-64"
     >
       <button
         id="close-menu"
@@ -82,13 +84,15 @@
     </aside>
 
     <!-- Main -->
-    <main class="container mx-auto px-4 py-8">
-      <div class="flex gap-8">
+    <main class="container mx-auto px-2 py-4">
+      <div class="flex flex-col lg:flex-row gap-4">
         <!-- Contenido principal -->
         <section class="flex-1">
           <!-- Sección de productos -->
           <div id="productos-section">
-            <h2 class="text-3xl font-bold text-amber-800 mb-8">
+            <h2
+              class="text-2xl lg:text-3xl font-bold text-amber-800 mb-4 lg:mb-8"
+            >
               Nuestros Productos
             </h2>
             {% if categorias %}
@@ -108,10 +112,17 @@
                     id="icon-cat{{ categoria.id }}"
                   ></i>
                 </button>
-                <div id="cat{{ categoria.id }}" class="hidden px-6 pb-6">
-                  <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
+                <div
+                  id="cat{{ categoria.id }}"
+                  class="hidden px-2 pb-4 lg:px-6 lg:pb-6"
+                >
+                  <div
+                    class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-6"
+                  >
                     {% for producto in categoria.productos %}
-                    <div class="product-card bg-amber-50 rounded-lg shadow p-4">
+                    <div
+                      class="product-card bg-amber-50 rounded-lg shadow p-2 lg:p-4"
+                    >
                       <img
                         src="{{ producto.imagen_url or '/static/img/default.png' }}"
                         alt="{{ producto.nombre }}"
@@ -134,6 +145,13 @@
                           <i class="fas fa-plus"></i> Agregar
                         </button>
                       </div>
+                      <div class="mt-2">
+                        {% if producto.cantidad == 0 %}
+                        <span class="text-red-600 font-bold"
+                          >No disponible</span
+                        >
+                        {% else %} {{ producto.cantidad }} {% endif %}
+                      </div>
                     </div>
                     {% else %}
                     <p class="text-amber-600 text-sm col-span-full">
@@ -154,12 +172,14 @@
 
           <!-- Sección de editar perfil -->
           <div id="editar-perfil-section" class="hidden">
-            <h2 class="text-3xl font-bold text-amber-800 mb-8">
+            <h2
+              class="text-2xl lg:text-3xl font-bold text-amber-800 mb-4 lg:mb-8"
+            >
               Editar Perfil
             </h2>
             <form
               id="editar-perfil-form"
-              class="bg-white rounded-xl shadow-md p-6 max-w-md"
+              class="bg-white rounded-xl shadow-md p-4 lg:p-6 max-w-full lg:max-w-md"
             >
               <div class="mb-4">
                 <label
@@ -233,8 +253,15 @@
 
           <!-- Sección de historial -->
           <div id="historial-section" class="hidden">
-            <h2 class="text-3xl font-bold text-amber-800 mb-8">Mis Compras</h2>
-            <div id="historial-items" class="bg-white rounded-xl shadow-md p-6">
+            <h2
+              class="text-2xl lg:text-3xl font-bold text-amber-800 mb-4 lg:mb-8"
+            >
+              Mis Compras
+            </h2>
+            <div
+              id="historial-items"
+              class="bg-white rounded-xl shadow-md p-4 lg:p-6"
+            >
               <p class="text-amber-700 text-center py-2">
                 Cargando historial...
               </p>
@@ -242,9 +269,9 @@
           </div>
         </section>
 
-        <!-- <CHANGE> Carrito sidebar - will be hidden when viewing profile or history -->
-        <aside id="carrito-sidebar" class="w-96 flex-shrink-0">
-          <div class="bg-white rounded-xl shadow-lg p-6 sticky top-24">
+        <!-- Carrito sidebar -->
+        <aside id="carrito-sidebar" class="w-full lg:w-96 flex-shrink-0">
+          <div class="bg-white rounded-xl shadow-lg p-4 lg:p-6 sticky top-24">
             <h3
               class="text-2xl font-bold text-amber-800 mb-6 flex items-center"
             >
@@ -293,7 +320,7 @@
     </main>
 
     <!-- Flotante móvil -->
-    <div id="floating-cart" class="floating-cart lg:hidden">
+    <div id="floating-cart" class="fixed bottom-6 right-6 z-50 lg:hidden">
       <button
         onclick="toggleMobileCart()"
         class="bg-amber-600 text-white p-4 rounded-full shadow-lg hover:bg-amber-700 transition-colors relative"
@@ -309,7 +336,7 @@
       class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden lg:hidden"
     >
       <div
-        class="absolute bottom-0 left-0 right-0 bg-white rounded-t-xl p-6 max-h-96 overflow-y-auto"
+        class="absolute bottom-0 left-0 right-0 bg-white rounded-t-xl p-4 max-h-96 overflow-y-auto"
       >
         <div class="flex justify-between items-center mb-4">
           <h3 class="text-xl font-bold text-amber-800">Mi Carrito</h3>
