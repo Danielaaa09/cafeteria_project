@@ -40,7 +40,6 @@ def create_app():
     from routes.acerca_routes import acerca_routes
     from routes.menu_routes import menu_routes
     from routes.reserva_routes import reserva_routes
-    from routes.contacto_routes import contacto_routes
     from routes.cliente_routes import cliente_routes
     from routes.empleados_routes import empleados_routes
 
@@ -55,7 +54,6 @@ def create_app():
     app.register_blueprint(menu_routes)
     app.register_blueprint(acerca_routes)
     app.register_blueprint(reserva_routes)
-    app.register_blueprint(contacto_routes)
     app.register_blueprint(cliente_routes)
     app.register_blueprint(empleados_routes)
 
