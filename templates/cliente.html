@@ -447,6 +447,27 @@
         renderMobileCart();
       }
 
+      function increaseQuantity(id) {
+        const item = cart.find((item) => item.id === id);
+        if (item) {
+          item.cantidad += 1;
+          renderCart();
+          renderMobileCart();
+        }
+      }
+
+      function decreaseQuantity(id) {
+        const item = cart.find((item) => item.id === id);
+        if (item && item.cantidad > 1) {
+          item.cantidad -= 1;
+        } else if (item && item.cantidad === 1) {
+          removeFromCart(id);
+          return;
+        }
+        renderCart();
+        renderMobileCart();
+      }
+
       function renderCart() {
         const cartItems = document.getElementById("cartItems");
         const cartTotal = document.getElementById("cartTotal");
@@ -467,19 +488,25 @@
         cart.forEach((item) => {
           total += item.precio * item.cantidad;
           cartItems.innerHTML += `
-          <div class="flex justify-between items-center bg-amber-50 p-3 rounded-lg shadow">
-            <div>
-              <p class="font-semibold text-amber-800 text-sm sm:text-base">${item.nombre}</p>
-              <p class="text-xs sm:text-sm text-amber-600">Cantidad: ${item.cantidad}</p>
+            <div class="flex justify-between items-center bg-amber-50 p-3 rounded-lg shadow">
+              <div>
+                <p class="font-semibold text-amber-800 text-sm sm:text-base">${item.nombre}</p>
+                <p class="text-xs sm:text-sm text-amber-600">Cantidad: ${item.cantidad}</p>
+              </div>
+              <div class="flex items-center space-x-3">
+                <button onclick="decreaseQuantity('${item.id}')" class="text-amber-600 hover:text-amber-800">
+                  <i class="fas fa-minus text-sm sm:text-base"></i>
+                </button>
+                <span class="text-amber-700 font-bold text-sm sm:text-base">${(item.precio * item.cantidad).toFixed(2)}</span>
+                <button onclick="increaseQuantity('${item.id}')" class="text-amber-600 hover:text-amber-800">
+                  <i class="fas fa-plus text-sm sm:text-base"></i>
+                </button>
+                <button onclick="removeFromCart('${item.id}')" class="text-red-600 hover:text-red-800">
+                  <i class="fas fa-trash text-sm sm:text-base"></i>
+                </button>
+              </div>
             </div>
-            <div class="flex items-center space-x-3">
-              <span class="text-amber-700 font-bold text-sm sm:text-base">$${(item.precio * item.cantidad).toFixed(2)}</span>
-              <button onclick="removeFromCart('${item.id}')" class="text-red-600 hover:text-red-800">
-                <i class="fas fa-trash text-sm sm:text-base"></i>
-              </button>
-            </div>
-          </div>
-        `;
+          `;
         });
 
         cartTotal.textContent = "$" + total.toFixed(2);
@@ -502,14 +529,22 @@
         mobileCartItems.innerHTML = cart
           .map(
             (item) => `
-        <div class="flex justify-between items-center bg-amber-50 p-2 rounded-lg">
-          <div>
-            <p class="font-semibold text-amber-800 text-sm sm:text-base">${item.nombre}</p>
-            <p class="text-xs sm:text-sm text-amber-600">x${item.cantidad}</p>
-          </div>
-          <span class="text-amber-700 font-bold text-sm sm:text-base">$${(item.precio * item.cantidad).toFixed(2)}</span>
-        </div>
-      `
+              <div class="flex justify-between items-center bg-amber-50 p-2 rounded-lg">
+                <div>
+                  <p class="font-semibold text-amber-800 text-sm sm:text-base">${item.nombre}</p>
+                  <div class="flex items-center space-x-2">
+                    <button onclick="decreaseQuantity('${item.id}')" class="text-amber-600 hover:text-amber-800">
+                      <i class="fas fa-minus text-sm sm:text-base"></i>
+                    </button>
+                    <span class="text-amber-600 text-sm sm:text-base">x${item.cantidad}</span>
+                    <button onclick="increaseQuantity('${item.id}')" class="text-amber-600 hover:text-amber-800">
+                      <i class="fas fa-plus text-sm sm:text-base"></i>
+                    </button>
+                  </div>
+                </div>
+                <span class="text-amber-700 font-bold text-sm sm:text-base">$${(item.precio * item.cantidad).toFixed(2)}</span>
+              </div>
+            `
           )
           .join("");
         total = cart.reduce(
@@ -573,32 +608,32 @@
               historialItems.innerHTML = data.historial
                 .map(
                   (pedido) => `
-              <div class="bg-amber-50 p-3 rounded-lg shadow mb-3">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-1">
-                  <span class="text-amber-800 font-semibold text-sm sm:text-base">Fecha: ${
-                    pedido.fecha
-                  } (${pedido.tipo})</span>
-                  <span class="text-amber-600 font-bold text-sm sm:text-base">$${pedido.total.toFixed(
-                    2
-                  )}</span>
-                </div>
-                <div class="text-amber-700 text-xs sm:text-sm">Método: ${pedido.metodo_pago}</div>
-                <div class="text-amber-700 text-xs sm:text-sm">Estado: ${pedido.estado}</div>
-                <div class="ml-0 sm:ml-4 mt-1 text-xs sm:text-sm text-amber-600">
-                  ${pedido.detalles
-                    .map(
-                      (d) =>
-                        `${d.nombre} (x${d.cantidad}) - $${d.subtotal.toFixed(
-                          2
-                        )}`
-                    )
-                    .join("<br>")}
-                </div>
-                <a href="/factura/${
-                  pedido.id
-                }/${pedido.tipo}" class="text-amber-600 hover:underline mt-2 block text-xs sm:text-sm">Descargar Factura</a>
-              </div>
-            `
+                  <div class="bg-amber-50 p-3 rounded-lg shadow mb-3">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-1">
+                      <span class="text-amber-800 font-semibold text-sm sm:text-base">Fecha: ${
+                        pedido.fecha
+                      } (${pedido.tipo})</span>
+                      <span class="text-amber-600 font-bold text-sm sm:text-base">$${pedido.total.toFixed(
+                        2
+                      )}</span>
+                    </div>
+                    <div class="text-amber-700 text-xs sm:text-sm">Método: ${pedido.metodo_pago}</div>
+                    <div class="text-amber-700 text-xs sm:text-sm">Estado: ${pedido.estado}</div>
+                    <div class="ml-0 sm:ml-4 mt-1 text-xs sm:text-sm text-amber-600">
+                      ${pedido.detalles
+                        .map(
+                          (d) =>
+                            `${d.nombre} (x${d.cantidad}) - $${d.subtotal.toFixed(
+                              2
+                            )}`
+                        )
+                        .join("<br>")}
+                    </div>
+                    <a href="/factura/${
+                      pedido.id
+                    }/${pedido.tipo}" class="text-amber-600 hover:underline mt-2 block text-xs sm:text-sm">Descargar Factura</a>
+                  </div>
+                `
                 )
                 .join("");
             }
