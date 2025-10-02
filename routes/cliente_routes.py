@@ -3,6 +3,8 @@ from models.producto import Producto
 from models.usuario import Usuario   
 from models.venta import Venta
 from models.detalle_venta import DetalleVenta
+from models.orden import Orden
+from models.detalle_orden import DetalleOrden
 import datetime
 from app import db
 from flask import make_response
@@ -38,9 +40,11 @@ def checkout():
             usuarios_id=session['user_id'],
             fecha=datetime.datetime.utcnow(),
             total=total,
-            metodo_pago=metodo_pago
+            metodo_pago=metodo_pago,
+            estado='pendiente'
         )
         db.session.add(venta)
+        db.session.flush()  # Obtener venta.id antes de commit
         for item in carrito:
             producto = Producto.query.get(item['id'])
             if not producto:
@@ -56,10 +60,12 @@ def checkout():
         cliente = Usuario.query.get(session['user_id'])
         mensaje = f"Nuevo pedido de {cliente.nombre_completo}"
         datos_pedido = {
+            "pedido_id": venta.id,
+            "tipo": "venta",
             "cliente": cliente.nombre_completo,
-            "productos": [detalle.producto.nombre for detalle in venta.detalles],
+            "productos": [item['nombre'] for item in carrito],
             "total": venta.total,
-            "fecha": str(venta.fecha)
+            "fecha": venta.fecha.strftime('%Y-%m-%d %H:%M:%S')
         }
         notificacion = Notificacion(
             mensaje=mensaje,
@@ -69,7 +75,7 @@ def checkout():
         db.session.add(notificacion)
         db.session.commit()
         detalles_venta = DetalleVenta.query.filter_by(venta_id=venta.id).all()
-        for detalle in detalles_venta:  # detalles_venta es la lista de productos comprados
+        for detalle in detalles_venta:
             producto = Producto.query.get(detalle.producto_id)
             if producto:
                 producto.cantidad -= detalle.cantidad
@@ -79,7 +85,8 @@ def checkout():
                 if producto.cantidad <= 5:
                     mensaje = f"Stock bajo para {producto.nombre}: quedan {producto.cantidad} unidades."
                     datos = {
-                        "producto": producto.nombre,
+                        "producto_id": producto.id,
+                        "nombre": producto.nombre,
                         "cantidad": producto.cantidad
                     }
                     notificacion = Notificacion(
@@ -94,86 +101,97 @@ def checkout():
         db.session.rollback()
         return jsonify({'error': f'Error interno: {str(e)}'}), 500
 
-@cliente_routes.route('/factura/<int:venta_id>')
-def factura_pdf(venta_id):
-        try:
-            venta = Venta.query.get_or_404(venta_id)
-            detalles = DetalleVenta.query.filter_by(venta_id=venta.id).all()
-            usuario = Usuario.query.get(venta.usuarios_id)
+@cliente_routes.route('/factura/<int:pedido_id>/<tipo>')
+def factura_pdf(pedido_id, tipo):
+    try:
+        if tipo == 'venta':
+            pedido = Venta.query.get_or_404(pedido_id)
+            detalles = DetalleVenta.query.filter_by(venta_id=pedido.id).all()
+            usuario = Usuario.query.get(pedido.usuarios_id)
             if not usuario:
                 return jsonify({'error': 'Usuario no encontrado'}), 404
-            buffer = io.BytesIO()
-            p = canvas.Canvas(buffer, pagesize=letter)
-            width, height = letter
-            p.setFillColorRGB(0.87, 0.68, 0.21)
-            p.setFont("Helvetica-Bold", 24)
-            p.drawString(200, height - 60, "Cafetería Las Dos Amigas")
-            p.line(50, height - 70, width - 50, height - 70)
-            p.setFillColorRGB(0, 0, 0)
-            p.setFont("Helvetica", 10)
-            p.drawString(50, height - 90, "Factura N° " + str(venta.id))
-            p.setFont("Helvetica-Bold", 12)
-            p.drawString(50, height - 120, "Detalles de la Factura")
-            p.setFont("Helvetica", 10)
-            p.drawString(50, height - 140, f"Cliente: {usuario.nombre_completo}")
-            p.drawString(50, height - 160, f"Correo: {usuario.correo}")
-            p.drawString(50, height - 180, f"Fecha: {venta.fecha.strftime('%d/%m/%Y %H:%M')}")
-            p.drawString(50, height - 200, f"Dirección: {usuario.direccion}")
-            p.drawString(50, height - 220, f"Método de Pago: {venta.metodo_pago}")
-            y = height - 240
-            p.setFont("Helvetica-Bold", 10)
-            p.drawString(50, y, "Producto")
-            p.drawString(250, y, "Cantidad")
-            p.drawString(350, y, "Precio Unit.")
-            p.drawString(450, y, "Subtotal")
+            fecha = pedido.fecha
+        elif tipo == 'orden':
+            pedido = Orden.query.get_or_404(pedido_id)
+            detalles = DetalleOrden.query.filter_by(orden_id=pedido.id).all()
+            usuario = Usuario.query.filter_by(correo=pedido.correo_cliente).first()
+            if not usuario:
+                return jsonify({'error': 'Usuario no encontrado'}), 404
+            fecha = pedido.fecha_creacion
+        else:
+            return jsonify({'error': 'Tipo de pedido inválido'}), 400
+
+        buffer = io.BytesIO()
+        p = canvas.Canvas(buffer, pagesize=letter)
+        width, height = letter
+        p.setFillColorRGB(0.87, 0.68, 0.21)
+        p.setFont("Helvetica-Bold", 24)
+        p.drawString(200, height - 60, "Cafetería Las Dos Amigas")
+        p.line(50, height - 70, width - 50, height - 70)
+        p.setFillColorRGB(0, 0, 0)
+        p.setFont("Helvetica", 10)
+        p.drawString(50, height - 90, f"Factura N° {pedido_id} ({tipo.capitalize()})")
+        p.setFont("Helvetica-Bold", 12)
+        p.drawString(50, height - 120, "Detalles de la Factura")
+        p.setFont("Helvetica", 10)
+        p.drawString(50, height - 140, f"Cliente: {usuario.nombre_completo}")
+        p.drawString(50, height - 160, f"Correo: {usuario.correo}")
+        p.drawString(50, height - 180, f"Fecha: {fecha.strftime('%d/%m/%Y %H:%M')}")
+        p.drawString(50, height - 200, f"Dirección: {usuario.direccion or 'N/A'}")
+        p.drawString(50, height - 220, f"Método de Pago: {pedido.metodo_pago or 'N/A'}")
+        p.drawString(50, height - 240, f"Estado: {pedido.estado.capitalize()}")
+        y = height - 260
+        p.setFont("Helvetica-Bold", 10)
+        p.drawString(50, y, "Producto")
+        p.drawString(250, y, "Cantidad")
+        p.drawString(350, y, "Precio Unit.")
+        p.drawString(450, y, "Subtotal")
+        y -= 20
+        p.setFillColorRGB(0.95, 0.95, 0.95)
+        p.rect(50, y, 500, 20, fill=True, stroke=False)
+        p.setFillColorRGB(0, 0, 0)
+        p.setFont("Helvetica", 10)
+        for detalle in detalles:
+            producto = Producto.query.get(detalle.producto_id)
+            if not producto:
+                return jsonify({'error': f'Producto no encontrado para detalle {detalle.id}'}), 404
             y -= 20
-            p.setFillColorRGB(0.95, 0.95, 0.95)
-            p.rect(50, y, 500, 20, fill=True, stroke=False)
-            p.setFillColorRGB(0, 0, 0)
-            p.setFont("Helvetica", 10)
-            for detalle in detalles:
-                producto = detalle.producto
-                if not producto:
-                    return jsonify({'error': f'Producto no encontrado para detalle {detalle.id}'}), 404
+            if y < 50:
+                p.showPage()
+                y = height - 60
+                p.setFont("Helvetica-Bold", 10)
+                p.drawString(50, y, "Producto")
+                p.drawString(250, y, "Cantidad")
+                p.drawString(350, y, "Precio Unit.")
+                p.drawString(450, y, "Subtotal")
                 y -= 20
-                if y < 50:
-                    p.showPage()
-                    y = height - 60
-                    p.setFont("Helvetica-Bold", 10)
-                    p.drawString(50, y, "Producto")
-                    p.drawString(250, y, "Cantidad")
-                    p.drawString(350, y, "Precio Unit.")
-                    p.drawString(450, y, "Subtotal")
-                    y -= 20
-                    p.setFillColorRGB(0.95, 0.95, 0.95)
-                    p.rect(50, y, 500, 20, fill=True, stroke=False)
-                    p.setFillColorRGB(0, 0, 0)
-                p.drawString(50, y, producto.nombre)
-                p.drawString(250, y, str(detalle.cantidad))
-                p.drawString(350, y, f"${producto.precio:.2f}")
-                p.drawString(450, y, f"${detalle.subtotal:.2f}")
-            y -= 30
-            p.setFillColorRGB(0.87, 0.68, 0.21)
-            p.rect(350, y, 200, 20, fill=True, stroke=False)
-            p.setFillColorRGB(1, 1, 1)
-            p.setFont("Helvetica-Bold", 12)
-            p.drawString(350, y + 5, "TOTAL:")
-            p.drawString(450, y + 5, f"${venta.total:.2f}")
-            p.setFillColorRGB(0, 0, 0)
-            y -= 40
-            p.setFont("Helvetica-Oblique", 10)
-            p.setFillColorRGB(0.4, 0.4, 0.4)
-            p.drawString(200, y, "¡Gracias por tu compra en Cafetería Las Dos Amigas!")
-            p.setFillColorRGB(0, 0, 0)
-            p.showPage()
-            p.save()
-            buffer.seek(0)
-            response = make_response(buffer.getvalue())
-            response.headers['Content-Type'] = 'application/pdf'
-            response.headers['Content-Disposition'] = f'inline; filename=factura_{venta.id}.pdf'
-            return response
-        except Exception as e:
-            return jsonify({'error': f'Error al generar la factura: {str(e)}'}), 500
+                p.setFillColorRGB(0.95, 0.95, 0.95)
+                p.rect(50, y, 500, 20, fill=True, stroke=False)
+                p.setFillColorRGB(0, 0, 0)
+            p.drawString(50, y, producto.nombre)
+            p.drawString(250, y, str(detalle.cantidad))
+            p.drawString(350, y, f"${producto.precio:.2f}")
+            p.drawString(450, y, f"${detalle.subtotal:.2f}")
+        y -= 30
+        p.setFillColorRGB(0.87, 0.68, 0.21)
+        p.rect(350, y, 200, 20, fill=True, stroke=False)
+        p.setFillColorRGB(1, 1, 1)
+        p.setFont("Helvetica-Bold", 12)
+        p.drawString(350, y + 5, "TOTAL:")
+        p.drawString(450, y + 5, f"${pedido.total:.2f}")
+        p.setFillColorRGB(0, 0, 0)
+        y -= 40
+        p.setFont("Helvetica-Oblique", 10)
+        p.drawString(200, y, "¡Gracias por tu compra en Cafetería Las Dos Amigas!")
+        p.showPage()
+        p.save()
+        buffer.seek(0)
+        response = make_response(buffer.getvalue())
+        response.headers['Content-Type'] = 'application/pdf'
+        response.headers['Content-Disposition'] = f'inline; filename=factura_{pedido_id}_{tipo}.pdf'
+        return response
+    except Exception as e:
+        return jsonify({'error': f'Error al generar la factura: {str(e)}'}), 500
     
 @cliente_routes.route('/obtener_historial', methods=['GET'])
 def obtener_historial():
@@ -181,19 +199,37 @@ def obtener_historial():
         if 'user_id' not in session:
             return jsonify({'error': 'Debes iniciar sesión para ver el historial'}), 403
         usuario_id = session['user_id']
-        ventas = Venta.query.filter_by(usuarios_id=usuario_id).order_by(Venta.fecha.desc()).all()
-        if not ventas:
-            return jsonify({'error': 'No se encontraron compras'}), 404
+        usuario = Usuario.query.get(usuario_id)
         historial = []
+        
+        # Ventas
+        ventas = Venta.query.filter_by(usuarios_id=usuario_id).order_by(Venta.fecha.desc()).all()
         for venta in ventas:
             detalles = DetalleVenta.query.filter_by(venta_id=venta.id).all()
             historial.append({
                 'id': venta.id,
+                'tipo': 'venta',
                 'fecha': venta.fecha.strftime('%d/%m/%Y %H:%M'),
                 'total': float(venta.total),
-                'metodo_pago': venta.metodo_pago,
+                'metodo_pago': venta.metodo_pago or 'N/A',
+                'estado': venta.estado or 'pendiente',
                 'detalles': [{'nombre': d.producto.nombre, 'cantidad': d.cantidad, 'subtotal': float(d.subtotal)} for d in detalles]
             })
+
+        # Órdenes
+        ordenes = Orden.query.filter_by(correo_cliente=usuario.correo).order_by(Orden.fecha_creacion.desc()).all()
+        for orden in ordenes:
+            detalles = DetalleOrden.query.filter_by(orden_id=orden.id).all()
+            historial.append({
+                'id': orden.id,
+                'tipo': 'orden',
+                'fecha': orden.fecha_creacion.strftime('%d/%m/%Y %H:%M'),
+                'total': float(orden.total),
+                'metodo_pago': orden.metodo_pago or 'N/A',
+                'estado': orden.estado or 'pendiente',
+                'detalles': [{'nombre': d.producto.nombre, 'cantidad': d.cantidad, 'subtotal': float(d.subtotal)} for d in detalles]
+            })
+
         return jsonify({'historial': historial})
     except Exception as e:
         return jsonify({'error': f'Error al obtener el historial: {str(e)}'}), 500

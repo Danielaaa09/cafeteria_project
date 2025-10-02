@@ -5,13 +5,14 @@ from models.producto import Producto
 from models.venta import Venta
 from models.detalle_venta import DetalleVenta
 from models.orden import Orden
+from models.detalle_orden import DetalleOrden
 from app import db
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import os
 from werkzeug.utils import secure_filename
-from datetime import date, datetime, timedelta
+from datetime import date, datetime
 from config import settings
 from models.notificacion import Notificacion
 import json
@@ -21,32 +22,25 @@ admin_routes = Blueprint('admin_routes', __name__)
 # ---------------------------
 # EMAIL
 # ---------------------------
-def enviar_correo(destinatario, contrasena_temporal, nombre_completo=None):
+def enviar_correo(destinatario, asunto, cuerpo, nombre_completo=None):
     remitente = 'cafeterialasdosamigas@gmail.com'
     password = 'doehmsrgujcalrrj'
 
     mensaje = MIMEMultipart()
     mensaje['From'] = remitente
     mensaje['To'] = destinatario
-    mensaje['Subject'] = 'Tu nueva contraseña temporal'
+    mensaje['Subject'] = asunto
 
-    saludo = f"¡Bienvenido {nombre_completo}!" if nombre_completo else "¡Bienvenido!"
-
-    cuerpo = f"""
-{saludo}
-
-Tu nueva contraseña temporal es: {contrasena_temporal}
-
-Por favor cámbiala después de iniciar sesión.
-"""
-    mensaje.attach(MIMEText(cuerpo, 'plain', 'utf-8'))
+    saludo = f"¡Hola {nombre_completo}!" if nombre_completo else "¡Hola!"
+    cuerpo_completo = f"{saludo}\n\n{cuerpo}"
+    mensaje.attach(MIMEText(cuerpo_completo, 'plain', 'utf-8'))
 
     try:
         with smtplib.SMTP('smtp.gmail.com', 587) as server:
             server.starttls()
             server.login(remitente, password)
             server.sendmail(remitente, destinatario, mensaje.as_string())
-        print("Correo enviado correctamente.")
+        print(f"Correo enviado correctamente a {destinatario}.")
         return True
     except Exception as e:
         print(f"Error al enviar correo: {e}")
@@ -73,61 +67,37 @@ def dashboard():
     total_clientes = len(clientes)
     hoy = date.today()
 
-    # Ventas totales hoy (suma de Venta + Orden pagadas)
-    ventas_hoy_ventas = (db.session.query(db.func.sum(Venta.total)).filter(db.func.date(Venta.fecha) == hoy).scalar()) or 0
-    ventas_hoy_ordenes = (db.session.query(db.func.sum(Orden.total)).filter(db.func.date(Orden.fecha_creacion) == hoy, Orden.estado == 'pagado').scalar()) or 0
-    ventas_hoy = ventas_hoy_ventas + ventas_hoy_ordenes
+    # Ventas totales hoy
+    ventas_hoy = (db.session.query(db.func.sum(Venta.total)).filter(db.func.date(Venta.fecha) == hoy).scalar()) or 0
+    ordenes_hoy = (db.session.query(db.func.sum(Orden.total)).filter(db.func.date(Orden.fecha_creacion) == hoy).scalar()) or 0
+    total_hoy = ventas_hoy + ordenes_hoy
 
-    # Pedidos totales hoy (conteo de Venta + Orden pagadas)
+    # Pedidos totales hoy
     pedidos_ventas = db.session.query(Venta).filter(db.func.date(Venta.fecha) == hoy).count()
-    pedidos_ordenes = db.session.query(Orden).filter(db.func.date(Orden.fecha_creacion) == hoy, Orden.estado == 'pagado').count()
+    pedidos_ordenes = db.session.query(Orden).filter(db.func.date(Orden.fecha_creacion) == hoy).count()
     pedidos = pedidos_ventas + pedidos_ordenes
 
-    # Desglose por método de pago (suma de ambos modelos)
-    # Efectivo
-    efectivo_ventas = (db.session.query(db.func.sum(Venta.total)).filter(db.func.date(Venta.fecha) == hoy, Venta.metodo_pago == 'Efectivo').scalar()) or 0
-    efectivo_ordenes = (db.session.query(db.func.sum(Orden.total)).filter(db.func.date(Orden.fecha_creacion) == hoy, Orden.estado == 'pagado', Orden.metodo_pago == 'Efectivo').scalar()) or 0
-    ventas_efectivo = efectivo_ventas + efectivo_ordenes
-
-    # Tarjeta
-    tarjeta_ventas = (db.session.query(db.func.sum(Venta.total)).filter(db.func.date(Venta.fecha) == hoy, Venta.metodo_pago == 'Tarjeta').scalar()) or 0
-    tarjeta_ordenes = (db.session.query(db.func.sum(Orden.total)).filter(db.func.date(Orden.fecha_creacion) == hoy, Orden.estado == 'pagado', Orden.metodo_pago == 'Tarjeta').scalar()) or 0
-    ventas_tarjeta = tarjeta_ventas + tarjeta_ordenes
-
-    # Transferencia
-    transferencia_ventas = (db.session.query(db.func.sum(Venta.total)).filter(db.func.date(Venta.fecha) == hoy, Venta.metodo_pago == 'Transferencia').scalar()) or 0
-    transferencia_ordenes = (db.session.query(db.func.sum(Orden.total)).filter(db.func.date(Orden.fecha_creacion) == hoy, Orden.estado == 'pagado', Orden.metodo_pago == 'Transferencia').scalar()) or 0
-    ventas_transferencia = transferencia_ventas + transferencia_ordenes
+    # Desglose por método de pago
+    ventas_efectivo = (db.session.query(db.func.sum(Venta.total)).filter(db.func.date(Venta.fecha) == hoy, Venta.metodo_pago == 'Efectivo').scalar()) or 0
+    ventas_tarjeta = (db.session.query(db.func.sum(Venta.total)).filter(db.func.date(Venta.fecha) == hoy, Venta.metodo_pago == 'Tarjeta').scalar()) or 0
+    ventas_transferencia = (db.session.query(db.func.sum(Venta.total)).filter(db.func.date(Venta.fecha) == hoy, Venta.metodo_pago == 'Transferencia').scalar()) or 0
 
     # Historial de ventas por día
-    # Obtener fechas distintas de Venta y Orden
     fechas_ventas = db.session.query(db.func.date(Venta.fecha).label('fecha')).distinct().all()
-    fechas_ordenes = db.session.query(db.func.date(Orden.fecha_creacion).label('fecha')).filter(Orden.estado == 'pagado').distinct().all()
-    fechas = set([f.fecha for f in fechas_ventas] + [f.fecha for f in fechas_ordenes])
+    fechas_ordenes = db.session.query(db.func.date(Orden.fecha_creacion).label('fecha')).distinct().all()
+    fechas = sorted(set([f.fecha for f in fechas_ventas] + [f.fecha for f in fechas_ordenes]), reverse=True)
     sales_history = []
 
-    for fecha in sorted(fechas, reverse=True):
-        # Suma de totales por día
+    for fecha in fechas:
         total_ventas = (db.session.query(db.func.sum(Venta.total)).filter(db.func.date(Venta.fecha) == fecha).scalar()) or 0
-        total_ordenes = (db.session.query(db.func.sum(Orden.total)).filter(db.func.date(Orden.fecha_creacion) == fecha, Orden.estado == 'pagado').scalar()) or 0
-        total = total_ventas + total_ordenes
-
-        # Desglose por método de pago
-        efectivo_ventas = (db.session.query(db.func.sum(Venta.total)).filter(db.func.date(Venta.fecha) == fecha, Venta.metodo_pago == 'Efectivo').scalar()) or 0
-        efectivo_ordenes = (db.session.query(db.func.sum(Orden.total)).filter(db.func.date(Orden.fecha_creacion) == fecha, Orden.estado == 'pagado', Orden.metodo_pago == 'Efectivo').scalar()) or 0
-        efectivo = efectivo_ventas + efectivo_ordenes
-
-        tarjeta_ventas = (db.session.query(db.func.sum(Venta.total)).filter(db.func.date(Venta.fecha) == fecha, Venta.metodo_pago == 'Tarjeta').scalar()) or 0
-        tarjeta_ordenes = (db.session.query(db.func.sum(Orden.total)).filter(db.func.date(Orden.fecha_creacion) == fecha, Orden.estado == 'pagado', Orden.metodo_pago == 'Tarjeta').scalar()) or 0
-        tarjeta = tarjeta_ventas + tarjeta_ordenes
-
-        transferencia_ventas = (db.session.query(db.func.sum(Venta.total)).filter(db.func.date(Venta.fecha) == fecha, Venta.metodo_pago == 'Transferencia').scalar()) or 0
-        transferencia_ordenes = (db.session.query(db.func.sum(Orden.total)).filter(db.func.date(Orden.fecha_creacion) == fecha, Orden.estado == 'pagado', Orden.metodo_pago == 'Transferencia').scalar()) or 0
-        transferencia = transferencia_ventas + transferencia_ordenes
+        total_ordenes = (db.session.query(db.func.sum(Orden.total)).filter(db.func.date(Orden.fecha_creacion) == fecha).scalar()) or 0
+        efectivo = (db.session.query(db.func.sum(Venta.total)).filter(db.func.date(Venta.fecha) == fecha, Venta.metodo_pago == 'Efectivo').scalar()) or 0
+        tarjeta = (db.session.query(db.func.sum(Venta.total)).filter(db.func.date(Venta.fecha) == fecha, Venta.metodo_pago == 'Tarjeta').scalar()) or 0
+        transferencia = (db.session.query(db.func.sum(Venta.total)).filter(db.func.date(Venta.fecha) == fecha, Venta.metodo_pago == 'Transferencia').scalar()) or 0
 
         sales_history.append({
             'date': fecha.strftime('%Y-%m-%d'),
-            'total': total,
+            'total': total_ventas + total_ordenes,
             'efectivo': efectivo,
             'tarjeta': tarjeta,
             'transferencia': transferencia
@@ -135,16 +105,55 @@ def dashboard():
 
     productos_bajo_stock = [p for p in productos if p.cantidad <= 10]
     notificaciones = Notificacion.query.order_by(Notificacion.fecha.desc()).limit(10).all()
-    # Procesar datos JSON
+
+    # Procesar datos JSON para notificaciones
     for n in notificaciones:
         try:
             n.datos_dict = json.loads(n.datos) if n.datos else {}
         except Exception:
             n.datos_dict = {}
+
+    # Obtener lista de pedidos (Ventas y Ordenes)
+    pedidos_list = []
+    # Ventas
+    ventas = Venta.query.all()
+    for venta in ventas:
+        cliente = Usuario.query.get(venta.usuarios_id)
+        detalles = DetalleVenta.query.filter_by(venta_id=venta.id).all()
+        productos = [Producto.query.get(d.producto_id).nombre for d in detalles]
+        pedidos_list.append({
+            'id': venta.id,
+            'tipo': 'venta',
+            'cliente': cliente.nombre_completo if cliente else 'Desconocido',
+            'productos': productos,
+            'direccion': cliente.direccion if cliente else 'N/A',
+            'telefono': cliente.telefono if cliente else 'N/A',
+            'estado': venta.estado or 'pendiente',
+            'total': venta.total,
+            'fecha': venta.fecha.strftime('%Y-%m-%d %H:%M:%S')
+        })
+    # Ordenes
+    ordenes = Orden.query.all()
+    for orden in ordenes:
+        cliente = Usuario.query.filter_by(correo=orden.correo_cliente).first()
+        detalles = DetalleOrden.query.filter_by(orden_id=orden.id).all()
+        productos = [Producto.query.get(d.producto_id).nombre for d in detalles]
+        pedidos_list.append({
+            'id': orden.id,
+            'tipo': 'orden',
+            'cliente': cliente.nombre_completo if cliente else orden.correo_cliente or 'Desconocido',
+            'productos': productos,
+            'direccion': cliente.direccion if cliente else 'N/A',
+            'telefono': cliente.telefono if cliente else 'N/A',
+            'estado': orden.estado or 'pendiente',
+            'total': orden.total,
+            'fecha': orden.fecha_creacion.strftime('%Y-%m-%d %H:%M:%S')
+        })
+
     return render_template(
         'admin/dashboard.html',
         usuarios=usuarios,
-        empleados=empleados, 
+        empleados=empleados,
         clientes=clientes,
         categorias=categorias,
         productos=productos,
@@ -154,7 +163,7 @@ def dashboard():
         nombre_admin=nombre_admin,
         total_empleados=total_empleados,
         total_clientes=total_clientes,
-        ventas_hoy=ventas_hoy,
+        ventas_hoy=total_hoy,
         pedidos=pedidos,
         ventas_efectivo=ventas_efectivo,
         ventas_tarjeta=ventas_tarjeta,
@@ -162,7 +171,66 @@ def dashboard():
         productos_bajo_stock=productos_bajo_stock,
         sales_history=sales_history,
         notificaciones=notificaciones,
+        pedidos_list=pedidos_list
     )
+
+# ---------------------------
+# NOTIFICACIONES
+# ---------------------------
+@admin_routes.route('/marcar_notificacion_leida/<int:id>', methods=['POST'])
+def marcar_notificacion_leida(id):
+    notificacion = Notificacion.query.get_or_404(id)
+    try:
+        db.session.delete(notificacion)
+        db.session.commit()
+        flash('Notificación marcada como leída.', 'success')
+        return jsonify({'status': 'success'})
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error al marcar notificación: {str(e)}', 'error')
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+# ---------------------------
+# PEDIDOS
+# ---------------------------
+@admin_routes.route('/actualizar_estado_pedido/<int:id>', methods=['POST'])
+def actualizar_estado_pedido(id):
+    estado = request.form.get('estado')
+    tipo = request.form.get('tipo')
+    valid_states = ['pendiente', 'enviado', 'en camino', 'entregado']
+
+    if estado not in valid_states:
+        flash('Estado inválido.', 'error')
+        return redirect(url_for('admin_routes.dashboard'))
+
+    try:
+        if tipo == 'venta':
+            pedido = Venta.query.get_or_404(id)
+            cliente = Usuario.query.get(pedido.usuarios_id)
+            fecha = pedido.fecha
+        elif tipo == 'orden':
+            pedido = Orden.query.get_or_404(id)
+            cliente = Usuario.query.filter_by(correo=pedido.correo_cliente).first()
+            fecha = pedido.fecha_creacion
+        else:
+            flash('Tipo de pedido inválido.', 'error')
+            return redirect(url_for('admin_routes.dashboard'))
+
+        pedido.estado = estado
+        db.session.commit()
+
+        # Enviar correo al cliente
+        if cliente and cliente.correo:
+            asunto = f"Actualización del estado de tu pedido #{id} ({tipo})"
+            cuerpo = f"Tu pedido #{id} ({tipo}) ha sido actualizado al estado: {estado.capitalize()}.\n\nDetalles del pedido:\n- Fecha: {fecha.strftime('%Y-%m-%d %H:%M:%S')}\n- Total: ${pedido.total:.2f}"
+            enviar_correo(cliente.correo, asunto, cuerpo, cliente.nombre_completo)
+
+        flash(f'Estado del pedido actualizado a {estado}.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error al actualizar estado: {str(e)}', 'error')
+
+    return redirect(url_for('admin_routes.dashboard'))
 
 # ---------------------------
 # PRODUCTOS
@@ -203,6 +271,16 @@ def anadir_producto():
             db.session.add(nuevo_producto)
             db.session.commit()
             flash('Producto agregado correctamente.', 'success')
+
+            if cantidad <= 10:
+                notificacion = Notificacion(
+                    mensaje=f"El producto {nombre} tiene bajo stock ({cantidad} unidades).",
+                    tipo='bajo_stock',
+                    datos=json.dumps({'producto_id': nuevo_producto.id, 'nombre': nombre, 'cantidad': cantidad}),
+                    fecha=datetime.now()
+                )
+                db.session.add(notificacion)
+                db.session.commit()
         except Exception as e:
             db.session.rollback()
             flash(f'Error al agregar producto: {str(e)}', 'error')
@@ -234,7 +312,6 @@ def editar_producto(id):
         flash('La cantidad debe ser un número válido.', 'error')
         return redirect(url_for('admin_routes.dashboard'))
 
-    # Imagen opcional
     imagen = request.files.get('imagen')
     if imagen and imagen.filename != "":
         try:
@@ -243,15 +320,29 @@ def editar_producto(id):
             os.makedirs(carpeta_destino, exist_ok=True)
             ruta = os.path.join(carpeta_destino, filename)
             imagen.save(ruta)
-            producto.imagen_url = f'/static/img/{filename}'  # ✅ mantiene la nueva
+            producto.imagen_url = f'/static/img/{filename}'
         except Exception as e:
             flash(f'Error al guardar la imagen: {str(e)}', 'error')
             return redirect(url_for('admin_routes.dashboard'))
-    # 👇 Si no hay imagen nueva, conserva la anterior (no tocamos producto.imagen_url)
 
     try:
         db.session.commit()
         flash('Producto actualizado correctamente.', 'success')
+
+        notificacion_existente = Notificacion.query.filter_by(tipo='bajo_stock', datos=json.dumps({'producto_id': producto.id})).first()
+        if producto.cantidad <= 10:
+            if not notificacion_existente:
+                notificacion = Notificacion(
+                    mensaje=f"El producto {producto.nombre} tiene bajo stock ({producto.cantidad} unidades).",
+                    tipo='bajo_stock',
+                    datos=json.dumps({'producto_id': producto.id, 'nombre': producto.nombre, 'cantidad': producto.cantidad}),
+                    fecha=datetime.now()
+                )
+                db.session.add(notificacion)
+                db.session.commit()
+        elif notificacion_existente:
+            db.session.delete(notificacion_existente)
+            db.session.commit()
     except Exception as e:
         db.session.rollback()
         flash(f'Error al actualizar producto: {str(e)}', 'error')
@@ -262,19 +353,18 @@ def editar_producto(id):
 def eliminar_producto(id):
     producto = Producto.query.get_or_404(id)
     try:
-        # Eliminar todos los detalles de venta asociados al producto
-        detalle_count = DetalleVenta.query.filter_by(producto_id=producto.id).delete(synchronize_session='fetch')
-        if detalle_count > 0:
-            print(f"Eliminados {detalle_count} detalles de venta para el producto {producto.id}")
-        
-        # Eliminar el producto
+        DetalleVenta.query.filter_by(producto_id=producto.id).delete(synchronize_session='fetch')
+        DetalleOrden.query.filter_by(producto_id=producto.id).delete(synchronize_session='fetch')
+        notificacion = Notificacion.query.filter_by(tipo='bajo_stock', datos=json.dumps({'producto_id': producto.id})).first()
+        if notificacion:
+            db.session.delete(notificacion)
         db.session.delete(producto)
         db.session.commit()
         flash('Producto y sus detalles asociados eliminados correctamente.', 'success')
     except Exception as e:
         db.session.rollback()
         flash(f'Error al eliminar producto: {str(e)}', 'error')
-        print(f"Error detallado: {str(e)}")  # Depuración
+        print(f"Error detallado: {str(e)}")
 
     return redirect(url_for('admin_routes.dashboard'))
 
@@ -298,7 +388,7 @@ def add_empleado():
     db.session.add(nuevo_empleado)
     db.session.commit()
 
-    if enviar_correo(correo, contrasena_temporal, nombre_completo=nombre):
+    if enviar_correo(correo, 'Tu nueva contraseña temporal', f"Tu nueva contraseña temporal es: {contrasena_temporal}\n\nPor favor cámbiala después de iniciar sesión.", nombre_completo=nombre):
         flash('Empleado agregado y correo enviado.', 'success')
     else:
         flash('Empleado agregado, pero falló el envío de correo.', 'warning')
@@ -358,7 +448,7 @@ def add_cliente():
     db.session.add(nuevo_cliente)
     db.session.commit()
 
-    if enviar_correo(correo, contrasena_temporal, nombre_completo=nombre):
+    if enviar_correo(correo, 'Tu nueva contraseña temporal', f"Tu nueva contraseña temporal es: {contrasena_temporal}\n\nPor favor cámbiala después de iniciar sesión.", nombre_completo=nombre):
         flash('Cliente agregado y correo enviado.', 'success')
     else:
         flash('Cliente agregado, pero falló el envío de correo.', 'warning')
@@ -387,22 +477,20 @@ def editar_cliente(id):
 def eliminar_cliente(id):
     cliente = Usuario.query.get_or_404(id)
     try:
-        # Obtener todas las ventas asociadas al cliente
         ventas = Venta.query.filter_by(usuarios_id=cliente.id).all()
-        if ventas:
-            for venta in ventas:
-                # Eliminar detalles de venta asociados
-                DetalleVenta.query.filter_by(venta_id=venta.id).delete(synchronize_session='fetch')
-                # Eliminar la venta
-                db.session.delete(venta)
-        
-        # Eliminar el cliente
+        for venta in ventas:
+            DetalleVenta.query.filter_by(venta_id=venta.id).delete(synchronize_session='fetch')
+            db.session.delete(venta)
+        ordenes = Orden.query.filter_by(correo_cliente=cliente.correo).all()
+        for orden in ordenes:
+            DetalleOrden.query.filter_by(orden_id=orden.id).delete(synchronize_session='fetch')
+            db.session.delete(orden)
         db.session.delete(cliente)
         db.session.commit()
-        flash('Cliente y sus ventas asociadas eliminados correctamente.', 'success')
+        flash('Cliente y sus pedidos asociados eliminados correctamente.', 'success')
     except Exception as e:
         db.session.rollback()
         flash(f'Error al eliminar cliente: {str(e)}', 'error')
-        print(f"Error detallado: {str(e)}")  # Depuración
+        print(f"Error detallado: {str(e)}")
 
     return redirect(url_for('admin_routes.dashboard'))

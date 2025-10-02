@@ -28,16 +28,48 @@
           </h1>
         </div>
         <div class="flex items-center space-x-4">
-          <button
-            id="notification-toggle"
-            class="text-amber-800 text-xl relative"
-          >
-            <i class="fas fa-bell"></i>
-            <span
-              class="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center"
-              >{{ notificaciones|length }}</span
+          <div class="relative">
+            <button
+              id="notification-toggle"
+              class="text-amber-800 text-xl relative"
             >
-          </button>
+              <i class="fas fa-bell"></i>
+              <span
+                class="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center"
+                >{{ notificaciones|length }}</span
+              >
+            </button>
+            <!-- Dropdown Desplegable de Notificaciones (más compacto) -->
+            <div
+              id="notificationDropdown"
+              class="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 hidden z-50 overflow-y-auto max-h-80"
+            >
+              <div class="p-2 border-b">
+                <h3 class="font-bold text-amber-800 text-sm">Notificaciones</h3>
+              </div>
+              {% if notificaciones %}
+              <ul class="space-y-1 p-2">
+                {% for notificacion in notificaciones %}
+                <li class="text-amber-700 border-b pb-1 last:border-b-0 text-sm">
+                  <p class="mb-1">{{ notificacion.mensaje }} - {{ notificacion.fecha.strftime('%d/%m/%Y %H:%M') }}</p>
+                  {% if notificacion.tipo == 'pedido' %}
+                  <div class="mt-1 p-1 bg-amber-50 rounded text-xs">
+                    <div><strong>Cliente:</strong> {{ notificacion.datos_dict.cliente }}</div>
+                    <div><strong>Productos:</strong> {{ notificacion.datos_dict.productos | join(', ') }}</div>
+                    <div><strong>Total:</strong> ${{ notificacion.datos_dict.total }}</div>
+                    <div><strong>Fecha:</strong> {{ notificacion.datos_dict.fecha }}</div>
+                    <button onclick="verPedido({{ notificacion.datos_dict.pedido_id }})" class="text-blue-500 text-xs hover:underline mt-1">Ver Detalle</button>
+                  </div>
+                  {% endif %}
+                  <button onclick="marcarLeida({{ notificacion.id }})" class="text-xs text-gray-500 hover:text-red-500 float-right">Marcar como leída</button>
+                </li>
+                {% endfor %}
+              </ul>
+              {% else %}
+              <p class="p-2 text-amber-700 text-sm">No hay notificaciones.</p>
+              {% endif %}
+            </div>
+          </div>
           <span class="text-amber-800 font-medium"
             >Bienvenido, {{ nombre_admin }}</span
           >
@@ -84,6 +116,12 @@
         >
           Clientes
         </button>
+        <button
+          class="w-full bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 mb-2"
+          onclick="showSection('pedidos')"
+        >
+          Pedidos
+        </button>
       </div>
     </aside>
 
@@ -129,7 +167,6 @@
         </div>
       </div>
 
-      <!-- Added IDs to history sections so they can be hidden when modals open -->
       <!-- Historial de Ventas por Día -->
       <div
         id="sales-history-section"
@@ -187,8 +224,7 @@
             Ventas por Transferencia: ${{ "%.2f"|format(ventas_transferencia) }}
           </p>
           <p class="text-amber-800 font-bold">
-            Total del Día: ${{ "%.2f"|format(ventas_hoy) }} (incluye ventas de
-            clientes y órdenes de empleados)
+            Total del Día: ${{ "%.2f"|format(ventas_hoy) }}
           </p>
           <p class="text-sm text-amber-500 mt-2">
             Los totales se reinician automáticamente al siguiente día.
@@ -235,7 +271,6 @@
         </div>
       </div>
 
-      <!-- Restructured dynamic sections with tables and add buttons -->
       <!-- Secciones Dinámicas -->
       <div id="dynamic-content" class="hidden">
         <!-- Productos Section -->
@@ -254,8 +289,6 @@
               <i class="fas fa-plus"></i> Agregar Producto
             </button>
           </div>
-
-          <!-- Products now displayed in table format -->
           {% for categoria in categorias %}
           <h3 class="text-xl font-semibold text-amber-700 mb-3 mt-6">
             {{ categoria.nombre }}
@@ -359,8 +392,6 @@
               <i class="fas fa-plus"></i> Agregar Empleado
             </button>
           </div>
-
-          <!-- Employees now displayed in table format -->
           <div class="overflow-x-auto">
             <table class="w-full text-left text-amber-700 border-collapse">
               <thead>
@@ -427,8 +458,6 @@
               <i class="fas fa-plus"></i> Agregar Cliente
             </button>
           </div>
-
-          <!-- Clients now displayed in table format -->
           <div class="overflow-x-auto">
             <table class="w-full text-left text-amber-700 border-collapse">
               <thead>
@@ -478,55 +507,66 @@
             </table>
           </div>
         </div>
+
+        <!-- Pedidos Section -->
+        <div
+          id="pedidos"
+          class="bg-white p-6 rounded-lg shadow-md mb-6"
+        >
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="text-2xl font-bold text-amber-800">
+              Gestión de Pedidos
+            </h2>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-amber-700 border-collapse">
+              <thead>
+                <tr class="bg-amber-100">
+                  <th class="border border-amber-300 px-4 py-2">ID</th>
+                  <th class="border border-amber-300 px-4 py-2">Cliente</th>
+                  <th class="border border-amber-300 px-4 py-2">Productos</th>
+                  <th class="border border-amber-300 px-4 py-2">Dirección</th>
+                  <th class="border border-amber-300 px-4 py-2">Teléfono</th>
+                  <th class="border border-amber-300 px-4 py-2">Estado</th>
+                  <th class="border border-amber-300 px-4 py-2">Total</th>
+                  <th class="border border-amber-300 px-4 py-2">Fecha</th>
+                  <th class="border border-amber-300 px-4 py-2">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for pedido in pedidos_list %}
+                <tr class="bg-white hover:bg-amber-50">
+                  <td class="border border-amber-300 px-4 py-2">{{ pedido.id }}</td>
+                  <td class="border border-amber-300 px-4 py-2 font-semibold">{{ pedido.cliente }}</td>
+                  <td class="border border-amber-300 px-4 py-2">{{ pedido.productos | join(', ') }}</td>
+                  <td class="border border-amber-300 px-4 py-2">{{ pedido.direccion }}</td>
+                  <td class="border border-amber-300 px-4 py-2">{{ pedido.telefono }}</td>
+                  <td class="border border-amber-300 px-4 py-2">{{ pedido.estado | capitalize }}</td>
+                  <td class="border border-amber-300 px-4 py-2">${{ "%.2f"|format(pedido.total) }}</td>
+                  <td class="border border-amber-300 px-4 py-2">{{ pedido.fecha }}</td>
+                  <td class="border border-amber-300 px-4 py-2">
+                    <form method="POST" action="{{ url_for('admin_routes.actualizar_estado_pedido', id=pedido.id) }}">
+                      <input type="hidden" name="tipo" value="venta">
+                      <select name="estado" class="border rounded p-1 text-sm">
+                        <option value="pendiente" {% if pedido.estado == 'pendiente' %}selected{% endif %}>Pendiente</option>
+                        <option value="enviado" {% if pedido.estado == 'enviado' %}selected{% endif %}>Enviado</option>
+                        <option value="en camino" {% if pedido.estado == 'en camino' %}selected{% endif %}>En camino</option>
+                        <option value="entregado" {% if pedido.estado == 'entregado' %}selected{% endif %}>Entregado</option>
+                      </select>
+                      <button type="submit" class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 text-sm mt-1">
+                        Actualizar
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </main>
 
-    <!-- Modal de Notificaciones -->
-    <div
-      id="notificationModal"
-      class="fixed inset-0 flex items-center justify-center hidden bg-black bg-opacity-50 z-50"
-    >
-      <div class="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
-        <h2 class="text-xl font-bold text-amber-800 mb-4">Notificaciones</h2>
-        {% if notificaciones %}
-        <ul class="space-y-2">
-          {% for notificacion in notificaciones %}
-          <li class="text-amber-700">
-            {{ notificacion.mensaje }} - {{
-            notificacion.fecha.strftime('%d/%m/%Y %H:%M') }} {% if
-            notificacion.tipo == 'pedido' %}
-            <form class="mt-2 p-2 bg-amber-50 rounded">
-              <div>
-                <strong>Cliente:</strong> {{ notificacion.datos_dict.cliente }}
-              </div>
-              <div>
-                <strong>Productos:</strong> {{ notificacion.datos_dict.productos
-                | join(', ') }}
-              </div>
-              <div>
-                <strong>Total:</strong> ${{ notificacion.datos_dict.total }}
-              </div>
-              <div>
-                <strong>Fecha:</strong> {{ notificacion.datos_dict.fecha }}
-              </div>
-            </form>
-            {% endif %}
-          </li>
-          {% endfor %}
-        </ul>
-        {% else %}
-        <p class="text-amber-700">No hay notificaciones.</p>
-        {% endif %}
-        <button
-          onclick="document.getElementById('notificationModal').classList.add('hidden')"
-          class="mt-4 text-red-500 hover:text-red-700"
-        >
-          Cerrar
-        </button>
-      </div>
-    </div>
-
-    <!-- Added modal for adding products -->
     <!-- Modal para Agregar Producto -->
     <div
       id="addProductoModal"
@@ -607,7 +647,6 @@
       </div>
     </div>
 
-    <!-- Added modal for adding employees -->
     <!-- Modal para Agregar Empleado -->
     <div
       id="addEmpleadoModal"
@@ -653,7 +692,6 @@
       </div>
     </div>
 
-    <!-- Added modal for adding clients -->
     <!-- Modal para Agregar Cliente -->
     <div
       id="addClienteModal"
@@ -881,7 +919,6 @@
       </div>
     </div>
 
-    <!-- Updated JavaScript to handle new modal system and hide history sections -->
     <!-- JavaScript -->
     <script>
       // Toggle Menú Lateral
@@ -905,9 +942,50 @@
         .getElementById("notification-toggle")
         .addEventListener("click", function () {
           document
-            .getElementById("notificationModal")
+            .getElementById("notificationDropdown")
             .classList.toggle("hidden");
         });
+
+      // Marcar notificación como leída
+      function marcarLeida(notificacionId) {
+        fetch(`/admin/marcar_notificacion_leida/${notificacionId}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+          .then(response => response.json())
+          .then(data => {
+            if (data.status === 'success') {
+              const li = document.querySelector(`button[onclick="marcarLeida(${notificacionId})"]`).parentElement;
+              li.remove();
+              const notifCount = document.querySelector('#notification-toggle span');
+              const newCount = parseInt(notifCount.textContent) - 1;
+              notifCount.textContent = newCount;
+              if (newCount === 0) {
+                document.getElementById('notificationDropdown').innerHTML = '<p class="p-2 text-amber-700 text-sm">No hay notificaciones.</p>';
+              }
+            } else {
+              alert('Error al marcar notificación como leída.');
+            }
+          })
+          .catch(error => console.error('Error:', error));
+      }
+
+      // Ver detalle de pedido
+      function verPedido(pedidoId) {
+        showSection('pedidos');
+        // Opcional: Resaltar el pedido en la tabla
+        const rows = document.querySelectorAll('#pedidos table tbody tr');
+        rows.forEach(row => {
+          const idCell = row.querySelector('td:first-child');
+          if (idCell && idCell.textContent == pedidoId) {
+            row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            row.classList.add('bg-amber-100');
+            setTimeout(() => row.classList.remove('bg-amber-100'), 2000);
+          }
+        });
+      }
 
       // Mostrar Secciones en el Dashboard
       function showSection(sectionId) {
@@ -917,15 +995,10 @@
         });
         document.getElementById(sectionId).classList.remove("hidden");
 
-        // Hide stats, activity, and history sections
         document.getElementById("stats-section").classList.add("hidden");
         document.getElementById("activity-section").classList.add("hidden");
-        document
-          .getElementById("sales-history-section")
-          .classList.add("hidden");
-        document
-          .getElementById("sales-summary-section")
-          .classList.add("hidden");
+        document.getElementById("sales-history-section").classList.add("hidden");
+        document.getElementById("sales-summary-section").classList.add("hidden");
 
         document.getElementById("sidebar").classList.add("-translate-x-full");
       }
@@ -937,27 +1010,18 @@
           div.classList.add("hidden");
         });
 
-        // Show stats, activity, and history sections
         document.getElementById("stats-section").classList.remove("hidden");
         document.getElementById("activity-section").classList.remove("hidden");
-        document
-          .getElementById("sales-history-section")
-          .classList.remove("hidden");
-        document
-          .getElementById("sales-summary-section")
-          .classList.remove("hidden");
+        document.getElementById("sales-history-section").classList.remove("hidden");
+        document.getElementById("sales-summary-section").classList.remove("hidden");
       }
 
       // Open Add Modal
       function openAddModal(type) {
         if (type === "producto") {
-          document
-            .getElementById("addProductoModal")
-            .classList.remove("hidden");
+          document.getElementById("addProductoModal").classList.remove("hidden");
         } else if (type === "empleado") {
-          document
-            .getElementById("addEmpleadoModal")
-            .classList.remove("hidden");
+          document.getElementById("addEmpleadoModal").classList.remove("hidden");
         } else if (type === "cliente") {
           document.getElementById("addClienteModal").classList.remove("hidden");
         }
@@ -975,52 +1039,29 @@
       }
 
       // Open Edit Modal
-      function openEditModal(
-        type,
-        id,
-        nombre,
-        descripcion,
-        precio,
-        cantidad,
-        categorias_id
-      ) {
+      function openEditModal(type, id, nombre, descripcion, precio, cantidad, categorias_id) {
         if (type === "producto") {
           document.getElementById("editProductoId").value = id;
           document.getElementById("editProductoNombre").value = nombre;
-          document.getElementById("editProductoDescripcion").value =
-            descripcion;
+          document.getElementById("editProductoDescripcion").value = descripcion;
           document.getElementById("editProductoPrecio").value = precio;
           document.getElementById("editProductoCantidad").value = cantidad;
-          document.getElementById(
-            "editProductoForm"
-          ).action = `/admin/editar_producto/${id}`;
-          const selectCategorias = document.getElementById(
-            "editProductoCategoriasId"
-          );
+          document.getElementById("editProductoForm").action = `/admin/editar_producto/${id}`;
+          const selectCategorias = document.getElementById("editProductoCategoriasId");
           selectCategorias.value = categorias_id;
-          document
-            .getElementById("editProductoModal")
-            .classList.remove("hidden");
+          document.getElementById("editProductoModal").classList.remove("hidden");
         } else if (type === "empleado") {
           document.getElementById("editEmpleadoId").value = id;
           document.getElementById("editEmpleadoNombre").value = nombre;
           document.getElementById("editEmpleadoCorreo").value = descripcion;
-          document.getElementById(
-            "editEmpleadoForm"
-          ).action = `/admin/editar_empleado/${id}`;
-          document
-            .getElementById("editEmpleadoModal")
-            .classList.remove("hidden");
+          document.getElementById("editEmpleadoForm").action = `/admin/editar_empleado/${id}`;
+          document.getElementById("editEmpleadoModal").classList.remove("hidden");
         } else if (type === "cliente") {
           document.getElementById("editClienteId").value = id;
           document.getElementById("editClienteNombre").value = nombre;
           document.getElementById("editClienteCorreo").value = descripcion;
-          document.getElementById(
-            "editClienteForm"
-          ).action = `/admin/editar_cliente/${id}`;
-          document
-            .getElementById("editClienteModal")
-            .classList.remove("hidden");
+          document.getElementById("editClienteForm").action = `/admin/editar_cliente/${id}`;
+          document.getElementById("editClienteModal").classList.remove("hidden");
         }
       }
 

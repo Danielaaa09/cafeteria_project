@@ -9,6 +9,7 @@ class Venta(db.Model):
     usuarios_id = db.Column(db.Integer, db.ForeignKey("usuarios.id"), nullable=False)
     metodo_pago = db.Column(db.String(50), nullable=False)
     total = db.Column(db.Float, nullable=False)
+    estado = db.Column(db.String(20), default="pendiente")  # pendiente, enviado, en camino, entregado
  
     # relación con DetalleVenta
     detalles = db.relationship("DetalleVenta", back_populates="venta", lazy=True)

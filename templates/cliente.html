@@ -19,7 +19,6 @@
     <header class="bg-white shadow-lg sticky top-0 z-50">
       <nav class="container mx-auto px-4 py-4">
         <div class="flex justify-between items-center">
-          <!-- <CHANGE> Added hamburger menu button like admin dashboard -->
           <button id="menu-toggle" class="text-amber-800 text-2xl mr-4">
             <i class="fas fa-bars"></i>
           </button>
@@ -45,7 +44,7 @@
       </nav>
     </header>
 
-    <!-- <CHANGE> Sidebar menu like admin dashboard - hidden by default, slides in from left -->
+    <!-- Sidebar -->
     <aside
       id="sidebar"
       class="bg-white w-64 min-h-screen p-4 shadow-lg fixed top-0 left-0 z-50 transform -translate-x-full transition-transform duration-300 ease-in-out"
@@ -83,6 +82,19 @@
 
     <!-- Main -->
     <main class="container mx-auto px-4 py-8">
+      <!-- Flash Messages -->
+      {% with messages = get_flashed_messages(with_categories=true) %} {% if messages %}
+      {% for category, message in messages %}
+      <div
+        class="bg-{{ 'green' if category == 'success' else 'red' }}-100 border border-{{ 'green' if category == 'success' else 'red' }}-400 text-{{ 'green' if category == 'success' else 'red' }}-700 px-4 py-3 rounded relative mb-4"
+        role="alert"
+      >
+        <span class="block sm:inline">{{ message }}</span>
+      </div>
+      {% endfor %}
+      {% endif %}
+      {% endwith %}
+
       <div class="flex gap-8">
         <!-- Contenido principal -->
         <section class="flex-1">
@@ -180,7 +192,7 @@
                 <label
                   for="telefono"
                   class="block text-sm font-medium text-amber-800"
-                  >Télefono</label
+                  >Teléfono</label
                 >
                 <input
                   type="text"
@@ -242,7 +254,7 @@
           </div>
         </section>
 
-        <!-- <CHANGE> Carrito sidebar - will be hidden when viewing profile or history -->
+        <!-- Carrito sidebar -->
         <aside id="carrito-sidebar" class="w-96 flex-shrink-0">
           <div class="bg-white rounded-xl shadow-lg p-6 sticky top-24">
             <h3
@@ -339,38 +351,28 @@
 
     <!-- JavaScript -->
     <script>
-      // <CHANGE> Variables globales para las secciones
+      // Variables globales para las secciones
       const productosSection = document.getElementById("productos-section");
-      const editarPerfilSection = document.getElementById(
-        "editar-perfil-section"
-      );
+      const editarPerfilSection = document.getElementById("editar-perfil-section");
       const historialSection = document.getElementById("historial-section");
       const carritoSidebar = document.getElementById("carrito-sidebar");
       const floatingCart = document.getElementById("floating-cart");
 
-      // <CHANGE> Toggle menu lateral (igual que admin dashboard)
-      document
-        .getElementById("menu-toggle")
-        .addEventListener("click", function () {
-          document
-            .getElementById("sidebar")
-            .classList.remove("-translate-x-full");
-        });
+      // Toggle menu lateral
+      document.getElementById("menu-toggle").addEventListener("click", function () {
+        document.getElementById("sidebar").classList.remove("-translate-x-full");
+      });
 
-      document
-        .getElementById("close-menu")
-        .addEventListener("click", function () {
-          document.getElementById("sidebar").classList.add("-translate-x-full");
-        });
+      document.getElementById("close-menu").addEventListener("click", function () {
+        document.getElementById("sidebar").classList.add("-translate-x-full");
+      });
 
-      // <CHANGE> Función para mostrar secciones (igual que admin dashboard)
+      // Función para mostrar secciones
       function showSection(sectionId) {
-        // Ocultar todas las secciones
         productosSection.classList.add("hidden");
         editarPerfilSection.classList.add("hidden");
         historialSection.classList.add("hidden");
 
-        // Mostrar la sección seleccionada
         if (sectionId === "productos") {
           productosSection.classList.remove("hidden");
           carritoSidebar.classList.remove("hidden");
@@ -383,15 +385,13 @@
           historialSection.classList.remove("hidden");
           carritoSidebar.classList.add("hidden");
           floatingCart.classList.add("hidden");
-          // <CHANGE> Fixed: Load history when showing history section
           loadHistorial();
         }
 
-        // Cerrar el menú lateral
         document.getElementById("sidebar").classList.add("-translate-x-full");
       }
 
-      // --- Acordeón categorías ---
+      // Acordeón categorías
       function toggleCategoria(id) {
         document.querySelectorAll('[id^="cat"]').forEach((div) => {
           if (div.id !== id) {
@@ -406,7 +406,7 @@
         if (icon) icon.classList.toggle("rotate-180");
       }
 
-      // --- Carrito ---
+      // Carrito
       let cart = [];
 
       function addToCart(id, nombre, precio) {
@@ -504,7 +504,7 @@
         mobileCartTotal.textContent = "$" + total.toFixed(2);
       }
 
-      // --- Checkout ---
+      // Checkout
       async function checkout() {
         if (cart.length === 0) return;
         const metodo = document.getElementById("metodo_pago").value;
@@ -521,10 +521,7 @@
           if (data.venta_id) {
             alert("Compra realizada con éxito.");
             window.open(
-              `{{ url_for('cliente_routes.factura_pdf', venta_id=0) }}`.replace(
-                "0",
-                data.venta_id
-              ),
+              `{{ url_for('cliente_routes.factura_pdf', pedido_id=0, tipo='venta') }}`.replace("0", data.venta_id),
               "_blank"
             );
             cart = [];
@@ -538,7 +535,7 @@
         }
       }
 
-      // <CHANGE> Fixed: Historial de Compras function restored to original logic
+      // Historial de Compras
       async function loadHistorial() {
         const historialItems = document.getElementById("historial-items");
         historialItems.innerHTML =
@@ -559,19 +556,20 @@
             } else {
               historialItems.innerHTML = data.historial
                 .map(
-                  (venta) => `
+                  (pedido) => `
               <div class="bg-amber-50 p-3 rounded-lg shadow mb-3">
                 <div class="flex justify-between items-center mb-1">
                   <span class="text-amber-800 font-semibold">Fecha: ${
-                    venta.fecha
-                  }</span>
-                  <span class="text-amber-600 font-bold">$${venta.total.toFixed(
+                    pedido.fecha
+                  } (${pedido.tipo})</span>
+                  <span class="text-amber-600 font-bold">$${pedido.total.toFixed(
                     2
                   )}</span>
                 </div>
-                <div class="text-amber-700">Método: ${venta.metodo_pago}</div>
+                <div class="text-amber-700">Método: ${pedido.metodo_pago}</div>
+                <div class="text-amber-700">Estado: ${pedido.estado}</div>
                 <div class="ml-4 mt-1 text-sm text-amber-600">
-                  ${venta.detalles
+                  ${pedido.detalles
                     .map(
                       (d) =>
                         `${d.nombre} (x${d.cantidad}) - $${d.subtotal.toFixed(
@@ -581,8 +579,8 @@
                     .join("<br>")}
                 </div>
                 <a href="/factura/${
-                  venta.id
-                }" class="text-amber-600 hover:underline mt-2 block">Descargar Factura</a>
+                  pedido.id
+                }/${pedido.tipo}" class="text-amber-600 hover:underline mt-2 block">Descargar Factura</a>
               </div>
             `
                 )
@@ -598,7 +596,7 @@
         }
       }
 
-      // --- Editar Perfil ---
+      // Editar Perfil
       const editarPerfilForm = document.getElementById("editar-perfil-form");
       const mensajePerfil = document.getElementById("mensaje-perfil");
       if (editarPerfilForm) {
@@ -633,7 +631,7 @@
         });
       }
 
-      // --- Funciones móviles ---
+      // Funciones móviles
       function toggleMobileCart() {
         const modal = document.getElementById("mobileCartModal");
         modal.classList.toggle("hidden");
