@@ -22,7 +22,7 @@
                 <div class="hidden md:flex space-x-8">
                     <a href="{{ url_for('index') }}" class="text-amber-800 hover:text-amber-600 font-medium transition-colors">Inicio</a>
                     <a href="{{ url_for('menu_routes.menu') }}" class="text-amber-800 hover:text-amber-600 font-medium transition-colors">Menú</a>
-                    <a href="{{ url_for('acerca_routes.acerca') }}" class="text-amber-800 hover:text-amber-600 font-medium transition-colors">Nosotros</a>
+                   
                    
                 </div>
                 
@@ -41,7 +41,7 @@
                 <div class="flex flex-col space-y-3">
                     <a href="{{ url_for('index') }}" class="text-amber-800 hover:text-amber-600 font-medium">Inicio</a>
                     <a href="{{ url_for('menu_routes.menu') }}" class="text-amber-800 hover:text-amber-600 font-medium">Menú</a>
-                    <a href="{{ url_for('acerca_routes.acerca') }}" class="text-amber-800 hover:text-amber-600 font-medium">Nosotros</a>
+                    
                     
                 </div>
             </div>
@@ -119,21 +119,7 @@
                     </div>
                 </div>
                 
-                <!-- Slide 4 -->
-                <div class="carousel-slide">
-                    <div class="flex flex-col md:flex-row items-center min-h-96">
-                        <div class="md:w-1/2 p-8 md:p-12">
-                            <h3 class="text-3xl md:text-4xl font-bold text-amber-800 mb-4">Baristas Expertos</h3>
-                            <p class="text-lg text-amber-700 mb-6">Nuestro equipo de baristas certificados crea arte en cada taza.</p>
-                            <a href="{{ url_for('acerca_routes.acerca') }}" class="bg-amber-600 text-white px-6 py-3 rounded-full hover:bg-amber-700 transition-colors inline-block">
-                                Conocer Equipo
-                            </a>
-                        </div>
-                        <div class="md:w-1/2">
-                            <img src="/static/img/baristas.jpg" alt="Baristas Expertos" class="w-full h-96 object-cover">
-                        </div>
-                    </div>
-                </div>
+               
                 
                 <!-- Navigation Buttons -->
                 <button id="prevBtn" class="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-80 hover:bg-opacity-100 text-amber-800 p-3 rounded-full shadow-lg transition-all">
@@ -194,7 +180,7 @@
                     <ul class="space-y-2">
                         <li><a href="{{ url_for('index') }}" class="text-amber-200 hover:text-white transition-colors">Inicio</a></li>
                         <li><a href="{{ url_for('menu_routes.menu') }}" class="text-amber-200 hover:text-white transition-colors">Menú</a></li>
-                        <li><a href="{{ url_for('acerca_routes.acerca') }}" class="text-amber-200 hover:text-white transition-colors">Nosotros</a></li>
+                        
                     </ul>
                 </div>
                 <div>
@@ -202,7 +188,7 @@
                     <ul class="space-y-2">
                         <li><a href="{{url_for('reserva_routes.reserva')}}" class="text-amber-200 hover:text-white transition-colors">Reservas</a></li>
                         <li><a href="{{ url_for('menu_routes.menu') }}" class="text-amber-200 hover:text-white transition-colors">Delivery</a></li>
-                        <li><a href="{{ url_for('acerca_routes.acerca') }}" class="text-amber-200 hover:text-white transition-colors">Eventos</a></li>
+                        
                     </ul>
                 </div>
                 <div>
