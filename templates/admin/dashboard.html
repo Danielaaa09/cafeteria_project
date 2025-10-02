@@ -13,6 +13,21 @@
       rel="stylesheet"
       href="{{ url_for('static', filename='css/Styles.css') }}"
     />
+    <style>
+      /* Custom styles for sticky headers and responsive table actions */
+      thead th {
+        position: sticky;
+        top: 0;
+        background-color: #fef3c7; /* Tailwind amber-100 */
+        z-index: 10;
+      }
+      @media (max-width: 640px) {
+        .table-actions {
+          flex-direction: column;
+          gap: 0.5rem;
+        }
+      }
+    </style>
   </head>
   <body class="bg-amber-50 min-h-screen flex flex-col">
     <!-- Header -->
@@ -23,7 +38,7 @@
         </button>
         <div class="flex items-center space-x-2">
           <i class="fas fa-coffee text-amber-600 text-2xl"></i>
-          <h1 class="text-2xl font-bold text-amber-800">
+          <h1 class="text-xl sm:text-2xl font-bold text-amber-800">
             Cafetería Las Dos Amigas
           </h1>
         </div>
@@ -35,25 +50,26 @@
             >
               <i class="fas fa-bell"></i>
               <span
+                id="notif-count"
                 class="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center"
                 >{{ notificaciones|length }}</span
               >
             </button>
-            <!-- Dropdown Desplegable de Notificaciones (más compacto) -->
+            <!-- Notification Dropdown -->
             <div
               id="notificationDropdown"
-              class="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 hidden z-50 overflow-y-auto max-h-80"
+              class="absolute right-0 mt-2 w-72 sm:w-80 bg-white rounded-lg shadow-lg border border-gray-200 hidden z-50 max-h-80 overflow-y-auto"
             >
-              <div class="p-2 border-b">
+              <div class="p-3 border-b">
                 <h3 class="font-bold text-amber-800 text-sm">Notificaciones</h3>
               </div>
               {% if notificaciones %}
-              <ul class="space-y-1 p-2">
+              <ul class="space-y-2 p-3">
                 {% for notificacion in notificaciones %}
-                <li class="text-amber-700 border-b pb-1 last:border-b-0 text-sm">
+                <li class="text-amber-700 bg-amber-50 p-2 rounded-lg text-sm hover:bg-amber-100 transition-colors">
                   <p class="mb-1">{{ notificacion.mensaje }} - {{ notificacion.fecha.strftime('%d/%m/%Y %H:%M') }}</p>
                   {% if notificacion.tipo == 'pedido' %}
-                  <div class="mt-1 p-1 bg-amber-50 rounded text-xs">
+                  <div class="mt-1 p-2 bg-white rounded text-xs border border-amber-200">
                     <div><strong>Cliente:</strong> {{ notificacion.datos_dict.cliente }}</div>
                     <div><strong>Productos:</strong> {{ notificacion.datos_dict.productos | join(', ') }}</div>
                     <div><strong>Total:</strong> ${{ notificacion.datos_dict.total }}</div>
@@ -66,24 +82,25 @@
                 {% endfor %}
               </ul>
               {% else %}
-              <p class="p-2 text-amber-700 text-sm">No hay notificaciones.</p>
+              <p class="p-3 text-amber-700 text-sm">No hay notificaciones.</p>
               {% endif %}
             </div>
           </div>
-          <span class="text-amber-800 font-medium"
+          <span class="text-amber-800 font-medium hidden sm:block"
             >Bienvenido, {{ nombre_admin }}</span
           >
           <a
             href="{{ url_for('auth_routes.logout') }}"
             class="text-amber-800 hover:text-amber-600 font-medium transition-colors"
           >
-            <i class="fas fa-sign-out-alt"></i> Cerrar sesión
+            <i class="fas fa-sign-out-alt"></i>
+            <span class="hidden sm:inline ml-1">Cerrar sesión</span>
           </a>
         </div>
       </div>
     </header>
 
-    <!-- Menú Lateral -->
+    <!-- Sidebar (Original) -->
     <aside
       id="sidebar"
       class="bg-white w-64 min-h-screen p-4 shadow-lg fixed top-0 left-0 z-50 transform -translate-x-full transition-transform duration-300 ease-in-out"
@@ -127,79 +144,106 @@
 
     <!-- Main Content -->
     <main class="container mx-auto px-4 py-8 flex-1">
-      <!-- Flash Messages -->
-      {% with messages = get_flashed_messages(with_categories=true) %} {% if
-      messages %} {% for category, message in messages %}
+      <!-- Flash Messages Modal -->
       <div
-        class="bg-{{ 'green' if category == 'success' else 'red' }}-100 border border-{{ 'green' if category == 'success' else 'red' }}-400 text-{{ 'green' if category == 'success' else 'red' }}-700 px-4 py-3 rounded relative mb-4"
-        role="alert"
+        id="flashModal"
+        class="fixed inset-0 flex items-center justify-center hidden bg-black bg-opacity-50 z-50"
       >
-        <span class="block sm:inline">{{ message }}</span>
+        <div
+          class="bg-white p-4 sm:p-6 rounded-lg shadow-lg max-w-md w-full sm:max-w-lg"
+        >
+          <div id="flashMessages" class="space-y-4">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            {% for category, message in messages %}
+            <div
+              class="bg-{{ 'green' if category == 'success' else 'red' }}-100 border border-{{ 'green' if category == 'success' else 'red' }}-400 text-{{ 'green' if category == 'success' else 'red' }}-700 px-4 py-3 rounded relative"
+              role="alert"
+            >
+              <span class="block sm:inline">{{ message }}</span>
+              <button
+                type="button"
+                class="absolute top-0 right-0 px-4 py-3"
+                onclick="this.parentElement.remove()"
+              >
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
+          </div>
+          <button
+            onclick="closeFlashModal()"
+            class="mt-4 bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 w-full"
+          >
+            Cerrar
+          </button>
+        </div>
       </div>
-      {% endfor %} {% endif %} {% endwith %}
 
       <!-- Estadísticas -->
       <div
         id="stats-section"
-        class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8"
+        class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8"
       >
-        <div class="bg-white p-6 rounded-lg shadow-md">
-          <h3 class="text-xl font-bold text-amber-800 mb-2">Total Productos</h3>
-          <p class="text-3xl text-amber-600">{{ productos|length }}</p>
+        <div class="bg-white p-4 rounded-lg shadow-md">
+          <h3 class="text-lg font-bold text-amber-800 mb-2">Total Productos</h3>
+          <p class="text-2xl text-amber-600">{{ productos|length }}</p>
         </div>
-        <div class="bg-white p-6 rounded-lg shadow-md">
-          <h3 class="text-xl font-bold text-amber-800 mb-2">Empleados</h3>
-          <p class="text-3xl text-amber-600">{{ total_empleados }}</p>
+        <div class="bg-white p-4 rounded-lg shadow-md">
+          <h3 class="text-lg font-bold text-amber-800 mb-2">Empleados</h3>
+          <p class="text-2xl text-amber-600">{{ total_empleados }}</p>
         </div>
-        <div class="bg-white p-6 rounded-lg shadow-md">
-          <h3 class="text-xl font-bold text-amber-800 mb-2">Clientes</h3>
-          <p class="text-3xl text-amber-600">{{ total_clientes }}</p>
+        <div class="bg-white p-4 rounded-lg shadow-md">
+          <h3 class="text-lg font-bold text-amber-800 mb-2">Clientes</h3>
+          <p class="text-2xl text-amber-600">{{ total_clientes }}</p>
         </div>
-        <div class="bg-white p-6 rounded-lg shadow-md">
-          <h3 class="text-xl font-bold text-amber-800 mb-2">Ventas Hoy</h3>
-          <p class="text-3xl text-amber-600">
+        <div class="bg-white p-4 rounded-lg shadow-md">
+          <h3 class="text-lg font-bold text-amber-800 mb-2">Ventas Hoy</h3>
+          <p class="text-2xl text-amber-600">
             ${{ "%.2f"|format(ventas_hoy) }}
           </p>
         </div>
-        <div class="bg-white p-6 rounded-lg shadow-md">
-          <h3 class="text-xl font-bold text-amber-800 mb-2">Pedidos Hoy</h3>
-          <p class="text-3xl text-amber-600">{{ pedidos }}</p>
+        <div class="bg-white p-4 rounded-lg shadow-md">
+          <h3 class="text-lg font-bold text-amber-800 mb-2">Pedidos Hoy</h3>
+          <p class="text-2xl text-amber-600">{{ pedidos }}</p>
         </div>
       </div>
 
       <!-- Historial de Ventas por Día -->
       <div
         id="sales-history-section"
-        class="bg-white p-6 rounded-lg shadow-md mb-6"
+        class="bg-white p-4 sm:p-6 rounded-lg shadow-md mb-6"
       >
-        <h2 class="text-2xl font-bold text-amber-800 mb-4">
+        <h2 class="text-xl sm:text-2xl font-bold text-amber-800 mb-4">
           Historial de Ventas por Día
         </h2>
         {% if sales_history %}
-        <table class="w-full text-left text-amber-700">
-          <thead>
-            <tr>
-              <th class="border-b py-2">Fecha</th>
-              <th class="border-b py-2">Total</th>
-              <th class="border-b py-2">Efectivo</th>
-              <th class="border-b py-2">Tarjeta</th>
-              <th class="border-b py-2">Transferencia</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for day in sales_history %}
-            <tr>
-              <td class="border-b py-2">{{ day.date }}</td>
-              <td class="border-b py-2">${{ "%.2f"|format(day.total) }}</td>
-              <td class="border-b py-2">${{ "%.2f"|format(day.efectivo) }}</td>
-              <td class="border-b py-2">${{ "%.2f"|format(day.tarjeta) }}</td>
-              <td class="border-b py-2">
-                ${{ "%.2f"|format(day.transferencia) }}
-              </td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-amber-700 border-collapse">
+            <thead>
+              <tr>
+                <th class="border border-amber-300 px-4 py-2">Fecha</th>
+                <th class="border border-amber-300 px-4 py-2">Total</th>
+                <th class="border border-amber-300 px-4 py-2">Efectivo</th>
+                <th class="border border-amber-300 px-4 py-2">Tarjeta</th>
+                <th class="border border-amber-300 px-4 py-2">Transferencia</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for day in sales_history %}
+              <tr class="hover:bg-amber-50">
+                <td class="border border-amber-300 px-4 py-2">{{ day.date }}</td>
+                <td class="border border-amber-300 px-4 py-2">${{ "%.2f"|format(day.total) }}</td>
+                <td class="border border-amber-300 px-4 py-2">${{ "%.2f"|format(day.efectivo) }}</td>
+                <td class="border border-amber-300 px-4 py-2">${{ "%.2f"|format(day.tarjeta) }}</td>
+                <td class="border border-amber-300 px-4 py-2">${{ "%.2f"|format(day.transferencia) }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
         {% else %}
         <p class="text-amber-700">No hay ventas registradas.</p>
         {% endif %}
@@ -208,9 +252,9 @@
       <!-- Historial de Ventas -->
       <div
         id="sales-summary-section"
-        class="bg-white p-6 rounded-lg shadow-md mb-6"
+        class="bg-white p-4 sm:p-6 rounded-lg shadow-md mb-6"
       >
-        <h2 class="text-2xl font-bold text-amber-800 mb-4">
+        <h2 class="text-xl sm:text-2xl font-bold text-amber-800 mb-4">
           Historial de Ventas
         </h2>
         <div>
@@ -233,13 +277,16 @@
       </div>
 
       <!-- Actividad Reciente -->
-      <div id="activity-section" class="bg-white p-6 rounded-lg shadow-md mb-6">
-        <h2 class="text-2xl font-bold text-amber-800 mb-4">
+      <div
+        id="activity-section"
+        class="bg-white p-4 sm:p-6 rounded-lg shadow-md mb-6"
+      >
+        <h2 class="text-xl sm:text-2xl font-bold text-amber-800 mb-4">
           Actividad Reciente
         </h2>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           <div>
-            <h3 class="text-xl font-semibold text-amber-700 mb-2">
+            <h3 class="text-lg font-semibold text-amber-700 mb-2">
               Últimos Productos
             </h3>
             <ul class="list-disc pl-6 text-amber-600">
@@ -249,7 +296,7 @@
             </ul>
           </div>
           <div>
-            <h3 class="text-xl font-semibold text-amber-700 mb-2">
+            <h3 class="text-lg font-semibold text-amber-700 mb-2">
               Últimos Empleados
             </h3>
             <ul class="list-disc pl-6 text-amber-600">
@@ -259,7 +306,7 @@
             </ul>
           </div>
           <div>
-            <h3 class="text-xl font-semibold text-amber-700 mb-2">
+            <h3 class="text-lg font-semibold text-amber-700 mb-2">
               Últimos Clientes
             </h3>
             <ul class="list-disc pl-6 text-amber-600">
@@ -276,10 +323,10 @@
         <!-- Productos Section -->
         <div
           id="agregar-producto"
-          class="bg-white p-6 rounded-lg shadow-md mb-6"
+          class="bg-white p-4 sm:p-6 rounded-lg shadow-md mb-6"
         >
           <div class="flex justify-between items-center mb-4">
-            <h2 class="text-2xl font-bold text-amber-800">
+            <h2 class="text-xl sm:text-2xl font-bold text-amber-800">
               Gestión de Productos
             </h2>
             <button
@@ -290,7 +337,7 @@
             </button>
           </div>
           {% for categoria in categorias %}
-          <h3 class="text-xl font-semibold text-amber-700 mb-3 mt-6">
+          <h3 class="text-lg sm:text-xl font-semibold text-amber-700 mb-3 mt-6">
             {{ categoria.nombre }}
           </h3>
           <div class="overflow-x-auto">
@@ -316,11 +363,11 @@
                     <img
                       src="{{ p.imagen_url }}"
                       alt="{{ p.nombre }}"
-                      class="w-16 h-16 object-cover rounded"
+                      class="w-12 h-12 sm:w-16 sm:h-16 object-cover rounded"
                     />
                     {% else %}
                     <div
-                      class="w-16 h-16 bg-gray-200 rounded flex items-center justify-center"
+                      class="w-12 h-12 sm:w-16 sm:h-16 bg-gray-200 rounded flex items-center justify-center"
                     >
                       <i class="fas fa-image text-gray-400"></i>
                     </div>
@@ -346,21 +393,21 @@
                     {{ "Rotativo" if p.es_rotativo else "Fijo" }}
                   </td>
                   <td class="border border-amber-300 px-4 py-2">
-                    <div class="flex gap-2">
+                    <div class="flex table-actions gap-2">
                       <button
                         onclick="openEditModal('producto', {{ p.id }}, '{{ p.nombre|safe }}', '{{ p.descripcion|safe }}', {{ p.precio }}, {{ p.cantidad }}, {{ p.categorias_id }})"
-                        class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 text-sm"
+                        class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 text-sm w-full sm:w-auto"
                       >
                         <i class="fas fa-edit"></i> Editar
                       </button>
                       <form
                         method="POST"
                         action="{{ url_for('admin_routes.eliminar_producto', id=p.id) }}"
-                        class="inline"
+                        class="inline w-full sm:w-auto"
                       >
                         <button
                           type="submit"
-                          class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 text-sm"
+                          class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 text-sm w-full sm:w-auto"
                           onclick="return confirm('¿Estás seguro de eliminar este producto?')"
                         >
                           <i class="fas fa-trash"></i> Eliminar
@@ -379,10 +426,10 @@
         <!-- Empleados Section -->
         <div
           id="agregar-empleado"
-          class="bg-white p-6 rounded-lg shadow-md mb-6"
+          class="bg-white p-4 sm:p-6 rounded-lg shadow-md mb-6"
         >
           <div class="flex justify-between items-center mb-4">
-            <h2 class="text-2xl font-bold text-amber-800">
+            <h2 class="text-xl sm:text-2xl font-bold text-amber-800">
               Gestión de Empleados
             </h2>
             <button
@@ -413,21 +460,21 @@
                     {{ e.correo }}
                   </td>
                   <td class="border border-amber-300 px-4 py-2">
-                    <div class="flex gap-2">
+                    <div class="flex table-actions gap-2">
                       <button
                         onclick="openEditModal('empleado', {{ e.id }}, '{{ e.nombre_completo|safe }}', '{{ e.correo|safe }}')"
-                        class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 text-sm"
+                        class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 text-sm w-full sm:w-auto"
                       >
                         <i class="fas fa-edit"></i> Editar
                       </button>
                       <form
                         method="POST"
                         action="{{ url_for('admin_routes.eliminar_empleado', id=e.id) }}"
-                        class="inline"
+                        class="inline w-full sm:w-auto"
                       >
                         <button
                           type="submit"
-                          class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 text-sm"
+                          class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 text-sm w-full sm:w-auto"
                           onclick="return confirm('¿Estás seguro de eliminar este empleado?')"
                         >
                           <i class="fas fa-trash"></i> Eliminar
@@ -445,10 +492,10 @@
         <!-- Clientes Section -->
         <div
           id="agregar-cliente"
-          class="bg-white p-6 rounded-lg shadow-md mb-6"
+          class="bg-white p-4 sm:p-6 rounded-lg shadow-md mb-6"
         >
           <div class="flex justify-between items-center mb-4">
-            <h2 class="text-2xl font-bold text-amber-800">
+            <h2 class="text-xl sm:text-2xl font-bold text-amber-800">
               Gestión de Clientes
             </h2>
             <button
@@ -479,21 +526,21 @@
                     {{ c.correo }}
                   </td>
                   <td class="border border-amber-300 px-4 py-2">
-                    <div class="flex gap-2">
+                    <div class="flex table-actions gap-2">
                       <button
                         onclick="openEditModal('cliente', {{ c.id }}, '{{ c.nombre_completo|safe }}', '{{ c.correo|safe }}')"
-                        class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 text-sm"
+                        class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 text-sm w-full sm:w-auto"
                       >
                         <i class="fas fa-edit"></i> Editar
                       </button>
                       <form
                         method="POST"
                         action="{{ url_for('admin_routes.eliminar_cliente', id=c.id) }}"
-                        class="inline"
+                        class="inline w-full sm:w-auto"
                       >
                         <button
                           type="submit"
-                          class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 text-sm"
+                          class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 text-sm w-full sm:w-auto"
                           onclick="return confirm('¿Estás seguro de eliminar este cliente?')"
                         >
                           <i class="fas fa-trash"></i> Eliminar
@@ -511,10 +558,10 @@
         <!-- Pedidos Section -->
         <div
           id="pedidos"
-          class="bg-white p-6 rounded-lg shadow-md mb-6"
+          class="bg-white p-4 sm:p-6 rounded-lg shadow-md mb-6"
         >
           <div class="flex justify-between items-center mb-4">
-            <h2 class="text-2xl font-bold text-amber-800">
+            <h2 class="text-xl sm:text-2xl font-bold text-amber-800">
               Gestión de Pedidos
             </h2>
           </div>
@@ -555,7 +602,7 @@
                         <option value="en camino" {% if pedido.estado == 'en camino' %}selected{% endif %}>En camino</option>
                         <option value="entregado" {% if pedido.estado == 'entregado' %}selected{% endif %}>Entregado</option>
                       </select>
-                      <button type="submit" class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 text-sm mt-1">
+                      <button type="submit" class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 text-sm mt-1 w-full sm:w-auto">
                         Actualizar
                       </button>
                     </form>
@@ -575,9 +622,9 @@
       class="fixed inset-0 flex items-center justify-center hidden bg-black bg-opacity-50 z-50"
     >
       <div
-        class="bg-white p-6 rounded-lg shadow-lg max-w-md w-full max-h-[90vh] overflow-y-auto"
+        class="bg-white p-4 sm:p-6 rounded-lg shadow-lg max-w-md w-full max-h-[90vh] overflow-y-auto"
       >
-        <h2 class="text-xl font-bold text-amber-800 mb-4">Agregar Producto</h2>
+        <h2 class="text-xl sm:text-2xl font-bold text-amber-800 mb-4">Agregar Producto</h2>
         <form
           method="POST"
           action="{{ url_for('admin_routes.anadir_producto') }}"
@@ -654,8 +701,8 @@
       id="addEmpleadoModal"
       class="fixed inset-0 flex items-center justify-center hidden bg-black bg-opacity-50 z-50"
     >
-      <div class="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
-        <h2 class="text-xl font-bold text-amber-800 mb-4">Agregar Empleado</h2>
+      <div class="bg-white p-4 sm:p-6 rounded-lg shadow-lg max-w-md w-full">
+        <h2 class="text-xl sm:text-2xl font-bold text-amber-800 mb-4">Agregar Empleado</h2>
         <form
           method="POST"
           action="{{ url_for('admin_routes.add_empleado') }}"
@@ -699,8 +746,8 @@
       id="addClienteModal"
       class="fixed inset-0 flex items-center justify-center hidden bg-black bg-opacity-50 z-50"
     >
-      <div class="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
-        <h2 class="text-xl font-bold text-amber-800 mb-4">Agregar Cliente</h2>
+      <div class="bg-white p-4 sm:p-6 rounded-lg shadow-lg max-w-md w-full">
+        <h2 class="text-xl sm:text-2xl font-bold text-amber-800 mb-4">Agregar Cliente</h2>
         <form
           method="POST"
           action="{{ url_for('admin_routes.add_cliente') }}"
@@ -759,9 +806,9 @@
       class="fixed inset-0 flex items-center justify-center hidden bg-black bg-opacity-50 z-50"
     >
       <div
-        class="bg-white p-6 rounded-lg shadow-lg max-w-md w-full max-h-[90vh] overflow-y-auto"
+        class="bg-white p-4 sm:p-6 rounded-lg shadow-lg max-w-md w-full max-h-[90vh] overflow-y-auto"
       >
-        <h2 class="text-xl font-bold text-amber-800 mb-4">Editar Producto</h2>
+        <h2 class="text-xl sm:text-2xl font-bold text-amber-800 mb-4">Editar Producto</h2>
         <form
           id="editProductoForm"
           method="POST"
@@ -838,8 +885,8 @@
       id="editEmpleadoModal"
       class="fixed inset-0 flex items-center justify-center hidden bg-black bg-opacity-50 z-50"
     >
-      <div class="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
-        <h2 class="text-xl font-bold text-amber-800 mb-4">Editar Empleado</h2>
+      <div class="bg-white p-4 sm:p-6 rounded-lg shadow-lg max-w-md w-full">
+        <h2 class="text-xl sm:text-2xl font-bold text-amber-800 mb-4">Editar Empleado</h2>
         <form id="editEmpleadoForm" method="POST" action="" class="space-y-4">
           <input type="hidden" name="id" id="editEmpleadoId" />
           <input
@@ -882,8 +929,8 @@
       id="editClienteModal"
       class="fixed inset-0 flex items-center justify-center hidden bg-black bg-opacity-50 z-50"
     >
-      <div class="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
-        <h2 class="text-xl font-bold text-amber-800 mb-4">Editar Cliente</h2>
+      <div class="bg-white p-4 sm:p-6 rounded-lg shadow-lg max-w-md w-full">
+        <h2 class="text-xl sm:text-2xl font-bold text-amber-800 mb-4">Editar Cliente</h2>
         <form id="editClienteForm" method="POST" action="" class="space-y-4">
           <input type="hidden" name="id" id="editClienteId" />
           <input
@@ -923,7 +970,7 @@
 
     <!-- JavaScript -->
     <script>
-      // Toggle Menú Lateral
+      // Toggle Sidebar
       document
         .getElementById("menu-toggle")
         .addEventListener("click", function () {
@@ -939,7 +986,7 @@
           resetDashboard();
         });
 
-      // Toggle Notificaciones
+      // Toggle Notifications
       document
         .getElementById("notification-toggle")
         .addEventListener("click", function () {
@@ -961,11 +1008,11 @@
             if (data.status === 'success') {
               const li = document.querySelector(`button[onclick="marcarLeida(${notificacionId})"]`).parentElement;
               li.remove();
-              const notifCount = document.querySelector('#notification-toggle span');
+              const notifCount = document.querySelector('#notif-count');
               const newCount = parseInt(notifCount.textContent) - 1;
               notifCount.textContent = newCount;
               if (newCount === 0) {
-                document.getElementById('notificationDropdown').innerHTML = '<p class="p-2 text-amber-700 text-sm">No hay notificaciones.</p>';
+                document.getElementById('notificationDropdown').innerHTML = '<p class="p-3 text-amber-700 text-sm">No hay notificaciones.</p>';
               }
             } else {
               alert('Error al marcar notificación como leída.');
@@ -977,7 +1024,6 @@
       // Ver detalle de pedido
       function verPedido(pedidoId) {
         showSection('pedidos');
-        // Opcional: Resaltar el pedido en la tabla
         const rows = document.querySelectorAll('#pedidos table tbody tr');
         rows.forEach(row => {
           const idCell = row.querySelector('td:first-child');
@@ -1076,6 +1122,25 @@
         } else if (type === "cliente") {
           document.getElementById("editClienteModal").classList.add("hidden");
         }
+      }
+
+      // Flash Modal Auto-Show and Auto-Close
+      window.addEventListener('load', function () {
+        const flashModal = document.getElementById('flashModal');
+        const flashMessages = document.getElementById('flashMessages');
+        if (flashMessages.children.length > 0) {
+          flashModal.classList.remove('hidden');
+          setTimeout(() => {
+            while (flashMessages.firstChild) {
+              flashMessages.removeChild(flashMessages.firstChild);
+            }
+            flashModal.classList.add('hidden');
+          }, 5000);
+        }
+      });
+
+      function closeFlashModal() {
+        document.getElementById('flashModal').classList.add('hidden');
       }
     </script>
   </body>
