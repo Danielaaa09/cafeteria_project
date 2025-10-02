@@ -16,6 +16,8 @@ from datetime import date, datetime
 from config import settings
 from models.notificacion import Notificacion
 import json
+import random
+import string
 
 admin_routes = Blueprint('admin_routes', __name__)
 
@@ -46,6 +48,12 @@ def enviar_correo(destinatario, asunto, cuerpo, nombre_completo=None):
         print(f"Error al enviar correo: {e}")
         flash(f'Error al enviar correo: {str(e)}', 'error')
         return False
+
+# Función para generar contraseña aleatoria
+def generar_contrasena_temporal(longitud=8):
+    caracteres = string.ascii_letters + string.digits  # Letras (mayúsculas y minúsculas) + números
+    contrasena = ''.join(random.choice(caracteres) for _ in range(longitud))
+    return contrasena
 
 # ---------------------------
 # DASHBOARD
@@ -245,6 +253,8 @@ def anadir_producto():
     cantidad = int(request.form.get('cantidad', 0))
     categorias_id_raw = request.form.get('categorias_id')
 
+    print(f"Valor de categorias_id_raw al agregar: {categorias_id_raw}")  # Depuración
+
     imagen = request.files.get('imagen')
     imagen_url = None
     if imagen and imagen.filename != '':
@@ -260,6 +270,7 @@ def anadir_producto():
     else:
         try:
             categorias_id = int(categorias_id_raw)
+            print(f"Valor convertido categorias_id: {categorias_id}")  # Depuración
             nuevo_producto = Producto(
                 nombre=nombre,
                 descripcion=descripcion,
@@ -376,7 +387,7 @@ def eliminar_producto(id):
 def add_empleado():
     nombre = request.form.get('nombre_completo')
     correo = request.form.get('correo')
-    contrasena_temporal = 'abc123Ñ'
+    contrasena_temporal = generar_contrasena_temporal()  # Genera contraseña aleatoria
 
     nuevo_empleado = Usuario(
         nombre_completo=nombre,
@@ -434,7 +445,7 @@ def add_cliente():
     correo = request.form.get('correo')
     telefono = request.form.get('telefono')
     direccion = request.form.get('direccion')
-    contrasena_temporal = 'abc123Ñ'
+    contrasena_temporal = generar_contrasena_temporal()  # Genera contraseña aleatoria
 
     nuevo_cliente = Usuario(
         nombre_completo=nombre,
