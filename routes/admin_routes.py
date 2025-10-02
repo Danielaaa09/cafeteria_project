@@ -125,6 +125,7 @@ def dashboard():
             'id': venta.id,
             'tipo': 'venta',
             'cliente': cliente.nombre_completo if cliente else 'Desconocido',
+            'cantidad': sum(d.cantidad for d in detalles),
             'productos': productos,
             'direccion': cliente.direccion if cliente else 'N/A',
             'telefono': cliente.telefono if cliente else 'N/A',

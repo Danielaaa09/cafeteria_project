@@ -524,6 +524,7 @@
                 <tr class="bg-amber-100">
                   <th class="border border-amber-300 px-4 py-2">ID</th>
                   <th class="border border-amber-300 px-4 py-2">Cliente</th>
+                  <th class="border border-amber-300 px-4 py-2">Cantidad</th>
                   <th class="border border-amber-300 px-4 py-2">Productos</th>
                   <th class="border border-amber-300 px-4 py-2">Dirección</th>
                   <th class="border border-amber-300 px-4 py-2">Teléfono</th>
@@ -538,6 +539,7 @@
                 <tr class="bg-white hover:bg-amber-50">
                   <td class="border border-amber-300 px-4 py-2">{{ pedido.id }}</td>
                   <td class="border border-amber-300 px-4 py-2 font-semibold">{{ pedido.cliente }}</td>
+                  <td class="border border-amber-300 px-4 py-2">{{ pedido.cantidad }}</td>
                   <td class="border border-amber-300 px-4 py-2">{{ pedido.productos | join(', ') }}</td>
                   <td class="border border-amber-300 px-4 py-2">{{ pedido.direccion }}</td>
                   <td class="border border-amber-300 px-4 py-2">{{ pedido.telefono }}</td>

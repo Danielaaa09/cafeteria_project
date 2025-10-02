@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Café Aroma - Empleado</title>
+    <title>Panel de Empleado - Café Aroma</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -13,119 +13,235 @@
         .table-occupied { background: linear-gradient(135deg, #dc2626, #ef4444); }
         .table-available { background: linear-gradient(135deg, #059669, #10b981); }
         .table-selected { background: linear-gradient(135deg, #d97706, #f59e0b); }
+
+        /* Estilos responsivos */
+        @media (max-width: 640px) {
+            #sidebar {
+                width: 80vw;
+            }
+            .mesa-card {
+                padding: 0.75rem;
+            }
+            #modal-productos, #modal-pago {
+                max-width: 100%;
+                padding: 0.5rem;
+            }
+            #modal-productos .max-h-[60vh] {
+                max-height: 70vh;
+            }
+            #mobile-order-modal {
+                max-height: 70vh;
+            }
+            #floating-order {
+                bottom: 1rem;
+                right: 1rem;
+            }
+        }
     </style>
 </head>
 <body class="bg-amber-50 min-h-screen">
-    <!-- Aplicando header moderno con Tailwind CSS -->
-    <header class="bg-white shadow-lg sticky top-0 z-40">
+    <!-- Header consistente con client.html -->
+    <header class="bg-white shadow-lg sticky top-0 z-50">
         <nav class="container mx-auto px-4 py-4">
             <div class="flex justify-between items-center">
+                <button id="menu-toggle" class="text-amber-800 text-2xl mr-4">
+                    <i class="fas fa-bars"></i>
+                </button>
                 <div class="flex items-center space-x-2">
                     <i class="fas fa-coffee text-amber-600 text-2xl"></i>
-                    <h1 class="text-2xl font-bold text-amber-800">Café Aroma - Empleado</h1>
+                    <h1 class="text-xl sm:text-2xl font-bold text-amber-800">Café Aroma</h1>
                 </div>
-                
-                <div class="flex items-center space-x-4">
-                    <span class="text-amber-800">Mesero: {{ nombre_mesero }}</span>
-                    <a href="/logout" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors">
-                        <i class="fas fa-sign-out-alt mr-2"></i>Cerrar Sesión
+                <div class="flex items-center space-x-2 sm:space-x-4">
+                    <div class="flex items-center space-x-1 sm:space-x-2 text-amber-800 font-medium text-sm sm:text-base">
+                        <i class="fas fa-user-circle text-amber-600 text-lg sm:text-xl"></i>
+                        <span class="truncate max-w-[100px] sm:max-w-none">{{ nombre_mesero }}</span>
+                    </div>
+                    <a href="/logout" class="text-amber-800 hover:text-amber-600 font-medium transition-colors text-sm sm:text-base">
+                        <i class="fas fa-sign-out-alt"></i> <span class="hidden sm:inline">Cerrar Sesión</span>
                     </a>
-                    <a href="/admin" class="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 transition-colors">
-                        <i class="fas fa-cog mr-2"></i>Admin
+                    <a href="/admin" class="text-amber-800 hover:text-amber-600 font-medium transition-colors text-sm sm:text-base">
+                        <i class="fas fa-cog"></i> <span class="hidden sm:inline">Admin</span>
                     </a>
                 </div>
             </div>
         </nav>
     </header>
 
-    <!-- Aplicando layout moderno con flexbox y Tailwind -->
-    <div class="flex h-screen pt-20">
-        <!-- Sección de Mesas -->
-        <div class="flex-1 p-6 overflow-auto">
-            <h2 class="text-2xl font-bold text-amber-800 mb-6">Seleccionar Mesa</h2>
-            
-            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-8">
-                {% for mesa in mesas_json %}
-                <div class="{% if mesa.estado == 'Disponible' %}table-available{% else %}table-occupied{% endif %} text-white p-6 rounded-xl shadow-lg cursor-pointer hover:scale-105 transition-all" onclick="abrirModalProductos({{ mesa.id }})">
-                    <div class="text-center">
-                        <i class="fas fa-chair text-2xl mb-2"></i>
-                        <p class="font-bold">Mesa {{ mesa.numero }}</p>
-                        <p class="text-sm">{{ mesa.estado }}</p>
+    <!-- Sidebar -->
+    <aside
+        id="sidebar"
+        class="bg-white w-64 sm:w-72 min-h-screen p-4 shadow-lg fixed top-0 left-0 z-50 transform -translate-x-full transition-transform duration-300 ease-in-out"
+    >
+        <button
+            id="close-menu"
+            class="text-amber-800 text-2xl absolute top-4 right-4"
+        >
+            <i class="fas fa-times"></i>
+        </button>
+        <div class="mt-12">
+            <h2 class="text-lg font-semibold text-amber-800 mb-4">Panel de Empleado</h2>
+            <button
+                class="w-full bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 mb-2 text-sm sm:text-base"
+                onclick="showSection('mesas')"
+            >
+                Seleccionar Mesa
+            </button>
+            <button
+                class="w-full bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 mb-2 text-sm sm:text-base"
+                onclick="showSection('ordenes')"
+            >
+                Órdenes Activas
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="container mx-auto px-4 py-6 sm:py-8">
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %} {% if messages %}
+        {% for category, message in messages %}
+        <div
+            class="bg-{{ 'green' if category == 'success' else 'red' }}-100 border border-{{ 'green' if category == 'success' else 'red' }}-400 text-{{ 'green' if category == 'success' else 'red' }}-700 px-4 py-3 rounded relative mb-4 text-sm sm:text-base"
+            role="alert"
+        >
+            <span class="block sm:inline">{{ message }}</span>
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        <div class="flex flex-col lg:flex-row gap-6 sm:gap-8">
+            <!-- Contenido principal -->
+            <section class="flex-1">
+                <!-- Sección de mesas -->
+                <div id="mesas-section">
+                    <h2 class="text-2xl sm:text-3xl font-bold text-amber-800 mb-6 sm:mb-8">Seleccionar Mesa</h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 sm:gap-6 mb-8">
+                        {% for mesa in mesas_json %}
+                        <div class="mesa-card {% if mesa.estado == 'Disponible' %}table-available{% else %}table-occupied{% endif %} text-white p-4 sm:p-6 rounded-xl shadow-lg cursor-pointer hover:scale-105 transition-all" onclick="abrirModalProductos({{ mesa.id }})">
+                            <div class="text-center">
+                                <i class="fas fa-chair text-xl sm:text-2xl mb-2"></i>
+                                <p class="font-bold text-sm sm:text-base">Mesa {{ mesa.numero }}</p>
+                                <p class="text-xs sm:text-sm">{{ mesa.estado }}</p>
+                            </div>
+                        </div>
+                        {% endfor %}
                     </div>
                 </div>
-                {% endfor %}
-            </div>
 
-            <!-- Sección de órdenes activas con diseño moderno -->
-            <div class="bg-white rounded-xl shadow-lg p-6">
-                <h3 class="text-xl font-bold text-amber-800 mb-4">Órdenes Activas</h3>
-                <div class="space-y-3">
-                    {% for orden in ordenes_json %}
-                    <div class="flex justify-between items-center p-3 bg-amber-50 rounded-lg">
-                        <span class="font-medium text-amber-800">Orden #{{ orden.id }} - Mesa {{ orden.mesa_id }}</span>
-                        <div class="flex items-center space-x-2">
-                            <span class="text-amber-600">${{ "%.2f"|format(orden.total) }}</span>
-                            <button onclick="verOrden({{ orden.id }})" class="bg-amber-600 text-white px-3 py-1 rounded-lg hover:bg-amber-700 text-sm">
-                                Ver
-                            </button>
+                <!-- Sección de órdenes activas -->
+                <div id="ordenes-section" class="hidden">
+                    <h2 class="text-2xl sm:text-3xl font-bold text-amber-800 mb-6 sm:mb-8">Órdenes Activas</h2>
+                    <div class="bg-white rounded-xl shadow-lg p-4 sm:p-6">
+                        <div class="space-y-3">
+                            {% for orden in ordenes_json %}
+                            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center p-3 bg-amber-50 rounded-lg">
+                                <span class="font-medium text-amber-800 text-sm sm:text-base">Orden #{{ orden.id }} - Mesa {{ orden.mesa_id }}</span>
+                                <div class="flex items-center space-x-2 mt-2 sm:mt-0">
+                                    <span class="text-amber-600 text-sm sm:text-base">${{ "%.2f"|format(orden.total) }}</span>
+                                    <button onclick="verOrden({{ orden.id }})" class="bg-amber-600 text-white px-3 py-1 sm:py-2 rounded-lg hover:bg-amber-700 text-xs sm:text-sm">
+                                        Ver
+                                    </button>
+                                </div>
+                            </div>
+                            {% endfor %}
+                            {% if not ordenes_json %}
+                            <p class="text-amber-600 text-center py-4 text-sm sm:text-base">No hay órdenes activas.</p>
+                            {% endif %}
                         </div>
                     </div>
-                    {% endfor %}
-                    {% if not ordenes_json %}
-                    <p class="text-amber-600 text-center py-4">No hay órdenes activas.</p>
-                    {% endif %}
                 </div>
-            </div>
-        </div>
+            </section>
 
-        <!-- Panel lateral de orden actual con diseño moderno -->
-        <div class="w-96 bg-white shadow-2xl p-6">
-            <div class="mb-6">
-                <h3 class="text-xl font-bold text-amber-800">Orden Actual</h3>
-                <p id="mesa-actual" class="text-amber-600">Mesa: -</p>
+            <!-- Panel lateral de orden actual -->
+            <aside id="orden-sidebar" class="w-full lg:w-96 flex-shrink-0 hidden lg:block">
+                <div class="bg-white rounded-xl shadow-lg p-4 sm:p-6 sticky top-24">
+                    <h3 class="text-xl sm:text-2xl font-bold text-amber-800 mb-4 sm:mb-6">Orden Actual</h3>
+                    <p id="mesa-actual" class="text-amber-600 text-sm sm:text-base">Mesa: -</p>
+                    <div class="flex-1 overflow-auto mb-4 sm:mb-6">
+                        <ul id="productos-orden" class="space-y-2">
+                            <li class="text-amber-600 text-sm sm:text-base">No hay productos seleccionados</li>
+                        </ul>
+                    </div>
+                    <div class="border-t pt-4">
+                        <div class="flex justify-between items-center mb-4">
+                            <span class="font-bold text-amber-800 text-base sm:text-lg">Total:</span>
+                            <span id="total-orden" class="font-bold text-amber-800 text-lg sm:text-xl">$0.00</span>
+                        </div>
+                        <button onclick="abrirModalPago()" class="w-full bg-amber-600 text-white py-2 sm:py-3 rounded-lg font-semibold hover:bg-amber-700 transition-colors text-sm sm:text-base">
+                            Pagar Orden
+                        </button>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </main>
+
+    <!-- Flotante móvil para orden actual -->
+    <div id="floating-order" class="fixed bottom-4 right-4 lg:hidden z-50">
+        <button
+            onclick="toggleMobileOrder()"
+            class="bg-amber-600 text-white p-3 sm:p-4 rounded-full shadow-lg hover:bg-amber-700 transition-colors relative"
+        >
+            <i class="fas fa-shopping-cart text-lg sm:text-xl"></i>
+            <span id="orderBadge" class="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center hidden">0</span>
+        </button>
+    </div>
+
+    <!-- Modal móvil para orden actual -->
+    <div
+        id="mobile-order-modal"
+        class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden lg:hidden"
+    >
+        <div
+            class="absolute bottom-0 left-0 right-0 bg-white rounded-t-xl p-4 sm:p-6 max-h-96 overflow-y-auto"
+        >
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg sm:text-xl font-bold text-amber-800">Orden Actual</h3>
+                <button onclick="toggleMobileOrder()" class="text-amber-600 text-lg sm:text-xl">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
-            
-            <div class="flex-1 overflow-auto mb-4">
-                <ul id="productos-orden" class="space-y-2">
-                    <li class="text-amber-600 text-sm">No hay productos seleccionados</li>
-                </ul>
+            <p id="mobile-mesa-actual" class="text-amber-600 text-sm sm:text-base mb-4">Mesa: -</p>
+            <div id="mobile-productos-orden" class="space-y-2 mb-4 sm:mb-6">
+                <p class="text-amber-600 text-center py-4 text-sm sm:text-base">No hay productos seleccionados</p>
             </div>
-            
             <div class="border-t pt-4">
                 <div class="flex justify-between items-center mb-4">
-                    <span class="font-bold text-amber-800">Total:</span>
-                    <span id="total-orden" class="font-bold text-amber-800 text-lg">$0.00</span>
+                    <span class="text-base sm:text-lg font-semibold text-amber-800">Total:</span>
+                    <span id="mobile-total-orden" class="text-lg sm:text-xl font-bold text-amber-600">$0.00</span>
                 </div>
-                
-                <button onclick="abrirModalPago()" class="w-full bg-amber-600 text-white py-3 rounded-lg font-semibold hover:bg-amber-700 transition-colors">
+                <button
+                    onclick="abrirModalPago()"
+                    class="w-full bg-amber-600 text-white py-2 sm:py-3 rounded-lg font-semibold hover:bg-amber-700 transition-colors text-sm sm:text-base"
+                >
                     Pagar Orden
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- Modal de productos con diseño moderno -->
-    <div id="modal-productos" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+    <!-- Modal de productos -->
+    <div id="modal-productos" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4 sm:p-6">
         <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
-            <div class="p-6 border-b border-amber-100">
-                <h2 class="text-2xl font-bold text-amber-800">Seleccionar Productos - Mesa <span id="mesa-seleccionada"></span></h2>
+            <div class="p-4 sm:p-6 border-b border-amber-100">
+                <h2 class="text-xl sm:text-2xl font-bold text-amber-800">Seleccionar Productos - Mesa <span id="mesa-seleccionada"></span></h2>
             </div>
-            
-            <div class="p-6 overflow-y-auto max-h-[60vh]">
+            <div class="p-4 sm:p-6 overflow-y-auto max-h-[60vh]">
                 {% for categoria, productos in productos_por_categoria.items() %}
-                <div class="mb-8">
-                    <h3 class="text-xl font-bold text-amber-800 mb-4">{{ categoria }}</h3>
-                    <div class="grid md:grid-cols-2 gap-4">
+                <div class="mb-6 sm:mb-8">
+                    <h3 class="text-lg sm:text-xl font-bold text-amber-800 mb-4">{{ categoria }}</h3>
+                    <div class="grid grid-cols-1 sm:md:grid-cols-2 gap-4">
                         {% for producto in productos %}
-                        <div class="flex justify-between items-center p-4 bg-amber-50 rounded-lg">
+                        <div class="flex justify-between items-center p-3 sm:p-4 bg-amber-50 rounded-lg">
                             <div>
-                                <p class="font-medium text-amber-800">{{ producto.nombre }}</p>
-                                <p class="text-amber-600">${{ "%.2f"|format(producto.precio) }}</p>
+                                <p class="font-medium text-amber-800 text-sm sm:text-base">{{ producto.nombre }}</p>
+                                <p class="text-amber-600 text-sm sm:text-base">${{ "%.2f"|format(producto.precio) }}</p>
                             </div>
                             <div class="flex items-center space-x-3">
-                                <button onclick="restarCantidad({{ producto.id }})" class="bg-red-500 text-white w-8 h-8 rounded-full hover:bg-red-600">-</button>
-                                <span id="cantidad-{{ producto.id }}" class="font-bold text-amber-800 min-w-[20px] text-center">0</span>
-                                <button onclick="sumarCantidad({{ producto.id }})" class="bg-green-500 text-white w-8 h-8 rounded-full hover:bg-green-600">+</button>
+                                <button onclick="restarCantidad({{ producto.id }})" class="bg-red-500 text-white w-8 h-8 rounded-full hover:bg-red-600 text-sm">-</button>
+                                <span id="cantidad-{{ producto.id }}" class="font-bold text-amber-800 min-w-[20px] text-center text-sm sm:text-base">0</span>
+                                <button onclick="sumarCantidad({{ producto.id }})" class="bg-green-500 text-white w-8 h-8 rounded-full hover:bg-green-600 text-sm">+</button>
                             </div>
                         </div>
                         {% endfor %}
@@ -133,47 +249,43 @@
                 </div>
                 {% endfor %}
             </div>
-            
-            <div class="p-6 border-t border-amber-100 flex space-x-4">
-                <button onclick="crearOrden()" class="flex-1 bg-amber-600 text-white py-3 rounded-lg font-semibold hover:bg-amber-700 transition-colors">
+            <div class="p-4 sm:p-6 border-t border-amber-100 flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+                <button onclick="crearOrden()" class="flex-1 bg-amber-600 text-white py-2 sm:py-3 rounded-lg font-semibold hover:bg-amber-700 transition-colors text-sm sm:text-base">
                     Crear Orden
                 </button>
-                <button onclick="cerrarModal('modal-productos')" class="flex-1 bg-gray-500 text-white py-3 rounded-lg font-semibold hover:bg-gray-600 transition-colors">
+                <button onclick="cerrarModal('modal-productos')" class="flex-1 bg-gray-500 text-white py-2 sm:py-3 rounded-lg font-semibold hover:bg-gray-600 transition-colors text-sm sm:text-base">
                     Cerrar
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- Modal de pago con diseño moderno -->
-    <div id="modal-pago" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+    <!-- Modal de pago -->
+    <div id="modal-pago" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4 sm:p-6">
         <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full">
-            <div class="p-6 border-b border-amber-100">
-                <h2 class="text-2xl font-bold text-amber-800">Pagar Orden</h2>
+            <div class="p-4 sm:p-6 border-b border-amber-100">
+                <h2 class="text-xl sm:text-2xl font-bold text-amber-800">Pagar Orden</h2>
             </div>
-            
-            <div class="p-6 space-y-4">
+            <div class="p-4 sm:p-6 space-y-4">
                 <div>
-                    <label class="block text-amber-800 font-medium mb-2">Método de pago</label>
-                    <select id="metodo-pago" class="w-full px-4 py-3 border border-amber-200 rounded-lg focus:outline-none focus:border-amber-500">
+                    <label class="block text-amber-800 font-medium text-sm sm:text-base mb-2">Método de pago</label>
+                    <select id="metodo-pago" class="w-full px-3 sm:px-4 py-2 sm:py-3 border border-amber-200 rounded-lg focus:outline-none focus:border-amber-500 text-sm sm:text-base">
                         <option value="">Seleccione método de pago</option>
                         <option value="Efectivo">Efectivo</option>
                         <option value="Tarjeta">Tarjeta</option>
                         <option value="Transferencia">Transferencia</option>
                     </select>
                 </div>
-                
                 <div>
-                    <label class="block text-amber-800 font-medium mb-2">Correo para factura (opcional)</label>
-                    <input type="email" id="correo-cliente" class="w-full px-4 py-3 border border-amber-200 rounded-lg focus:outline-none focus:border-amber-500" placeholder="correo@ejemplo.com">
+                    <label class="block text-amber-800 font-medium text-sm sm:text-base mb-2">Correo para factura (opcional)</label>
+                    <input type="email" id="correo-cliente" class="w-full px-3 sm:px-4 py-2 sm:py-3 border border-amber-200 rounded-lg focus:outline-none focus:border-amber-500 text-sm sm:text-base" placeholder="correo@ejemplo.com">
                 </div>
             </div>
-            
-            <div class="p-6 border-t border-amber-100 flex space-x-4">
-                <button id="confirmar-pago-btn" class="flex-1 bg-amber-600 text-white py-3 rounded-lg font-semibold hover:bg-amber-700 transition-colors">
+            <div class="p-4 sm:p-6 border-t border-amber-100 flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+                <button id="confirmar-pago-btn" class="flex-1 bg-amber-600 text-white py-2 sm:py-3 rounded-lg font-semibold hover:bg-amber-700 transition-colors text-sm sm:text-base">
                     Confirmar Pago
                 </button>
-                <button onclick="cerrarModal('modal-pago')" class="flex-1 bg-gray-500 text-white py-3 rounded-lg font-semibold hover:bg-gray-600 transition-colors">
+                <button onclick="cerrarModal('modal-pago')" class="flex-1 bg-gray-500 text-white py-2 sm:py-3 rounded-lg font-semibold hover:bg-gray-600 transition-colors text-sm sm:text-base">
                     Cerrar
                 </button>
             </div>
@@ -185,11 +297,51 @@
         let mesaSeleccionadaId = null;
         let productosSeleccionados = {};
 
+        // Toggle sidebar
+        document.getElementById("menu-toggle").addEventListener("click", function () {
+            document.getElementById("sidebar").classList.remove("-translate-x-full");
+        });
+
+        document.getElementById("close-menu").addEventListener("click", function () {
+            document.getElementById("sidebar").classList.add("-translate-x-full");
+        });
+
+        // Mostrar secciones
+        function showSection(sectionId) {
+            document.getElementById("mesas-section").classList.add("hidden");
+            document.getElementById("ordenes-section").classList.add("hidden");
+            document.getElementById("orden-sidebar").classList.add("hidden");
+            document.getElementById("floating-order").classList.add("hidden");
+
+            if (sectionId === "mesas") {
+                document.getElementById("mesas-section").classList.remove("hidden");
+                document.getElementById("orden-sidebar").classList.remove("hidden");
+                document.getElementById("floating-order").classList.remove("hidden");
+            } else if (sectionId === "ordenes") {
+                document.getElementById("ordenes-section").classList.remove("hidden");
+            }
+
+            document.getElementById("sidebar").classList.add("-translate-x-full");
+        }
+
+        // Toggle modal móvil
+        function toggleMobileOrder() {
+            const modal = document.getElementById("mobile-order-modal");
+            modal.classList.toggle("hidden");
+            if (!modal.classList.contains("hidden")) {
+                const productosList = document.getElementById("mobile-productos-orden");
+                const total = document.getElementById("mobile-total-orden");
+                const mesaActual = document.getElementById("mobile-mesa-actual");
+                productosList.innerHTML = document.getElementById("productos-orden").innerHTML;
+                total.textContent = document.getElementById("total-orden").textContent;
+                mesaActual.textContent = document.getElementById("mesa-actual").textContent;
+            }
+        }
+
         function abrirModalProductos(mesaId) {
             mesaSeleccionadaId = mesaId;
             document.getElementById('mesa-seleccionada').textContent = mesaId;
             document.getElementById('modal-productos').classList.remove('hidden');
-            // Reiniciar cantidades
             productosSeleccionados = {};
             document.querySelectorAll('[id^="cantidad-"]').forEach(span => {
                 span.textContent = '0';
@@ -253,18 +405,24 @@
                     if (data.success) {
                         const orden = data.orden;
                         document.getElementById('mesa-actual').textContent = `Mesa: ${orden.mesa_id}`;
+                        document.getElementById('mobile-mesa-actual').textContent = `Mesa: ${orden.mesa_id}`;
                         const productosList = document.getElementById('productos-orden');
                         productosList.innerHTML = '';
+                        let total = 0;
                         orden.productos.forEach(producto => {
                             const li = document.createElement('li');
-                            li.className = 'flex justify-between items-center text-sm p-2 bg-amber-50 rounded';
+                            li.className = 'flex justify-between items-center text-sm sm:text-base p-2 bg-amber-50 rounded';
                             li.innerHTML = `
                                 <span>${producto.nombre} x${producto.cantidad}</span>
                                 <span>$${producto.subtotal.toFixed(2)}</span>
                             `;
                             productosList.appendChild(li);
+                            total += producto.subtotal;
                         });
-                        document.getElementById('total-orden').textContent = `$${orden.total.toFixed(2)}`;
+                        document.getElementById('total-orden').textContent = `$${total.toFixed(2)}`;
+                        document.getElementById('mobile-total-orden').textContent = `$${total.toFixed(2)}`;
+                        document.getElementById('orderBadge').textContent = orden.productos.length;
+                        document.getElementById('orderBadge').classList.remove('hidden');
                         ordenActualId = orden.id;
                     } else {
                         alert(data.error);
@@ -311,6 +469,9 @@
                 alert('Error al procesar el pago');
             });
         });
+
+        // Mostrar sección de mesas por defecto
+        showSection('mesas');
     </script>
 </body>
 </html>
